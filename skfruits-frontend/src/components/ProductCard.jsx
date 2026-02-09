@@ -66,10 +66,10 @@ function ProductCard({ product, compact = false }) {
       : null;
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group ${compact ? "flex gap-3" : ""}`}>
+    <div className={`rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group ${compact ? "flex gap-3" : ""}`} style={{ backgroundColor: 'var(--background)' }}>
       {/* Product Image */}
       <Link to={`/product/${product.id}`} className={compact ? "shrink-0" : "block"}>
-        <div className={`relative flex items-center justify-center overflow-hidden cursor-pointer bg-white ${compact ? "h-20 w-20 rounded-lg" : "h-64"}`}>
+        <div className={`relative flex items-center justify-center overflow-hidden cursor-pointer ${compact ? "h-20 w-20 rounded-lg" : "h-64"}`} style={{ backgroundColor: 'var(--background)' }}>
           {images.length > 0 ? (
             <img
               src={images[0]}
@@ -81,8 +81,8 @@ function ProductCard({ product, compact = false }) {
               height={320}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: 'oklch(92% .04 340)' }}>
-              <img src="/logo.png" alt="Gift Choice Logo" className="w-24 h-24 object-contain opacity-50" />
+            <div className="w-full h-full flex items-center justify-center bg-design-secondary">
+              <img src="/logo.png" alt="SK Fruits" className="w-24 h-24 object-contain opacity-50" />
             </div>
           )}
           
@@ -90,22 +90,22 @@ function ProductCard({ product, compact = false }) {
           {!compact && (
           <div className="absolute top-3 right-3 flex flex-col gap-1.5">
             {product.isReady60Min && (
-              <span className="px-2 py-0.5 text-xs rounded-full font-semibold shadow-sm" style={{ backgroundColor: 'oklch(92% .04 340)', color: 'oklch(20% .02 340)' }}>
+              <span className="px-2 py-0.5 text-xs rounded-full font-semibold shadow-sm bg-design-secondary text-design-foreground">
                 60 Min
               </span>
             )}
             {product.isFestival && (
-              <span className="px-2 py-0.5 text-xs rounded-full font-semibold shadow-sm" style={{ backgroundColor: 'oklch(92% .04 340)', color: 'oklch(20% .02 340)' }}>
+              <span className="px-2 py-0.5 text-xs rounded-full font-semibold shadow-sm bg-design-secondary text-design-foreground">
                 Festival
               </span>
             )}
             {product.isNew && (
-              <span className="px-2 py-0.5 text-xs rounded-full font-semibold shadow-sm" style={{ backgroundColor: 'oklch(92% .04 340)', color: 'oklch(20% .02 340)' }}>
+              <span className="px-2 py-0.5 text-xs rounded-full font-semibold shadow-sm bg-design-secondary text-design-foreground">
                 New
               </span>
             )}
             {product.badge && (
-              <span className="px-2 py-0.5 text-xs rounded-full font-semibold shadow-sm" style={{ backgroundColor: 'oklch(92% .04 340)', color: 'oklch(20% .02 340)' }}>
+              <span className="px-2 py-0.5 text-xs rounded-full font-semibold shadow-sm bg-design-secondary text-design-foreground">
                 {product.badge}
               </span>
             )}
@@ -117,28 +117,28 @@ function ProductCard({ product, compact = false }) {
       {/* Product Info */}
       <div className={compact ? "py-1 pr-2 flex-1 min-w-0" : "p-4"}>
         <Link to={`/product/${product.id}`}>
-          <h3 className={`font-semibold line-clamp-1 transition-colors cursor-pointer ${compact ? "text-sm mb-0.5" : "text-base mb-1.5"}`} style={{ color: 'oklch(20% .02 340)' }} onMouseEnter={(e) => e.target.style.color = 'oklch(92% .04 340)'} onMouseLeave={(e) => e.target.style.color = 'oklch(20% .02 340)'}>
+          <h3 className={`font-semibold line-clamp-1 transition-colors cursor-pointer ${compact ? "text-sm mb-0.5" : "text-base mb-1.5"}`} style={{ color: 'var(--foreground)' }} onMouseEnter={(e) => { e.target.style.color = 'var(--primary)'; }} onMouseLeave={(e) => { e.target.style.color = 'var(--foreground)'; }}>
             {product.name}
           </h3>
         </Link>
-        {!compact && <p className="text-sm mb-3 line-clamp-2 min-h-[2.5rem]" style={{ color: 'oklch(50% .02 340)' }}>{product.description}</p>}
+        {!compact && <p className="text-sm mb-3 line-clamp-2 min-h-[2.5rem] text-design-muted">{product.description}</p>}
 
         {/* Price - Amazon-style: MRP struck through, selling price bold, optional discount % */}
         {displayPrice != null && (
           <div className={compact ? "mb-1.5 flex items-baseline gap-2" : "mb-3 flex flex-wrap items-baseline gap-2"}>
-            <span className={compact ? "text-sm font-bold" : "text-lg font-bold"} style={{ color: 'oklch(20% .02 340)' }}>
+            <span className={compact ? "text-sm font-bold" : "text-lg font-bold"} style={{ color: 'var(--foreground)' }}>
               ₹{Number(displayPrice).toLocaleString('en-IN')}
               {!product.hasSinglePrice && product.sizes && product.sizes.length > 1 && (
-                <span className="text-sm font-normal ml-1" style={{ color: 'oklch(50% .02 340)' }}>onwards</span>
+                <span className="text-sm font-normal ml-1 text-design-muted">onwards</span>
               )}
             </span>
             {displayMrp != null && displayMrp > displayPrice && (
               <>
-                <span className="text-sm line-through" style={{ color: 'oklch(55% .02 340)' }}>
+                <span className="text-sm line-through text-design-muted">
                   ₹{Number(displayMrp).toLocaleString('en-IN')}
                 </span>
                 {discountPct != null && discountPct > 0 && (
-                  <span className="text-xs font-semibold text-green-600">
+                  <span className="text-xs font-semibold" style={{ color: 'var(--success)' }}>
                     {discountPct}% OFF
                   </span>
                 )}
@@ -147,11 +147,11 @@ function ProductCard({ product, compact = false }) {
           </div>
         )}
 
-        {/* Add Button */}
+        {/* Add Button — Primary: yellow-400 bg, gray-900 text, hover orange */}
         <button
           onClick={handleAddToCart}
-          className={`rounded-lg font-medium transition-all duration-300 hover:opacity-90 active:scale-95 text-sm flex items-center justify-center gap-2 ${compact ? "px-3 py-1.5" : "w-full py-2.5"}`}
-          style={{ backgroundColor: 'oklch(92% .04 340)', color: 'oklch(20% .02 340)' }}
+          className={`btn-primary-brand rounded-lg font-medium transition-all duration-300 active:scale-95 text-sm flex items-center justify-center gap-2 ${compact ? "px-3 py-1.5" : "w-full py-2.5"}`}
+          style={{ borderRadius: 'var(--radius-lg)' }}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />

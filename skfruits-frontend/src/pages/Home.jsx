@@ -244,7 +244,7 @@ export default function Home() {
   const isAnyLoading = isInitialLoad;
 
   return (
-    <div className="min-h-screen bg-white fade-in">
+    <div className="min-h-screen fade-in" style={{ backgroundColor: 'var(--background)' }}>
       {/* Gift Box Loading Animation - Only shows if loading takes >= 0.1 seconds */}
       <GiftBoxLoader 
         isLoading={isAnyLoading} 
@@ -261,7 +261,7 @@ export default function Home() {
             <>
               <img
                 src={heroBanner.imageUrl}
-                alt={heroBanner.title || "Gift Choice"}
+                alt={heroBanner.title || "SK Fruits"}
                 className="w-full h-full object-cover"
                 loading="eager"
                 fetchPriority="high"
@@ -269,16 +269,16 @@ export default function Home() {
               <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent"></div>
             </>
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/20 via-[var(--accent)]/15 to-[var(--primary)]/10"></div>
           )}
           
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center px-4">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 text-white drop-shadow-lg">
-                {heroBanner?.title || "Gift Choice"}
+              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 text-white drop-shadow-lg">
+                {heroBanner?.title || "SK Fruits"}
               </h1>
               <p className="text-lg sm:text-xl text-white/90 mb-6 drop-shadow-md">
-                {heroBanner?.subtitle || "Discover the perfect gift for every occasion"}
+                {heroBanner?.subtitle || "FreshFruit — Premium fresh fruits for every occasion"}
               </p>
             </div>
           </div>
@@ -286,14 +286,14 @@ export default function Home() {
           {/* Decorative elements - only show if no banner image */}
           {!heroBanner && (
             <>
-              <div className="absolute top-10 left-10 w-16 h-16 opacity-20 rounded-full p-2" style={{ backgroundColor: 'rgba(255, 192, 203, 0.3)' }}>
-                <img src="/logo.png" alt="Gift Choice Logo" className="w-full h-full object-contain" />
+              <div className="absolute top-10 left-10 w-16 h-16 opacity-20 rounded-full p-2 bg-white/30">
+                <img src="/logo.png" alt="SK Fruits" className="w-full h-full object-contain" />
               </div>
-              <div className="absolute bottom-10 right-10 w-16 h-16 opacity-20 rounded-full p-2" style={{ backgroundColor: 'rgba(255, 192, 203, 0.3)' }}>
-                <img src="/logo.png" alt="Gift Choice Logo" className="w-full h-full object-contain" />
+              <div className="absolute bottom-10 right-10 w-16 h-16 opacity-20 rounded-full p-2 bg-white/30">
+                <img src="/logo.png" alt="SK Fruits" className="w-full h-full object-contain" />
               </div>
-              <div className="absolute top-1/2 right-20 w-14 h-14 opacity-20 rounded-full p-2" style={{ backgroundColor: 'rgba(255, 192, 203, 0.3)' }}>
-                <img src="/logo.png" alt="Gift Choice Logo" className="w-full h-full object-contain" />
+              <div className="absolute top-1/2 right-20 w-14 h-14 opacity-20 rounded-full p-2 bg-white/30">
+                <img src="/logo.png" alt="SK Fruits" className="w-full h-full object-contain" />
               </div>
             </>
           )}
@@ -307,13 +307,10 @@ export default function Home() {
       {categories.length > 0 ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold" style={{ color: 'oklch(20% .02 340)' }}>Shop By Category</h2>
+            <h2 className="font-display text-3xl font-bold text-design-foreground">Shop By Category</h2>
             <Link 
               to="/categories" 
-              className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group"
-              style={{ color: 'oklch(20% .02 340)' }}
-              onMouseEnter={(e) => e.target.style.color = 'oklch(40% .02 340)'}
-              onMouseLeave={(e) => e.target.style.color = 'oklch(20% .02 340)'}
+              className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group text-design-foreground hover:opacity-80"
             >
               View All
               <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -324,18 +321,9 @@ export default function Home() {
           <div className="relative">
             <button
               onClick={() => scrollCategories("left")}
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
-              style={{ borderColor: 'oklch(92% .04 340)' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'oklch(92% .04 340)';
-                e.currentTarget.style.backgroundColor = 'oklch(92% .04 340)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'oklch(92% .04 340)';
-                e.currentTarget.style.backgroundColor = 'white';
-              }}
+              className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border border-design active:scale-95 bg-[var(--background)] hover:bg-design-secondary"
             >
-              <svg className="w-5 h-5" style={{ color: 'oklch(40% .02 340)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-design-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
@@ -354,17 +342,7 @@ export default function Home() {
                   to={`/category/${category.slug}`}
                   className="flex-shrink-0 flex flex-col items-center min-w-[100px] sm:min-w-[120px] group"
                 >
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full flex items-center justify-center text-4xl sm:text-5xl border-2 group-hover:shadow-lg group-hover:scale-110 transition-all duration-300 overflow-hidden cursor-pointer"
-                    style={{ 
-                      backgroundColor: 'oklch(92% .04 340)',
-                      borderColor: 'oklch(92% .04 340)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = 'oklch(88% .06 340)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'oklch(92% .04 340)';
-                    }}
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full flex items-center justify-center text-4xl sm:text-5xl border-2 border-design group-hover:shadow-lg group-hover:scale-110 transition-all duration-300 overflow-hidden cursor-pointer bg-design-secondary group-hover:border-[var(--border)]"
                   >
                     {category.imageUrl ? (
                       <img
@@ -373,16 +351,12 @@ export default function Home() {
                         className="w-full h-full object-cover rounded-full"
                       />
                     ) : (
-                      <div className="w-full h-full rounded-full flex items-center justify-center overflow-hidden" style={{ backgroundColor: 'oklch(92% .04 340)' }}>
-                        <img src="/logo.png" alt="Gift Choice Logo" className="w-3/4 h-3/4 object-contain" />
+                      <div className="w-full h-full rounded-full flex items-center justify-center overflow-hidden bg-design-secondary">
+                        <img src="/logo.png" alt="SK Fruits" className="w-3/4 h-3/4 object-contain" />
                       </div>
                     )}
                   </div>
-                  <span className="text-sm font-semibold text-center transition-colors mt-2"
-                    style={{ color: 'oklch(40% .02 340)' }}
-                    onMouseEnter={(e) => e.target.style.color = 'oklch(92% .04 340)'}
-                    onMouseLeave={(e) => e.target.style.color = 'oklch(40% .02 340)'}
-                  >
+                  <span className="text-sm font-semibold text-center transition-colors mt-2 text-design-muted group-hover:text-design-foreground">
                     {category.name}
                   </span>
                 </Link>
@@ -390,18 +364,9 @@ export default function Home() {
             </div>
             <button
               onClick={() => scrollCategories("right")}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
-              style={{ borderColor: 'oklch(92% .04 340)' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'oklch(92% .04 340)';
-                e.currentTarget.style.backgroundColor = 'oklch(92% .04 340)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'oklch(92% .04 340)';
-                e.currentTarget.style.backgroundColor = 'white';
-              }}
+              className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border border-design active:scale-95 bg-[var(--background)] hover:bg-design-secondary"
             >
-              <svg className="w-5 h-5" style={{ color: 'oklch(40% .02 340)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-design-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -411,15 +376,12 @@ export default function Home() {
 
       {/* Trending Products Section */}
       {trendingProducts.length > 0 ? (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
           <div className="flex items-center justify-between mb-10">
-            <h2 className="text-3xl font-bold" style={{ color: 'oklch(20% .02 340)' }}>Trending Products</h2>
+            <h2 className="font-display text-3xl font-bold text-design-foreground">Trending Products</h2>
             <Link
               to="/categories?trending=true"
-              className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group"
-              style={{ color: 'oklch(20% .02 340)' }}
-              onMouseEnter={(e) => e.target.style.color = 'oklch(40% .02 340)'}
-              onMouseLeave={(e) => e.target.style.color = 'oklch(20% .02 340)'}
+              className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group text-design-foreground hover:opacity-80"
             >
               View All
               <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -447,13 +409,10 @@ export default function Home() {
       {occasions.length > 0 ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold" style={{ color: 'oklch(20% .02 340)' }}>Shop By Occasion</h2>
+            <h2 className="font-display text-3xl font-bold text-design-foreground">Shop By Occasion</h2>
             <Link 
               to="/occasion" 
-              className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group"
-              style={{ color: 'oklch(20% .02 340)' }}
-              onMouseEnter={(e) => e.target.style.color = 'oklch(40% .02 340)'}
-              onMouseLeave={(e) => e.target.style.color = 'oklch(20% .02 340)'}
+              className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group text-design-foreground hover:opacity-80"
             >
               View All
               <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -464,18 +423,9 @@ export default function Home() {
           <div className="relative">
             <button
               onClick={() => scrollOccasions("left")}
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
-              style={{ borderColor: 'oklch(92% .04 340)' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'oklch(92% .04 340)';
-                e.currentTarget.style.backgroundColor = 'oklch(92% .04 340)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'oklch(92% .04 340)';
-                e.currentTarget.style.backgroundColor = 'white';
-              }}
+              className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border border-design active:scale-95 bg-[var(--background)] hover:bg-design-secondary"
             >
-              <svg className="w-5 h-5" style={{ color: 'oklch(40% .02 340)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-design-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
@@ -494,10 +444,7 @@ export default function Home() {
                   to={`/occasion/${occasion.slug}`}
                   className="flex-shrink-0 flex flex-col items-center min-w-[140px] sm:min-w-[160px] group"
                 >
-                  <div className="w-32 h-32 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-lg flex items-center justify-center text-4xl sm:text-5xl group-hover:shadow-lg group-hover:scale-110 transition-all duration-300 overflow-hidden cursor-pointer"
-                    style={{ 
-                      backgroundColor: 'oklch(92% .04 340)'
-                    }}
+                  <div className="w-32 h-32 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-lg flex items-center justify-center text-4xl sm:text-5xl group-hover:shadow-lg group-hover:scale-110 transition-all duration-300 overflow-hidden cursor-pointer bg-design-secondary"
                   >
                     {occasion.imageUrl ? (
                       <img
@@ -506,16 +453,12 @@ export default function Home() {
                         className="w-full h-full object-cover rounded-lg"
                       />
                     ) : (
-                      <div className="w-full h-full rounded-lg flex items-center justify-center overflow-hidden" style={{ backgroundColor: 'oklch(92% .04 340)' }}>
-                        <img src="/logo.png" alt="Gift Choice Logo" className="w-3/4 h-3/4 object-contain" />
+                      <div className="w-full h-full rounded-lg flex items-center justify-center overflow-hidden bg-design-secondary">
+                        <img src="/logo.png" alt="SK Fruits" className="w-3/4 h-3/4 object-contain" />
                       </div>
                     )}
                   </div>
-                  <span className="text-sm font-semibold text-center transition-colors mt-2"
-                    style={{ color: 'oklch(40% .02 340)' }}
-                    onMouseEnter={(e) => e.target.style.color = 'oklch(92% .04 340)'}
-                    onMouseLeave={(e) => e.target.style.color = 'oklch(40% .02 340)'}
-                  >
+                  <span className="text-sm font-semibold text-center transition-colors mt-2 text-design-muted group-hover:text-design-foreground">
                     {occasion.name}
                   </span>
                 </Link>
@@ -523,18 +466,9 @@ export default function Home() {
             </div>
             <button
               onClick={() => scrollOccasions("right")}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
-              style={{ borderColor: 'oklch(92% .04 340)' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'oklch(92% .04 340)';
-                e.currentTarget.style.backgroundColor = 'oklch(92% .04 340)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'oklch(92% .04 340)';
-                e.currentTarget.style.backgroundColor = 'white';
-              }}
+              className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border border-design active:scale-95 bg-[var(--background)] hover:bg-design-secondary"
             >
-              <svg className="w-5 h-5" style={{ color: 'oklch(40% .02 340)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-design-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -544,16 +478,13 @@ export default function Home() {
 
       {/* Trending Gifts Section - Hide while loader is showing */}
       {!showAnyLoader && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
           <div className="flex items-center justify-between mb-10">
-            <h2 className="text-3xl font-bold" style={{ color: 'oklch(20% .02 340)' }}>Gifts</h2>
+            <h2 className="font-display text-3xl font-bold text-design-foreground">Gifts</h2>
             {products.length > 0 && (
               <Link
                 to="/shop"
-                className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group"
-                style={{ color: 'oklch(20% .02 340)' }}
-                onMouseEnter={(e) => e.target.style.color = 'oklch(40% .02 340)'}
-                onMouseLeave={(e) => e.target.style.color = 'oklch(20% .02 340)'}
+                className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group text-design-foreground hover:opacity-80"
               >
                 View All
                 <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -567,11 +498,11 @@ export default function Home() {
               visibleProducts.map((p) => <ProductCard key={p.id} product={p} />)
             ) : (
               <div className="col-span-full text-center py-16">
-                <div className="inline-block p-6 rounded-full mb-4" style={{ backgroundColor: 'oklch(92% .04 340)' }}>
-                  <img src="/logo.png" alt="Gift Choice Logo" className="w-16 h-16 object-contain" />
+                <div className="inline-block p-6 rounded-full mb-4 bg-design-secondary">
+                  <img src="/logo.png" alt="SK Fruits" className="w-16 h-16 object-contain" />
                 </div>
-                <h3 className="text-2xl font-bold mb-2" style={{ color: 'oklch(20% .02 340)' }}>Gift Choice</h3>
-                <p className="font-medium" style={{ color: 'oklch(60% .02 340)' }}>
+                <h3 className="font-display text-2xl font-bold mb-2 text-design-foreground">SK Fruits</h3>
+                <p className="font-medium text-design-muted">
                   More amazing gifts coming soon!
                 </p>
               </div>
@@ -585,15 +516,14 @@ export default function Home() {
 
       {/* Reels Section */}
       {reels.length > 0 && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 bg-white">
-            <h2 className="text-3xl font-bold mb-8 text-center" style={{ color: 'oklch(20% .02 340)' }}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
+            <h2 className="font-display text-3xl font-bold mb-8 text-center text-design-foreground">
               Follow Us{" "}
               <a
                 href="https://www.instagram.com/giftchoicebhl"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:underline transition-all"
-                style={{ color: 'oklch(92% .04 340)' }}
+                className="hover:underline transition-all text-[var(--primary)]"
               >
                 @giftchoicebhl
               </a>

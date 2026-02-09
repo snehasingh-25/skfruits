@@ -16,12 +16,32 @@ export default function Navbar() {
   const [allProducts, setAllProducts] = useState([]);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const stored = localStorage.getItem("skfruits-theme");
+    if (stored === "dark" || stored === "light") return stored === "dark";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
   const typedElementRef = useRef(null);
   const typedInstanceRef = useRef(null);
   const searchInputRef = useRef(null);
   const suggestionsRef = useRef(null);
 
   const isActive = (path) => location.pathname === path;
+
+  // Apply theme to document and persist
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDark) {
+      root.classList.add("dark");
+      localStorage.setItem("skfruits-theme", "dark");
+    } else {
+      root.classList.remove("dark");
+      localStorage.setItem("skfruits-theme", "light");
+    }
+  }, [isDark]);
+
+  const toggleTheme = () => setIsDark((prev) => !prev);
 
   const navItems = [
     { path: "/", label: "Home" },
@@ -145,10 +165,10 @@ export default function Navbar() {
     <nav
       className={`sticky top-0 z-50 backdrop-blur-sm transition-all ${
         scrolled
-          ? "bg-white shadow-lg border-b"
-          : "bg-white/95"
+          ? "shadow-lg border-b border-design"
+          : "bg-[var(--background)]/95"
       }`}
-      style={{ borderColor: scrolled ? 'oklch(92% .04 340)' : 'transparent' }}
+      style={{ backgroundColor: scrolled ? 'var(--background)' : undefined, borderColor: scrolled ? 'var(--border)' : 'transparent' }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
@@ -157,7 +177,7 @@ export default function Navbar() {
           <Link to="/" className="flex items-center gap-3 group">
             <img 
               src="/logo.png" 
-              alt="GiftChoice Logo" 
+              alt="SK Fruits — FreshFruit" 
               className="h-12 w-auto transform group-hover:scale-110 transition-all duration-300"
             />
           </Link>
@@ -174,26 +194,26 @@ export default function Navbar() {
                       : ""
                   }`}
                   style={{
-                    color: isActive(item.path) ? 'oklch(20% .02 340)' : 'oklch(40% .02 340)',
-                    backgroundColor: isActive(item.path) ? 'oklch(92% .04 340)' : 'transparent',
-                    borderColor: isActive(item.path) ? 'oklch(92% .04 340)' : 'transparent'
+                    color: isActive(item.path) ? 'var(--foreground)' : 'var(--muted)',
+                    backgroundColor: isActive(item.path) ? 'var(--secondary)' : 'transparent',
+                    borderColor: isActive(item.path) ? 'var(--border)' : 'transparent'
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive(item.path)) {
-                      e.currentTarget.style.backgroundColor = 'oklch(92% .04 340)';
-                      e.currentTarget.style.color = 'oklch(20% .02 340)';
+                      e.currentTarget.style.backgroundColor = 'var(--secondary)';
+                      e.currentTarget.style.color = 'var(--foreground)';
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isActive(item.path)) {
                       e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = 'oklch(40% .02 340)';
+                      e.currentTarget.style.color = 'var(--muted)';
                     }
                   }}
                 >
                   {item.label}
                   {item.badge && (
-                    <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'oklch(92% .04 340)', color: 'oklch(20% .02 340)' }}>
+                    <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--secondary)', color: 'var(--foreground)' }}>
                       {item.badge}
                     </span>
                   )}
@@ -229,9 +249,9 @@ export default function Navbar() {
                     }
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = 'oklch(92% .04 340)';
-                    e.target.style.backgroundColor = 'white';
-                    e.target.style.color = 'oklch(20% .02 340)';
+                    e.target.style.borderColor = 'var(--border)';
+                    e.target.style.backgroundColor = 'var(--background)';
+                    e.target.style.color = 'var(--foreground)';
                     // Pause typing when focused
                     if (typedInstanceRef.current) {
                       typedInstanceRef.current.stop();
@@ -244,8 +264,8 @@ export default function Navbar() {
                     // Delay to allow click on suggestions
                     setTimeout(() => {
                       if (!searchQuery) {
-                        e.target.style.borderColor = 'oklch(92% .04 340)';
-                        e.target.style.backgroundColor = 'oklch(92% .04 340)';
+                        e.target.style.borderColor = 'var(--border)';
+                        e.target.style.backgroundColor = 'var(--input)';
                         e.target.style.color = 'transparent';
                         // Resume typing when blurred and no query
                         if (typedInstanceRef.current) {
@@ -257,16 +277,16 @@ export default function Navbar() {
                   }}
                   className="rounded-full px-5 py-2.5 pr-10 w-60 text-sm transition-all duration-300 relative z-10"
                   style={{
-                    backgroundColor: searchQuery ? 'white' : 'oklch(92% .04 340)',
-                    border: '1px solid oklch(92% .04 340)',
-                    color: searchQuery ? 'oklch(20% .02 340)' : 'transparent'
+                    backgroundColor: searchQuery ? 'var(--background)' : 'var(--input)',
+                    border: '1px solid var(--border)',
+                    color: searchQuery ? 'var(--foreground)' : 'transparent'
                   }}
                 />
                 {!searchQuery && !isMobile && (
                   <span
                     ref={typedElementRef}
                     className="absolute left-5 top-1/2 -translate-y-1/2 pointer-events-none text-sm z-20"
-                    style={{ color: 'oklch(60% .02 340)' }}
+                    style={{ color: 'var(--muted)' }}
                   ></span>
                 )}
                 <button
@@ -280,7 +300,7 @@ export default function Navbar() {
                 >
                   <svg
                     className="w-4 h-4"
-                    style={{ color: 'oklch(60% .02 340)' }}
+                    style={{ color: 'var(--muted)' }}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -298,11 +318,11 @@ export default function Navbar() {
                 {showSuggestions && searchSuggestions.length > 0 && (
                   <div
                     ref={suggestionsRef}
-                    className="absolute top-full left-0 mt-2 w-60 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-80 overflow-y-auto"
-                    style={{ borderColor: 'oklch(92% .04 340)' }}
+                    className="absolute top-full left-0 mt-2 w-60 rounded-lg shadow-xl border z-50 max-h-80 overflow-y-auto"
+                    style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }}
                   >
                     <div className="p-2">
-                      <div className="text-xs font-semibold px-3 py-2" style={{ color: 'oklch(60% .02 340)' }}>
+                      <div className="text-xs font-semibold px-3 py-2" style={{ color: 'var(--muted)' }}>
                         Suggestions
                       </div>
                       {searchSuggestions.map((product) => {
@@ -315,12 +335,10 @@ export default function Navbar() {
                               setShowSuggestions(false);
                               setSearchQuery("");
                             }}
-                            className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
-                            style={{ 
-                              backgroundColor: 'transparent'
-                            }}
+                            className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors cursor-pointer group"
+                            style={{ backgroundColor: 'transparent' }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = 'oklch(92% .04 340)';
+                              e.currentTarget.style.backgroundColor = 'var(--secondary)';
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.backgroundColor = 'transparent';
@@ -333,16 +351,16 @@ export default function Navbar() {
                                 className="w-12 h-12 object-cover rounded-lg"
                               />
                             ) : (
-                            <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden" style={{ backgroundColor: 'oklch(92% .04 340)' }}>
-                              <img src="/logo.png" alt="Gift Choice Logo" className="w-10 h-10 object-contain opacity-50" />
+                            <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden" style={{ backgroundColor: 'var(--secondary)' }}>
+                              <img src="/logo.png" alt="SK Fruits" className="w-10 h-10 object-contain opacity-50" />
                             </div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <div className="font-semibold text-sm truncate" style={{ color: 'oklch(20% .02 340)' }}>
+                              <div className="font-semibold text-sm truncate" style={{ color: 'var(--foreground)' }}>
                                 {product.name}
                               </div>
                               {((product.categories && product.categories.length > 0) || product.category) && (
-                                <div className="text-xs truncate" style={{ color: 'oklch(60% .02 340)' }}>
+                                <div className="text-xs truncate" style={{ color: 'var(--muted)' }}>
                                   {product.categories && product.categories.length > 0
                                     ? product.categories.map(c => c.name || c.category?.name).join(", ")
                                     : product.category?.name}
@@ -356,15 +374,12 @@ export default function Navbar() {
                         to={`/search?q=${encodeURIComponent(searchQuery.trim())}`}
                         onClick={() => setShowSuggestions(false)}
                         className="block px-3 py-2 rounded-lg text-sm font-semibold text-center transition-colors"
-                        style={{ 
-                          color: 'oklch(20% .02 340)',
-                          backgroundColor: 'oklch(92% .04 340)'
-                        }}
+                        style={{ color: 'var(--foreground)', backgroundColor: 'var(--secondary)' }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'oklch(88% .06 340)';
+                          e.currentTarget.style.backgroundColor = 'var(--border)';
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'oklch(92% .04 340)';
+                          e.currentTarget.style.backgroundColor = 'var(--secondary)';
                         }}
                       >
                         View all results for "{searchQuery}"
@@ -375,24 +390,49 @@ export default function Navbar() {
               </div>
             </div>
 
+            {/* Theme toggle */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+              className="p-2.5 rounded-full hover:scale-110 transition-all duration-300 active:scale-95"
+              style={{ backgroundColor: "var(--secondary)", color: "var(--foreground)" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--background)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--secondary)";
+              }}
+            >
+              {isDark ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              )}
+            </button>
+
             {/* Cart */}
             <Link to="/cart" className="relative group">
               <button 
                 className="p-2.5 rounded-full hover:scale-110 transition-all duration-300 active:scale-95"
-                style={{ backgroundColor: 'oklch(92% .04 340)' }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = 'white'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = 'oklch(92% .04 340)'}
+                style={{ backgroundColor: 'var(--secondary)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--background)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--secondary)'; }}
               >
-                <svg className="w-6 h-6 transition-transform duration-300 group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'oklch(20% .02 340)' }}>
+                <svg className="w-6 h-6 transition-transform duration-300 group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--foreground)' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 {getCartCount() > 0 && (
-                  <span className="absolute top-0 right-0 w-5 h-5 text-xs rounded-full flex items-center justify-center font-semibold animate-pulse" style={{ backgroundColor: 'oklch(92% .04 340)', color: 'oklch(20% .02 340)' }}>
+                  <span className="absolute top-0 right-0 w-5 h-5 text-xs rounded-full flex items-center justify-center font-semibold animate-pulse" style={{ backgroundColor: 'var(--secondary)', color: 'var(--foreground)' }}>
                     {getCartCount()}
                   </span>
                 )}
               </button>
-              <span className="absolute -top-9 right-0 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-1 group-hover:translate-y-0" style={{ backgroundColor: 'oklch(20% .02 340)' }}>
+              <span className="absolute -top-9 right-0 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-1 group-hover:translate-y-0" style={{ backgroundColor: 'var(--foreground)', color: 'var(--background)' }}>
                 Your Cart
               </span>
             </Link>
@@ -401,9 +441,9 @@ export default function Navbar() {
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="lg:hidden p-2 rounded-lg transition-all duration-300 active:scale-95"
-              style={{ color: 'oklch(40% .02 340)' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'oklch(92% .04 340)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              style={{ color: 'var(--muted)' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--secondary)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {isMobileMenuOpen ? (
@@ -432,7 +472,7 @@ export default function Navbar() {
             >
               <svg
                 className="w-4 h-4"
-                style={{ color: "oklch(60% .02 340)" }}
+                style={{ color: "var(--muted)" }}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -465,15 +505,15 @@ export default function Navbar() {
               }}
               placeholder=""
               className="w-full rounded-full pl-10 pr-4 py-2.5 text-sm border transition-all duration-300"
-              style={{
-                backgroundColor: "white",
-                borderColor: "oklch(92% .04 340)",
-                color: searchQuery ? "oklch(20% .02 340)" : "transparent",
-              }}
+                style={{
+                  backgroundColor: "var(--background)",
+                  borderColor: "var(--border)",
+                  color: searchQuery ? "var(--foreground)" : "transparent",
+                }}
               onFocus={() => {
                 // reveal text + pause typing
                 if (searchInputRef.current) {
-                  searchInputRef.current.style.color = "oklch(20% .02 340)";
+                  searchInputRef.current.style.color = "var(--foreground)";
                 }
                 if (typedInstanceRef.current) typedInstanceRef.current.stop();
                 if (searchSuggestions.length > 0) setShowSuggestions(true);
@@ -492,7 +532,7 @@ export default function Navbar() {
               <span
                 ref={typedElementRef}
                 className="absolute left-10 top-1/2 -translate-y-1/2 pointer-events-none text-sm z-20"
-                style={{ color: "oklch(60% .02 340)" }}
+                style={{ color: "var(--muted)" }}
               ></span>
             )}
 
@@ -501,12 +541,12 @@ export default function Navbar() {
               <div
                 ref={suggestionsRef}
                 className="absolute top-full left-0 mt-2 w-full bg-white rounded-lg shadow-xl border z-50 max-h-80 overflow-y-auto"
-                style={{ borderColor: "oklch(92% .04 340)" }}
+                style={{ borderColor: "var(--border)", backgroundColor: "var(--background)" }}
               >
                 <div className="p-2">
                   <div
                     className="text-xs font-semibold px-3 py-2"
-                    style={{ color: "oklch(60% .02 340)" }}
+                    style={{ color: "var(--muted)" }}
                   >
                     Suggestions
                   </div>
@@ -527,8 +567,7 @@ export default function Navbar() {
                         className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
                         style={{ backgroundColor: "transparent" }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor =
-                            "oklch(92% .04 340)";
+                          e.currentTarget.style.backgroundColor = "var(--secondary)";
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = "transparent";
@@ -543,22 +582,22 @@ export default function Navbar() {
                         ) : (
                           <div
                             className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden"
-                            style={{ backgroundColor: "oklch(92% .04 340)" }}
+                            style={{ backgroundColor: "var(--secondary)" }}
                           >
-                            <img src="/logo.png" alt="Gift Choice Logo" className="w-10 h-10 object-contain opacity-50" />
+                            <img src="/logo.png" alt="SK Fruits" className="w-10 h-10 object-contain opacity-50" />
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
                           <div
                             className="font-semibold text-sm truncate"
-                            style={{ color: "oklch(20% .02 340)" }}
+                            style={{ color: "var(--foreground)" }}
                           >
                             {product.name}
                           </div>
                           {product.category && (
                             <div
                               className="text-xs truncate"
-                              style={{ color: "oklch(60% .02 340)" }}
+                              style={{ color: "var(--muted)" }}
                             >
                               {product.category.name}
                             </div>
@@ -572,16 +611,14 @@ export default function Navbar() {
                     onClick={() => setShowSuggestions(false)}
                     className="block px-3 py-2 rounded-lg text-sm font-semibold text-center transition-colors"
                     style={{
-                      color: "oklch(20% .02 340)",
-                      backgroundColor: "oklch(92% .04 340)",
+                      color: "var(--foreground)",
+                      backgroundColor: "var(--secondary)",
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor =
-                        "oklch(88% .06 340)";
+                      e.currentTarget.style.backgroundColor = "var(--border)";
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor =
-                        "oklch(92% .04 340)";
+                      e.currentTarget.style.backgroundColor = "var(--secondary)";
                     }}
                   >
                     View all results for "{searchQuery}"
@@ -598,7 +635,7 @@ export default function Navbar() {
             isMobileMenuOpen ? "max-h-96 py-4" : "max-h-0"
           }`}
         >
-          <div className="flex flex-col gap-1 border-t pt-4" style={{ borderColor: 'oklch(92% .04 340)' }}>
+          <div className="flex flex-col gap-1 border-t pt-4 border-design">
             {navItems.map((item) => (
               <Link
                 key={item.path}
@@ -610,26 +647,26 @@ export default function Navbar() {
                     : "active:scale-95"
                 }`}
                 style={{
-                  color: isActive(item.path) ? 'oklch(20% .02 340)' : 'oklch(40% .02 340)',
-                  backgroundColor: isActive(item.path) ? 'oklch(92% .04 340)' : 'transparent',
-                  borderColor: isActive(item.path) ? 'oklch(92% .04 340)' : 'transparent'
+                  color: isActive(item.path) ? 'var(--foreground)' : 'var(--muted)',
+                  backgroundColor: isActive(item.path) ? 'var(--secondary)' : 'transparent',
+                  borderColor: isActive(item.path) ? 'var(--border)' : 'transparent'
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive(item.path)) {
-                    e.currentTarget.style.backgroundColor = 'oklch(92% .04 340)';
-                    e.currentTarget.style.color = 'oklch(20% .02 340)';
+                    e.currentTarget.style.backgroundColor = 'var(--secondary)';
+                    e.currentTarget.style.color = 'var(--foreground)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive(item.path)) {
                     e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = 'oklch(40% .02 340)';
+                    e.currentTarget.style.color = 'var(--muted)';
                   }
                 }}
               >
                 {item.label}
                 {item.badge && (
-                  <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'oklch(92% .04 340)', color: 'oklch(20% .02 340)' }}>
+                  <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--secondary)', color: 'var(--foreground)' }}>
                     {item.badge}
                   </span>
                 )}

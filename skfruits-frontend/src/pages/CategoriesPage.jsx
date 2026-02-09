@@ -164,7 +164,7 @@ export default function CategoriesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white py-16">
+    <div className="min-h-screen py-16 bg-page-products">
       {/* Gift Box Loading Animation - Only shows if product loading takes >= 1 second */}
       <GiftBoxLoader 
         isLoading={loading && selectedCategory !== null} 
@@ -172,11 +172,11 @@ export default function CategoriesPage() {
       />
       <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4" style={{ color: 'oklch(20% .02 340)' }}>
+          <h2 className="font-display text-4xl font-bold mb-4 text-white drop-shadow-sm">
             Shop by Category
           </h2>
-          <p className="text-lg" style={{ color: 'oklch(60% .02 340)' }}>
-            Browse our wide range of gift categories
+          <p className="text-lg text-white/90">
+            FreshFruit — Browse our wide range of categories
           </p>
         </div>
 
@@ -184,11 +184,10 @@ export default function CategoriesPage() {
         <div className="relative mb-12">
           <button
             onClick={() => scrollCategories("left")}
-            className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
-            style={{ borderColor: "oklch(92% .04 340)" }}
+            className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border border-design active:scale-95"
             aria-label="Scroll categories left"
           >
-            <svg className="w-5 h-5" style={{ color: "oklch(40% .02 340)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-design-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
@@ -206,11 +205,7 @@ export default function CategoriesPage() {
                 className="flex-shrink-0 flex flex-col items-center min-w-[100px] sm:min-w-[120px] group"
               >
                 <div
-                  className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden flex items-center justify-center border-2 group-hover:shadow-lg group-hover:scale-110 transition-all duration-300"
-                  style={{
-                    backgroundColor: "oklch(92% .04 340)",
-                    borderColor: "oklch(92% .04 340)",
-                  }}
+                  className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden flex items-center justify-center border-2 border-design group-hover:shadow-lg group-hover:scale-110 transition-all duration-300 bg-design-secondary"
                 >
                   {category.imageUrl ? (
                     <img
@@ -219,10 +214,10 @@ export default function CategoriesPage() {
                       className="w-full h-full object-cover rounded-full"
                     />
                   ) : (
-                    <img src="/logo.png" alt="Gift Choice Logo" className="w-3/4 h-3/4 object-contain" />
+                    <img src="/logo.png" alt="SK Fruits" className="w-3/4 h-3/4 object-contain" />
                   )}
                 </div>
-                <h3 className="font-semibold text-sm text-center mt-2" style={{ color: "oklch(20% .02 340)" }}>
+                <h3 className="font-semibold text-sm text-center mt-2 text-design-foreground">
                   {category.name}
                 </h3>
               </Link>
@@ -231,11 +226,10 @@ export default function CategoriesPage() {
 
           <button
             onClick={() => scrollCategories("right")}
-            className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
-            style={{ borderColor: "oklch(92% .04 340)" }}
+            className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border border-design active:scale-95"
             aria-label="Scroll categories right"
           >
-            <svg className="w-5 h-5" style={{ color: "oklch(40% .02 340)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-design-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -245,11 +239,11 @@ export default function CategoriesPage() {
         {selectedCategory && slug && (
           <div className="mt-12">
             <div className="mb-8">
-              <h3 className="text-3xl font-bold mb-2" style={{ color: 'oklch(20% .02 340)' }}>
+              <h3 className="font-display text-3xl font-bold mb-2 text-white drop-shadow-sm">
                 {selectedCategory.name}
               </h3>
               {selectedCategory.description && (
-                <p className="text-lg mb-4" style={{ color: 'oklch(60% .02 340)' }}>
+                <p className="text-lg mb-4 text-white/90">
                   {selectedCategory.description}
                 </p>
               )}
@@ -257,20 +251,13 @@ export default function CategoriesPage() {
               {/* Occasion Filter */}
               <div className="flex flex-wrap items-center gap-4 mb-6">
                 <div className="flex items-center gap-2">
-                  <label className="text-sm font-semibold" style={{ color: 'oklch(40% .02 340)' }}>
+                  <label className="text-sm font-semibold text-white">
                     Filter by Occasion:
                   </label>
                   <select
                     value={occasionFilter}
                     onChange={handleOccasionChange}
-                    className="px-4 py-2 rounded-lg border-2 text-sm transition-all duration-300 focus:outline-none"
-                    style={{
-                      borderColor: 'oklch(92% .04 340)',
-                      backgroundColor: 'white',
-                      color: 'oklch(20% .02 340)'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = 'oklch(88% .06 340)'}
-                    onBlur={(e) => e.target.style.borderColor = 'oklch(92% .04 340)'}
+                    className="px-4 py-2 rounded-lg border-2 border-design text-sm transition-all duration-300 focus:outline-none focus:border-[var(--primary)] bg-[var(--background)] text-design-foreground"
                   >
                     <option value="">All Occasions</option>
                     {occasions.map((occ) => (
@@ -284,13 +271,7 @@ export default function CategoriesPage() {
                 {occasionFilter && (
                   <button
                     onClick={clearOccasionFilter}
-                    className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300"
-                    style={{
-                      backgroundColor: 'oklch(92% .04 340)',
-                      color: 'oklch(20% .02 340)'
-                    }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = 'oklch(88% .06 340)'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = 'oklch(92% .04 340)'}
+                    className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 bg-[var(--background)] text-design-foreground border border-design hover:bg-design-secondary"
                   >
                     Clear Filter
                   </button>
@@ -298,7 +279,7 @@ export default function CategoriesPage() {
               </div>
 
               {occasionFilter && (
-                <p className="text-sm mb-4" style={{ color: 'oklch(60% .02 340)' }}>
+                <p className="text-sm mb-4 text-white/90">
                   Showing products for {occasions.find(o => o.slug === occasionFilter)?.name || occasionFilter}
                 </p>
               )}
@@ -311,10 +292,10 @@ export default function CategoriesPage() {
               </div>
             ) : (
               <div className="text-center py-16">
-                <div className="inline-block p-6 rounded-full mb-4" style={{ backgroundColor: 'oklch(92% .04 340)' }}>
-                  <img src="/logo.png" alt="Gift Choice Logo" className="w-16 h-16 object-contain" />
+                <div className="inline-block p-6 rounded-full mb-4 bg-white/20">
+                  <img src="/logo.png" alt="SK Fruits" className="w-16 h-16 object-contain" />
                 </div>
-                <p className="font-medium" style={{ color: 'oklch(60% .02 340)' }}>
+                <p className="font-medium text-white/90">
                   No products available in this category yet
                 </p>
               </div>
@@ -326,27 +307,20 @@ export default function CategoriesPage() {
         {!slug && (
           <div className="mt-12">
             <div className="mb-8">
-              <h3 className="text-3xl font-bold mb-2" style={{ color: 'oklch(20% .02 340)' }}>
+              <h3 className="font-display text-3xl font-bold mb-2 text-white drop-shadow-sm">
                 {trendingFilter ? "Trending Products" : "All Products"}
               </h3>
 
               {/* Occasion Filter (still useful on /categories) */}
               <div className="flex flex-wrap items-center gap-4 mb-6">
                 <div className="flex items-center gap-2">
-                  <label className="text-sm font-semibold" style={{ color: 'oklch(40% .02 340)' }}>
+                  <label className="text-sm font-semibold text-white">
                     Filter by Occasion:
                   </label>
                   <select
                     value={occasionFilter}
                     onChange={handleOccasionChange}
-                    className="px-4 py-2 rounded-lg border-2 text-sm transition-all duration-300 focus:outline-none"
-                    style={{
-                      borderColor: 'oklch(92% .04 340)',
-                      backgroundColor: 'white',
-                      color: 'oklch(20% .02 340)'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = 'oklch(88% .06 340)'}
-                    onBlur={(e) => e.target.style.borderColor = 'oklch(92% .04 340)'}
+                    className="px-4 py-2 rounded-lg border-2 border-design text-sm transition-all duration-300 focus:outline-none focus:border-[var(--primary)] bg-[var(--background)] text-design-foreground"
                   >
                     <option value="">All Occasions</option>
                     {occasions.map((occ) => (
@@ -360,13 +334,7 @@ export default function CategoriesPage() {
                 {occasionFilter && (
                   <button
                     onClick={clearOccasionFilter}
-                    className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300"
-                    style={{
-                      backgroundColor: 'oklch(92% .04 340)',
-                      color: 'oklch(20% .02 340)'
-                    }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = 'oklch(88% .06 340)'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = 'oklch(92% .04 340)'}
+                    className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 bg-[var(--background)] text-design-foreground border border-design hover:bg-design-secondary"
                   >
                     Clear Filter
                   </button>
@@ -374,7 +342,7 @@ export default function CategoriesPage() {
               </div>
 
               {occasionFilter && (
-                <p className="text-sm mb-4" style={{ color: 'oklch(60% .02 340)' }}>
+                <p className="text-sm mb-4 text-white/90">
                   Showing products for {occasions.find(o => o.slug === occasionFilter)?.name || occasionFilter}
                 </p>
               )}
@@ -388,10 +356,10 @@ export default function CategoriesPage() {
               </div>
             ) : (
               <div className="text-center py-16">
-                <div className="inline-block p-6 rounded-full mb-4" style={{ backgroundColor: 'oklch(92% .04 340)' }}>
-                  <img src="/logo.png" alt="Gift Choice Logo" className="w-16 h-16 object-contain" />
+                <div className="inline-block p-6 rounded-full mb-4 bg-white/20">
+                  <img src="/logo.png" alt="SK Fruits" className="w-16 h-16 object-contain" />
                 </div>
-                <p className="font-medium" style={{ color: 'oklch(60% .02 340)' }}>
+                <p className="font-medium text-white/90">
                   No products available yet
                 </p>
               </div>
@@ -402,10 +370,10 @@ export default function CategoriesPage() {
         {/* Show all categories if none selected */}
         {!selectedCategory && categories.length === 0 && (
           <div className="text-center py-16">
-            <div className="inline-block p-6 rounded-full mb-4" style={{ backgroundColor: 'oklch(92% .04 340)' }}>
-              <img src="/logo.png" alt="Gift Choice Logo" className="w-16 h-16 object-contain" />
+            <div className="inline-block p-6 rounded-full mb-4 bg-white/20">
+              <img src="/logo.png" alt="SK Fruits" className="w-16 h-16 object-contain" />
             </div>
-            <p className="font-medium" style={{ color: 'oklch(60% .02 340)' }}>
+            <p className="font-medium text-white/90">
               No categories available yet
             </p>
           </div>

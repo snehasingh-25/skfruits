@@ -1,10 +1,66 @@
 @import "tailwindcss";
 
+/* =============================================================================
+   SK Fruits / FreshFruit — Design System
+   ============================================================================= */
+
+/* Google Fonts loaded in index.html: DM Sans (body), Playfair Display (display) */
+
 :root {
-  --primary: white;
-  --secondary: oklch(92% .04 340);
-  --secondary-dark: oklch(88% .06 340);
-  --secondary-light: oklch(96% .02 340);
+  /* Light mode — OKLCH */
+  --background: oklch(0.985 0.002 90);
+  --foreground: oklch(0.2 0.02 30);
+  --primary: oklch(0.55 0.2 145);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.97 0.01 90);
+  --muted: oklch(0.96 0.01 90);
+  --accent: oklch(0.7 0.18 75);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.92 0.01 90);
+  --input: oklch(0.92 0.01 90);
+
+  /* Special usage (Tailwind-equivalent semantics) */
+  --page-products-bg: #fb923c; /* orange-400 */
+  --page-auth-bg: #fb923c;    /* orange-400 */
+  --btn-primary-bg: #facc15;  /* yellow-400 */
+  --btn-primary-fg: #111827;  /* gray-900 */
+  --hover-accent: #ea580c;     /* orange-600 */
+  --hover-accent-muted: #f97316; /* orange-500 */
+  --success: oklch(0.55 0.2 145);
+
+  /* Chart colors */
+  --chart-1: oklch(0.55 0.2 145);
+  --chart-2: oklch(0.7 0.18 75);
+  --chart-3: oklch(0.72 0.19 55);
+  --chart-4: oklch(0.55 0.15 250);
+  --chart-5: oklch(0.85 0.15 95);
+
+  /* Border radius */
+  --radius-sm: 8px;   /* calc(0.75rem - 4px) */
+  --radius-md: 10px;  /* calc(0.75rem - 2px) */
+  --radius-lg: 0.75rem; /* 12px */
+  --radius-xl: 16px;  /* calc(0.75rem + 4px) */
+
+  /* Legacy compatibility (map old vars to design system) */
+  --primary-old: var(--background);
+  --secondary-old: var(--secondary);
+  --secondary-dark: oklch(0.88 0.02 90);
+  --secondary-light: var(--muted);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --secondary: oklch(0.269 0 0);
+  --muted: oklch(0.269 0 0);
+  --accent: oklch(0.269 0 0);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --page-products-bg: oklch(0.22 0.02 55);
+  --page-auth-bg: oklch(0.22 0.02 55);
+  --btn-primary-bg: oklch(0.9 0.1 95);
+  --btn-primary-fg: oklch(0.2 0.02 30);
 }
 
 * {
@@ -12,13 +68,19 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--primary);
-  color: oklch(20% .02 340);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Display / headings use Playfair Display */
+.font-display,
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Playfair Display", ui-serif, Georgia, serif;
 }
 
 /* Smooth scrolling */
@@ -101,7 +163,7 @@ a, button, input, textarea, select {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--secondary-light);
+  background: var(--muted);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -125,8 +187,8 @@ a, button, input, textarea, select {
 
 /* Thin scrollbar (horizontal/vertical) for specific containers */
 .scrollbar-thin {
-  scrollbar-width: thin; /* Firefox */
-  scrollbar-color: var(--secondary) var(--secondary-light); /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: var(--secondary) var(--muted);
 }
 
 .scrollbar-thin::-webkit-scrollbar {
@@ -135,7 +197,7 @@ a, button, input, textarea, select {
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
-  background: var(--secondary-light);
+  background: var(--muted);
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
@@ -145,4 +207,22 @@ a, button, input, textarea, select {
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: var(--secondary-dark);
+}
+
+/* Utility classes for design system */
+.bg-page-products { background-color: var(--page-products-bg); }
+.bg-page-auth { background-color: var(--page-auth-bg); }
+.bg-design-primary { background-color: var(--primary); }
+.bg-design-muted { background-color: var(--muted); }
+.bg-design-secondary { background-color: var(--secondary); }
+.text-design-foreground { color: var(--foreground); }
+.text-design-muted { color: var(--muted); }
+.border-design { border-color: var(--border); }
+.btn-primary-brand {
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+}
+.btn-primary-brand:hover {
+  background-color: var(--hover-accent-muted);
+  color: var(--btn-primary-fg);
 }
