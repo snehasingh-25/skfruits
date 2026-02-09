@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Category {
+  id          Int              @id @default(autoincrement())
+  name        String
+  slug        String           @unique
+  description String?          @db.Text
+  imageUrl    String?          @db.Text
+  order       Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  products    ProductCategory[]
+
+  @@index([order])
+}
+
+model Product {
+  id            Int            @id @default(autoincrement())
+  name          String
+  description   String         @db.Text
+  aiDescription String?        @db.Text // Cached AI-generated description (avoids repeat API calls)
+  badge         String?
+  isFestival    Boolean        @default(false)
+  isNew         Boolean        @default(false)
+  isTrending    Boolean        @default(false)
+  isReady60Min  Boolean        @default(false) // 60 minutes ready/delivery option
+  hasSinglePrice Boolean       @default(false) // If true, use singlePrice instead of sizes
+  singlePrice   Float?         // Selling price for products without size variants
+  originalPrice Float?         // MRP / list price for single-price products (strikethrough on frontend)
+  images        String         @db.Text // JSON array of image URLs
+  videos        String?        @db.Text // JSON array of video URLs (optional)
+  instagramEmbeds String?      @db.Text // JSON array of Instagram embed objects: [{url, enabled, createdAt}]
+  keywords      String         @db.Text // JSON array for multilingual search
+  order         Int            @default(0) // For ordering products
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  categories    ProductCategory[]
+  sizes         ProductSize[]
+  orderItems    OrderItem[]
+  occasions     ProductOccasion[]
+  reels         Reel[]
+
+  @@index([createdAt])
+  @@index([isTrending, createdAt])
+  @@index([isNew, createdAt])
+  @@index([isFestival, createdAt])
+  @@index([order])
+}
+
+model ProductSize {
+  id            Int     @id @default(autoincrement())
+  label         String
+  price         Float   // Selling price
+  originalPrice Float?  // MRP / list price (strikethrough on frontend)
+  productId    Int
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+// Reusable size options (e.g. S, M, L, 250gm, 500gm) for admin checkbox list
+model SizeOption {
+  id        Int      @id @default(autoincrement())
+  label     String   @unique
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([order])
+}
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  customer  String
+  phone     String?     @db.Text
+  email     String?
+  address   String?     @db.Text
+  total     Float
+  status    String      @default("pending")
+  notes     String?     @db.Text
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  items     OrderItem[]
+}
+
+model OrderItem {
+  id          Int      @id @default(autoincrement())
+  orderId     Int
+  productId   Int
+  productName String
+  sizeLabel   String
+  quantity    Int
+  price       Float
+  subtotal    Float
+
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id])
+}
+
+model ContactMessage {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String?
+  message   String    @db.Text
+  read      Boolean   @default(false)
+  createdAt DateTime  @default(now())
+}
+
+model Reel {
+  id          Int       @id @default(autoincrement())
+  title       String?
+  // Legacy fields (kept for backwards compatibility with existing data)
+  url         String?   @db.Text // External reel URL (youtube/instagram)
+  thumbnail   String?   @db.Text // Thumbnail image URL
+  platform    String    @default("native") // native, youtube, instagram
+
+  // Native reels (play directly on website)
+  videoUrl    String?   @db.Text // Uploaded video URL (/uploads/... or Cloudinary)
+
+  // Merchandising / CMS controls
+  productId   Int?
+  product     Product?  @relation(fields: [productId], references: [id])
+  isTrending  Boolean   @default(false)
+  isFeatured  Boolean   @default(false) // Primary featured video in center
+  viewCount   Int       @default(0)
+  discountPct Int?      // e.g. 48
+
+  isActive    Boolean   @default(true)
+  order       Int       @default(0) // For ordering reels
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([isActive, order])
+  @@index([isTrending, order])
+  @@index([isFeatured])
+}
+
+model Occasion {
+  id          Int              @id @default(autoincrement())
+  name        String
+  slug        String           @unique
+  description String?          @db.Text
+  imageUrl    String?          @db.Text
+  isActive    Boolean          @default(true)
+  order       Int              @default(0) // For ordering occasions
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  products    ProductOccasion[]
+
+  @@index([order])
+}
+
+model ProductCategory {
+  id         Int      @id @default(autoincrement())
+  productId  Int
+  categoryId Int
+
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, categoryId])
+}
+
+model ProductOccasion {
+  id         Int      @id @default(autoincrement())
+  productId  Int
+  occasionId Int
+
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  occasion   Occasion @relation(fields: [occasionId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, occasionId])
+}
+
+model Banner {
+  id          Int       @id @default(autoincrement())
+  title       String
+  subtitle    String?   @db.Text
+  imageUrl    String    @db.Text
+  ctaText     String?   // Call-to-action button text
+  ctaLink     String?   @db.Text // Call-to-action link URL
+  bannerType  String    @default("primary") // "primary" or "secondary"
+  isActive    Boolean   @default(true)
+  order       Int       @default(0) // For ordering banners
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([bannerType, order])
+}
