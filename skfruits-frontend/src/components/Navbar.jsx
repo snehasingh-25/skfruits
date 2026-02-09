@@ -44,10 +44,11 @@ export default function Navbar() {
   const toggleTheme = () => setIsDark((prev) => !prev);
 
   const navItems = [
-    { path: "/", label: "Home" },
+    { path: "/", label: "All Fruits" },
     { path: "/categories", label: "Categories" },
-    { path: "/occasion", label: "Occasions" },
-    { path: "/new", label: "New Arrivals"},
+    { path: "/seasonal", label: "Seasonal" },
+    { path: "/occasion", label: "Exotic" },
+    { path: "/new", label: "Organic" },
     { path: "/about", label: "About" },
     { path: "/contact", label: "Contact" },
   ];
@@ -163,51 +164,48 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`sticky top-0 z-50 backdrop-blur-sm transition-all ${
-        scrolled
-          ? "shadow-lg border-b border-design"
-          : "bg-[var(--background)]/95"
-      }`}
-      style={{ backgroundColor: scrolled ? 'var(--background)' : undefined, borderColor: scrolled ? 'var(--border)' : 'transparent' }}
+      className="sticky top-0 z-50 bg-[var(--background)]/95 backdrop-blur-sm border-b transition-all"
+      style={{ borderColor: "var(--border)" }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16 md:h-20">
           
-          {/* Logo */}
+          {/* Logo: circular SK badge + brand text */}
           <Link to="/" className="flex items-center gap-3 group">
-            <img 
-              src="/logo.png" 
-              alt="SK Fruits — FreshFruit" 
-              className="h-12 w-auto transform group-hover:scale-110 transition-all duration-300"
-            />
+            <div
+              className="w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm md:text-base transition-transform duration-300 group-hover:scale-105"
+              style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
+            >
+              SK
+            </div>
+            <span className="font-display font-semibold md:font-bold text-lg md:text-xl" style={{ color: "var(--foreground)" }}>
+              SK Fruits
+            </span>
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden lg:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-1 lg:gap-2">
             {navItems.map((item) => (
-              <div key={item.path} className="relative group">
+              <div key={item.path} className="relative">
                 <Link
                   to={item.path}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out ${
-                    isActive(item.path)
-                      ? "border-2"
-                      : ""
+                  className={`px-3 py-2 lg:px-4 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out ${
+                    isActive(item.path) ? "ring-1 ring-[var(--border)]" : ""
                   }`}
                   style={{
-                    color: isActive(item.path) ? 'var(--foreground)' : 'var(--muted)',
-                    backgroundColor: isActive(item.path) ? 'var(--secondary)' : 'transparent',
-                    borderColor: isActive(item.path) ? 'var(--border)' : 'transparent'
+                    color: isActive(item.path) ? "var(--foreground)" : "var(--muted)",
+                    backgroundColor: isActive(item.path) ? "var(--secondary)" : "transparent",
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive(item.path)) {
-                      e.currentTarget.style.backgroundColor = 'var(--secondary)';
-                      e.currentTarget.style.color = 'var(--foreground)';
+                      e.currentTarget.style.backgroundColor = "var(--hover-accent-muted)";
+                      e.currentTarget.style.color = "var(--primary-foreground)";
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isActive(item.path)) {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = 'var(--muted)';
+                      e.currentTarget.style.backgroundColor = "transparent";
+                      e.currentTarget.style.color = "var(--muted)";
                     }
                   }}
                 >
@@ -427,7 +425,7 @@ export default function Navbar() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 {getCartCount() > 0 && (
-                  <span className="absolute top-0 right-0 w-5 h-5 text-xs rounded-full flex items-center justify-center font-semibold animate-pulse" style={{ backgroundColor: 'var(--secondary)', color: 'var(--foreground)' }}>
+                  <span className="absolute top-0 right-0 w-5 h-5 text-xs rounded-full flex items-center justify-center font-semibold" style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}>
                     {getCartCount()}
                   </span>
                 )}
@@ -437,10 +435,10 @@ export default function Navbar() {
               </span>
             </Link>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Button (visible < md) */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg transition-all duration-300 active:scale-95"
+              className="md:hidden p-2 rounded-lg transition-all duration-300 active:scale-95"
               style={{ color: 'var(--muted)' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--secondary)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
@@ -629,44 +627,42 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu — slide-down, large tap targets (visible < md) */}
         <div
-          className={`lg:hidden overflow-hidden transition-all duration-300 ${
-            isMobileMenuOpen ? "max-h-96 py-4" : "max-h-0"
-          }`}
+          className="md:hidden overflow-hidden transition-[max-height] duration-300 ease-in-out"
+          style={{ maxHeight: isMobileMenuOpen ? "400px" : "0" }}
         >
-          <div className="flex flex-col gap-1 border-t pt-4 border-design">
+          <div
+            className="flex flex-col border-t border-[var(--border)]"
+            style={{ backgroundColor: "var(--background)" }}
+          >
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  isActive(item.path)
-                    ? "border-2"
-                    : "active:scale-95"
-                }`}
+                className={`px-4 py-3.5 text-base font-medium transition-all duration-300 active:scale-[0.98] border-b border-l-4 border-[var(--border)] last:border-b-0`}
                 style={{
-                  color: isActive(item.path) ? 'var(--foreground)' : 'var(--muted)',
-                  backgroundColor: isActive(item.path) ? 'var(--secondary)' : 'transparent',
-                  borderColor: isActive(item.path) ? 'var(--border)' : 'transparent'
+                  color: isActive(item.path) ? "var(--foreground)" : "var(--muted)",
+                  backgroundColor: isActive(item.path) ? "var(--secondary)" : "transparent",
+                  borderLeftColor: isActive(item.path) ? "var(--primary)" : "transparent",
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive(item.path)) {
-                    e.currentTarget.style.backgroundColor = 'var(--secondary)';
-                    e.currentTarget.style.color = 'var(--foreground)';
+                    e.currentTarget.style.backgroundColor = "var(--secondary)";
+                    e.currentTarget.style.color = "var(--foreground)";
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive(item.path)) {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = 'var(--muted)';
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = "var(--muted)";
                   }
                 }}
               >
                 {item.label}
                 {item.badge && (
-                  <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--secondary)', color: 'var(--foreground)' }}>
+                  <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "var(--secondary)", color: "var(--foreground)" }}>
                     {item.badge}
                   </span>
                 )}

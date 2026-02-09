@@ -13,6 +13,7 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Occasion from "./pages/Occasion";
+import Seasonal from "./pages/Seasonal";
 import NewArrivals from "./pages/NewArrivals";
 import CategoriesPage from "./pages/CategoriesPage";
 import ProductDetail from "./pages/ProductDetail";
@@ -30,6 +31,8 @@ function PublicLayout() {
         <Route path="/shop" element={<Home />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/category/:slug" element={<CategoriesPage />} />
+        <Route path="/seasonal" element={<Seasonal />} />
+        <Route path="/seasonal/:slug" element={<Seasonal />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/occasion" element={<Occasion />} />

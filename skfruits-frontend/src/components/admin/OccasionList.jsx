@@ -6,7 +6,7 @@ export default function OccasionList({ occasions, onEdit, onDelete }) {
   const toast = useToast();
   
   const handleDelete = async (occasionId) => {
-    if (!confirm("Are you sure you want to delete this occasion?")) return;
+    if (!confirm("Are you sure you want to delete this exotic item?")) return;
 
     try {
       const token = localStorage.getItem("adminToken");
@@ -18,14 +18,14 @@ export default function OccasionList({ occasions, onEdit, onDelete }) {
       });
 
       if (res.ok) {
-        toast.success("Occasion deleted");
+        toast.success("Exotic deleted");
         onDelete();
       } else {
         const data = await res.json();
-        toast.error(data.error || data.message || "Failed to delete occasion");
+        toast.error(data.error || data.message || "Failed to delete exotic item");
       }
     } catch (error) {
-      toast.error(error.message || "Failed to delete occasion");
+      toast.error(error.message || "Failed to delete exotic item");
     }
   };
 
@@ -35,8 +35,11 @@ export default function OccasionList({ occasions, onEdit, onDelete }) {
   const renderRow = (occasion, order, dragHandle, orderInput, isDragging) => (
     <div
       className={`flex items-center gap-4 p-4 transition-all ${
-        isDragging ? "opacity-50" : "hover:bg-gray-50"
+        isDragging ? "opacity-50" : ""
       }`}
+      style={{ backgroundColor: "transparent" }}
+      onMouseEnter={(e) => { if (!isDragging) e.currentTarget.style.backgroundColor = "var(--secondary)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
     >
       {/* Drag Handle */}
       <div className="flex-shrink-0">{dragHandle}</div>
@@ -45,7 +48,7 @@ export default function OccasionList({ occasions, onEdit, onDelete }) {
       <div className="flex-shrink-0 w-20">
         {orderInput || (
           <div className="text-center">
-            <div className="text-sm font-bold" style={{ color: 'oklch(20% .02 340)' }}>
+            <div className="text-sm font-bold" style={{ color: "var(--foreground)" }}>
               {order}
             </div>
           </div>
@@ -61,18 +64,18 @@ export default function OccasionList({ occasions, onEdit, onDelete }) {
             className="w-14 h-14 object-cover rounded-lg"
           />
         ) : (
-          <div className="w-14 h-14 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'oklch(92% .04 340)' }}>
-            <img src="/logo.png" alt="Gift Choice Logo" className="w-10 h-10 object-contain opacity-50" />
+          <div className="w-14 h-14 rounded-lg flex items-center justify-center" style={{ backgroundColor: "var(--secondary)" }}>
+            <img src="/logo.png" alt="SK Fruits" className="w-10 h-10 object-contain opacity-50" />
           </div>
         )}
       </div>
 
       {/* Name & Details */}
       <div className="flex-1 min-w-0">
-        <div className="font-semibold" style={{ color: 'oklch(20% .02 340)' }}>
+        <div className="font-semibold" style={{ color: "var(--foreground)" }}>
           {occasion.name}
         </div>
-        <div className="text-xs" style={{ color: 'oklch(50% .02 340)' }}>
+        <div className="text-xs" style={{ color: "var(--muted)" }}>
           Slug: {occasion.slug}
         </div>
       </div>

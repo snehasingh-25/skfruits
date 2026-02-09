@@ -528,9 +528,9 @@ export default function ProductForm({ product, categories, occasions = [], onSav
   }, [product]);
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6 mb-6 border border-gray-200">
+    <div className="rounded-xl shadow-md p-6 mb-6 border" style={{ backgroundColor: "var(--background)", borderColor: "var(--border)" }}>
       <div className="flex items-start justify-between gap-4 mb-6">
-        <h2 className="text-xl font-bold text-gray-900">
+        <h2 className="text-xl font-bold" style={{ color: "var(--foreground)" }}>
           {isEdit ? "Edit Product" : "Add New Product"}
         </h2>
         <div className="flex gap-2 shrink-0">
@@ -538,7 +538,8 @@ export default function ProductForm({ product, categories, occasions = [], onSav
             type="button"
             onClick={handleCancel}
             disabled={loading}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-pink-500/40"
+            className="px-4 py-2 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: "var(--secondary)", color: "var(--foreground)" }}
           >
             Cancel
           </button>
@@ -546,7 +547,8 @@ export default function ProductForm({ product, categories, occasions = [], onSav
             type="button"
             onClick={() => formRef.current?.requestSubmit?.()}
             disabled={loading}
-            className="px-4 py-2 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-lg font-semibold hover:from-pink-600 hover:to-pink-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-pink-500/40 flex items-center justify-center gap-2"
+            className="px-4 py-2 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
           >
             {loading && (
               <span className="inline-block w-4 h-4 border-2 border-white/60 border-t-white rounded-full animate-spin" />
@@ -557,19 +559,20 @@ export default function ProductForm({ product, categories, occasions = [], onSav
       </div>
       <form ref={formRef} onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-6">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Product Name *</label>
+          <label className="block text-sm font-semibold mb-2" style={{ color: "var(--foreground)" }}>Product Name *</label>
           <input
             type="text"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-pink-500 transition"
+            className="w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none transition"
+            style={{ borderColor: "var(--border)", backgroundColor: "var(--input)", color: "var(--foreground)" }}
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">Categories *</label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 p-3 rounded-xl border-2 border-gray-200 bg-gray-50/50">
+          <label className="block text-sm font-semibold mb-2" style={{ color: "var(--foreground)" }}>Categories *</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 p-3 rounded-xl border-2" style={{ borderColor: "var(--border)", backgroundColor: "var(--muted)" }}>
             {[...categories]
               .sort((a, b) => a.name.localeCompare(b.name))
               .map((cat) => {
@@ -599,7 +602,7 @@ export default function ProductForm({ product, categories, occasions = [], onSav
               })}
           </div>
           {selectedCategories.length === 0 && (
-            <p className="text-xs text-gray-500 mt-1">Select at least one category.</p>
+            <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Select at least one category.</p>
           )}
         </div>
 
@@ -647,7 +650,8 @@ export default function ProductForm({ product, categories, occasions = [], onSav
           <textarea
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-pink-500 transition"
+            className="w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none transition"
+            style={{ borderColor: "var(--border)", backgroundColor: "var(--input)", color: "var(--foreground)" }}
             rows="4"
             required
           />
@@ -660,7 +664,8 @@ export default function ProductForm({ product, categories, occasions = [], onSav
               type="text"
               value={formData.badge}
               onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
-              className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-pink-500 transition"
+              className="w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none transition"
+            style={{ borderColor: "var(--border)", backgroundColor: "var(--input)", color: "var(--foreground)" }}
               placeholder="Optional"
             />
           </div>
@@ -709,8 +714,8 @@ export default function ProductForm({ product, categories, occasions = [], onSav
 
         {occasions.length > 0 && (
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Occasions (optional)</label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 p-3 rounded-xl border-2 border-gray-200 bg-gray-50/50">
+            <label className="block text-sm font-semibold mb-2" style={{ color: "var(--foreground)" }}>Exotic (optional)</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 p-3 rounded-xl border-2" style={{ borderColor: "var(--border)", backgroundColor: "var(--muted)" }}>
               {[...occasions]
                 .filter((o) => o.isActive !== false)
                 .sort((a, b) => a.name.localeCompare(b.name))
@@ -740,7 +745,7 @@ export default function ProductForm({ product, categories, occasions = [], onSav
                   );
                 })}
             </div>
-            <p className="text-xs text-gray-500 mt-1">Select occasions this product is suitable for (optional)</p>
+            <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Select exotic items this product is suitable for (optional)</p>
           </div>
         )}
 
@@ -790,7 +795,8 @@ export default function ProductForm({ product, categories, occasions = [], onSav
                   type="number"
                   value={formData.singlePrice}
                   onChange={(e) => setFormData({ ...formData, singlePrice: e.target.value })}
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-pink-500 transition"
+                  className="w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none transition"
+            style={{ borderColor: "var(--border)", backgroundColor: "var(--input)", color: "var(--foreground)" }}
                   step="0.01"
                   min="0"
                   placeholder="e.g., 999"
@@ -803,7 +809,8 @@ export default function ProductForm({ product, categories, occasions = [], onSav
                   type="number"
                   value={formData.originalPrice}
                   onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
-                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-pink-500 transition"
+                  className="w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none transition"
+            style={{ borderColor: "var(--border)", backgroundColor: "var(--input)", color: "var(--foreground)" }}
                   step="0.01"
                   min="0"
                   placeholder="e.g., 1499 (shown struck through)"
@@ -929,12 +936,13 @@ export default function ProductForm({ product, categories, occasions = [], onSav
           )}
         </div>
 
-        <div className="sticky bottom-0 bg-white pt-4 pb-2 border-t border-gray-200">
+        <div className="sticky bottom-0 pt-4 pb-2 border-t" style={{ backgroundColor: "var(--background)", borderColor: "var(--border)" }}>
           <div className="flex gap-4">
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-gradient-to-r from-pink-500 to-pink-600 text-white py-3 rounded-lg font-semibold hover:from-pink-600 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
             >
               {loading && (
                 <span className="inline-block w-4 h-4 border-2 border-white/60 border-t-white rounded-full animate-spin" />
@@ -945,7 +953,8 @@ export default function ProductForm({ product, categories, occasions = [], onSav
               type="button"
               onClick={handleCancel}
               disabled={loading}
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: "var(--secondary)", color: "var(--foreground)" }}
             >
               Cancel
             </button>
