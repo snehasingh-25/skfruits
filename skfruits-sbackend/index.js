@@ -18,6 +18,7 @@ import recommendationRoutes from "./routes/recommendations.js";
 import sizeOptionRoutes from "./routes/size-options.js";
 import generateDescriptionRoutes from "./routes/generate-description.js";
 import chatRoutes from "./routes/chat.js";
+import addressRoutes from "./routes/addresses.js";
 import cache from "./utils/cache.js";
 
 // Log startup information
@@ -47,7 +48,7 @@ app.use(
       "https://midnightblue-fish-476058.hostingersite.com"
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Cart-Session-Id"],
     credentials: true
   })
 );
@@ -147,6 +148,7 @@ app.use("/recommendations", recommendationRoutes);
 app.use("/size-options", sizeOptionRoutes);
 app.use("/generate-description", generateDescriptionRoutes);
 app.use("/chat", chatRoutes);
+app.use("/addresses", addressRoutes);
 
 // Global error handling middleware (must be after all routes)
 app.use((err, req, res, next) => {

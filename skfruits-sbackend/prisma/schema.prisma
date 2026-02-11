@@ -3,16 +3,37 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
   id        Int       @id @default(autoincrement())
+  name      String
   email     String    @unique
-  password  String
+  phone     String?
+  password  String    // bcrypt hashed
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  carts     Cart[]
+  addresses Address[]
+}
+
+model Address {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  fullName    String
+  phone       String
+  addressLine String   @db.Text
+  city        String
+  state       String
+  pincode     String
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Category {
@@ -55,6 +76,7 @@ model Product {
   orderItems    OrderItem[]
   occasions     ProductOccasion[]
   reels         Reel[]
+  cartItems     CartItem[]
 
   @@index([createdAt])
   @@index([isTrending, createdAt])
@@ -70,7 +92,8 @@ model ProductSize {
   originalPrice Float?  // MRP / list price (strikethrough on frontend)
   productId    Int
 
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product    Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems  CartItem[]
 }
 
 // Reusable size options (e.g. S, M, L, 250gm, 500gm) for admin checkbox list
@@ -200,6 +223,34 @@ model ProductOccasion {
   occasion   Occasion @relation(fields: [occasionId], references: [id], onDelete: Cascade)
 
   @@unique([productId, occasionId])
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  sessionId String     @unique // For guest users; stored in localStorage on frontend
+  userId    Int?       // When set, this is the user's cart (for merge after login)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  items     CartItem[]
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([userId])
+}
+
+model CartItem {
+  id            Int     @id @default(autoincrement())
+  cartId        String
+  productId     Int
+  productSizeId Int?    // null = single-price product (use product.singlePrice)
+  quantity      Int     @default(1)
+
+  cart    Cart         @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size    ProductSize? @relation(fields: [productSizeId], references: [id], onDelete: Cascade)
+
+  @@index([cartId])
+  @@index([cartId, productId, productSizeId])
 }
 
 model Banner {

@@ -161,12 +161,7 @@ export default function ProductDetail() {
       return;
     }
 
-    const success = addToCart(product, selectedSize, quantity);
-    if (success) {
-      toast.success("Added to cart");
-      // Optionally navigate to cart
-      // navigate("/cart");
-    }
+    addToCart(product, selectedSize, quantity);
   };
 
   if (loading) {

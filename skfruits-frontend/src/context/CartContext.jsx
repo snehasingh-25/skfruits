@@ -1,154 +1,207 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { useToast } from "./ToastContext";
+import { useUserAuth } from "./UserAuthContext";
+import { API } from "../api";
 
 const CartContext = createContext();
-const CART_STORAGE_KEY = "giftchoice_cart";
+export const CART_SESSION_KEY = "skfruits_cart_session";
 
-// Helper functions for localStorage with error handling
-const getCartFromStorage = () => {
+function getStoredSessionId() {
   try {
-    const savedCart = localStorage.getItem(CART_STORAGE_KEY);
-    if (savedCart) {
-      return JSON.parse(savedCart);
-    }
-  } catch (error) {
-    console.error("Error loading cart from localStorage:", error);
-    // Clear corrupted data
-    try {
-      localStorage.removeItem(CART_STORAGE_KEY);
-    } catch (e) {
-      console.error("Error clearing corrupted cart data:", e);
-    }
+    return localStorage.getItem(CART_SESSION_KEY) || null;
+  } catch {
+    return null;
   }
-  return [];
-};
+}
 
-const saveCartToStorage = (cartItems) => {
+function setStoredSessionId(sessionId) {
   try {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
-  } catch (error) {
-    console.error("Error saving cart to localStorage:", error);
-    // Handle quota exceeded error
-    if (error.name === "QuotaExceededError") {
-      // We can't toast here (outside provider render), so just log.
-      console.warn("Cart storage is full. Please clear some items.");
-    }
+    if (sessionId) localStorage.setItem(CART_SESSION_KEY, sessionId);
+    else localStorage.removeItem(CART_SESSION_KEY);
+  } catch (e) {
+    console.warn("Could not persist cart session:", e);
   }
-};
+}
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const toast = useToast();
+  const { token: userToken, getAuthHeaders } = useUserAuth();
 
-  // Load cart from localStorage on mount
-  useEffect(() => {
-    const savedCart = getCartFromStorage();
-    setCartItems(savedCart);
-    setIsLoaded(true);
-  }, []);
+  const fetchCart = useCallback(async () => {
+    const sessionId = getStoredSessionId();
+    const headers = { "Content-Type": "application/json" };
+    if (sessionId) headers["X-Cart-Session-Id"] = sessionId;
+    const auth = getAuthHeaders();
+    if (auth.Authorization) headers.Authorization = auth.Authorization;
 
-  // Save cart to localStorage whenever it changes (only after initial load)
-  useEffect(() => {
-    if (isLoaded) {
-      saveCartToStorage(cartItems);
-    }
-  }, [cartItems, isLoaded]);
-
-  const addToCart = (product, selectedSize, quantity = 1) => {
-    if (!selectedSize) {
-      toast.error("Please select a size");
+    const res = await fetch(`${API}/cart`, { headers, credentials: "include" });
+    const data = await res.json();
+    if (!res.ok) {
+      console.error("Cart fetch failed:", data);
       return;
     }
+    const newSessionId = res.headers.get("X-Cart-Session-Id") || data.sessionId;
+    if (newSessionId) setStoredSessionId(newSessionId);
+    setCartItems(Array.isArray(data.items) ? data.items : []);
+  }, [getAuthHeaders]);
 
-    const cartItem = {
-      id: `${product.id}-${selectedSize.id}`,
+  useEffect(() => {
+    fetchCart().finally(() => setIsLoaded(true));
+  }, [fetchCart]);
+
+  const addToCart = async (product, selectedSize, quantity = 1) => {
+    if (!selectedSize) {
+      toast.error("Please select a size");
+      return false;
+    }
+
+    const sessionId = getStoredSessionId();
+    const headers = { "Content-Type": "application/json" };
+    if (sessionId) headers["X-Cart-Session-Id"] = sessionId;
+    const auth = getAuthHeaders();
+    if (auth.Authorization) headers.Authorization = auth.Authorization;
+
+    const productSizeId = selectedSize.id === 0 || selectedSize.id == null ? null : selectedSize.id;
+    const body = JSON.stringify({
       productId: product.id,
-      productName: product.name,
-      productImage: product.images ? (Array.isArray(product.images) ? product.images[0] : JSON.parse(product.images)[0]) : null,
-      sizeId: selectedSize.id,
-      sizeLabel: selectedSize.label,
-      price: parseFloat(selectedSize.price),
-      quantity: quantity,
-      subtotal: parseFloat(selectedSize.price) * quantity,
-    };
-
-    setCartItems((prevItems) => {
-      const existingItem = prevItems.find(
-        (item) => item.id === cartItem.id
-      );
-
-      if (existingItem) {
-        // Update quantity if item already exists
-        return prevItems.map((item) =>
-          item.id === cartItem.id
-            ? {
-                ...item,
-                quantity: item.quantity + quantity,
-                subtotal: item.price * (item.quantity + quantity),
-              }
-            : item
-        );
-      } else {
-        // Add new item
-        return [...prevItems, cartItem];
-      }
+      productSizeId,
+      quantity,
     });
 
-    toast.success("Added to cart");
-    return true;
+    try {
+      const res = await fetch(`${API}/cart/items`, {
+        method: "POST",
+        headers,
+        body,
+        credentials: "include",
+      });
+      const data = await res.json();
+      const newSessionId = res.headers.get("X-Cart-Session-Id") || data.sessionId;
+      if (newSessionId) setStoredSessionId(newSessionId);
+
+      if (!res.ok) {
+        toast.error(data.error || "Could not add to cart");
+        return false;
+      }
+      await fetchCart();
+      toast.success("Added to cart");
+      return true;
+    } catch (err) {
+      console.error("Add to cart error:", err);
+      toast.error("Could not add to cart");
+      return false;
+    }
   };
 
-  const removeFromCart = (itemId) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
+  const removeFromCart = async (itemId) => {
+    const sessionId = getStoredSessionId();
+    const headers = {};
+    if (sessionId) headers["X-Cart-Session-Id"] = sessionId;
+    const auth = getAuthHeaders();
+    if (auth.Authorization) headers.Authorization = auth.Authorization;
+
+    try {
+      const res = await fetch(`${API}/cart/items/${itemId}`, {
+        method: "DELETE",
+        headers,
+        credentials: "include",
+      });
+      if (res.ok) await fetchCart();
+    } catch (err) {
+      console.error("Remove from cart error:", err);
+      toast.error("Could not remove item");
+    }
   };
 
-  const updateQuantity = (itemId, newQuantity) => {
+  const updateQuantity = async (itemId, newQuantity) => {
     if (newQuantity <= 0) {
       removeFromCart(itemId);
       return;
     }
 
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === itemId
-          ? {
-              ...item,
-              quantity: newQuantity,
-              subtotal: item.price * newQuantity,
-            }
-          : item
-      )
-    );
-  };
+    const sessionId = getStoredSessionId();
+    const headers = { "Content-Type": "application/json" };
+    if (sessionId) headers["X-Cart-Session-Id"] = sessionId;
+    const auth = getAuthHeaders();
+    if (auth.Authorization) headers.Authorization = auth.Authorization;
 
-  const clearCart = () => {
-    setCartItems([]);
     try {
-      localStorage.removeItem(CART_STORAGE_KEY);
-    } catch (error) {
-      console.error("Error clearing cart from localStorage:", error);
+      const res = await fetch(`${API}/cart/items/${itemId}`, {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ quantity: newQuantity }),
+        credentials: "include",
+      });
+      const data = await res.json();
+      const newSessionId = res.headers.get("X-Cart-Session-Id") || data?.sessionId;
+      if (newSessionId) setStoredSessionId(newSessionId);
+      if (res.ok) await fetchCart();
+    } catch (err) {
+      console.error("Update quantity error:", err);
+      toast.error("Could not update quantity");
     }
   };
 
-  const getCartTotal = () => {
-    return cartItems.reduce((sum, item) => sum + item.subtotal, 0);
+  const clearCart = async () => {
+    const sessionId = getStoredSessionId();
+    const headers = {};
+    if (sessionId) headers["X-Cart-Session-Id"] = sessionId;
+    const auth = getAuthHeaders();
+    if (auth.Authorization) headers.Authorization = auth.Authorization;
+    if (!sessionId && !auth.Authorization) {
+      setCartItems([]);
+      return;
+    }
+    try {
+      await fetch(`${API}/cart`, { method: "DELETE", headers, credentials: "include" });
+      setCartItems([]);
+    } catch (err) {
+      console.error("Clear cart error:", err);
+      setCartItems([]);
+    }
   };
 
-  const getCartCount = () => {
-    return cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  };
+  const getCartTotal = () => cartItems.reduce((sum, item) => sum + (item.subtotal || 0), 0);
+  const getCartCount = () => cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+
+  const mergeCart = useCallback(async () => {
+    const guestSessionId = getStoredSessionId();
+    const headers = { "Content-Type": "application/json" };
+    const auth = getAuthHeaders();
+    if (!auth.Authorization) return;
+    headers.Authorization = auth.Authorization;
+    if (guestSessionId) headers["X-Cart-Session-Id"] = guestSessionId;
+    try {
+      const res = await fetch(`${API}/cart/merge`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ guestSessionId: guestSessionId || undefined }),
+        credentials: "include",
+      });
+      const data = await res.json();
+      const newSessionId = res.headers.get("X-Cart-Session-Id") || data.sessionId;
+      if (newSessionId) setStoredSessionId(newSessionId);
+      setCartItems(Array.isArray(data.items) ? data.items : []);
+    } catch (err) {
+      console.error("Cart merge error:", err);
+    }
+  }, [getAuthHeaders]);
 
   return (
     <CartContext.Provider
       value={{
         cartItems,
+        isLoaded,
         addToCart,
         removeFromCart,
         updateQuantity,
         clearCart,
         getCartTotal,
         getCartCount,
+        refreshCart: fetchCart,
+        mergeCart,
       }}
     >
       {children}

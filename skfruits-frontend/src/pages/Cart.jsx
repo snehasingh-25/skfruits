@@ -5,6 +5,7 @@ import { useToast } from "../context/ToastContext";
 export default function Cart() {
   const {
     cartItems,
+    isLoaded,
     removeFromCart,
     updateQuantity,
     clearCart,
@@ -18,44 +19,56 @@ export default function Cart() {
       toast.error("Your cart is empty");
       return;
     }
-
-    // Build WhatsApp message
-    let message = "Hi! I'd like to place an order:\n\n";
-    
-    cartItems.forEach((item, index) => {
-      message += `${index + 1}. ${item.productName}\n`;
-      message += `   Size: ${item.sizeLabel}\n`;
-      message += `   Quantity: ${item.quantity}\n`;
-      message += `   Price: ₹${item.price}\n`;
-      message += `   Subtotal: ₹${item.subtotal.toFixed(2)}\n\n`;
-    });
-
-    message += `Total: ₹${getCartTotal().toFixed(2)}`;
-
-    // Open WhatsApp
-    window.open(
-      `https://wa.me/917976948872?text=${encodeURIComponent(message)}`
-    );
-
-    // Optionally clear cart after checkout
-    // clearCart();
+    navigate("/checkout");
   };
+
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen py-6 px-4 sm:px-6 lg:px-8" style={{ background: "var(--background)" }}>
+        <div className="max-w-6xl mx-auto">
+          <div className="h-10 w-48 rounded-lg animate-pulse mb-8" style={{ background: "var(--muted)" }} />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-4">
+              {[1, 2].map((i) => (
+                <div key={i} className="rounded-xl p-6 flex gap-6 animate-pulse" style={{ background: "var(--background)", border: "1px solid var(--border)" }}>
+                  <div className="w-32 h-32 rounded-lg shrink-0" style={{ background: "var(--muted)" }} />
+                  <div className="flex-1 space-y-3">
+                    <div className="h-5 rounded w-3/4" style={{ background: "var(--muted)" }} />
+                    <div className="h-4 rounded w-1/2" style={{ background: "var(--muted)" }} />
+                    <div className="h-8 rounded w-24" style={{ background: "var(--muted)" }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="lg:col-span-1">
+              <div className="rounded-xl p-6 sticky top-8 animate-pulse" style={{ background: "var(--background)", border: "1px solid var(--border)" }}>
+                <div className="h-6 rounded w-32 mb-6" style={{ background: "var(--muted)" }} />
+                <div className="h-10 rounded w-full mb-4" style={{ background: "var(--muted)" }} />
+                <div className="h-12 rounded w-full" style={{ background: "var(--muted)" }} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen py-6 px-4 sm:px-6 lg:px-8" style={{ background: "var(--background)" }}>
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-            <img src="/logo.png" alt="Gift Choice Logo" className="w-20 h-20 mx-auto mb-6 object-contain opacity-50" />
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          <div className="rounded-2xl shadow-lg p-12 text-center" style={{ background: "var(--background)", border: "1px solid var(--border)" }}>
+            <img src="/logo.png" alt="SK Fruits" className="w-20 h-20 mx-auto mb-6 object-contain opacity-50" />
+            <h2 className="text-3xl font-bold mb-4 font-display" style={{ color: "var(--foreground)" }}>
               Your cart is empty
             </h2>
-            <p className="text-gray-600 mb-8">
-              Looks like you haven't added anything to your cart yet.
+            <p className="mb-8" style={{ color: "var(--muted)" }}>
+              Looks like you haven&apos;t added anything to your cart yet.
             </p>
             <Link
               to="/"
-              className="inline-block bg-gradient-to-r from-pink-500 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-pink-600 hover:to-pink-700 transition-all shadow-lg"
+              className="btn-primary-brand inline-block px-8 py-3 rounded-xl font-semibold transition-all shadow-lg"
+              style={{ borderRadius: "var(--radius-lg)" }}
             >
               Continue Shopping
             </Link>
@@ -66,9 +79,9 @@ export default function Cart() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-6 px-4 sm:px-6 lg:px-8" style={{ background: "var(--background)" }}>
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
+        <h1 className="text-4xl font-bold mb-8 font-display" style={{ color: "var(--foreground)" }}>Shopping Cart</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
@@ -76,81 +89,56 @@ export default function Cart() {
             {cartItems.map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-xl shadow-md p-6 flex flex-col sm:flex-row gap-6 hover:shadow-lg transition-all duration-300 fade-in"
+                className="rounded-xl shadow-md p-6 flex flex-col sm:flex-row gap-6 hover:shadow-lg transition-all duration-300 fade-in border border-transparent hover:border-[var(--border)]"
+                style={{ background: "var(--background)" }}
               >
-                {/* Product Image */}
-                <div className="w-full sm:w-32 h-32 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg overflow-hidden flex-shrink-0">
+                <div className="w-full sm:w-32 h-32 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center" style={{ background: "var(--muted)" }}>
                   {item.productImage ? (
-                    <img
-                      src={item.productImage}
-                      alt={item.productName}
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={item.productImage} alt={item.productName} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <img src="/logo.png" alt="Gift Choice Logo" className="w-16 h-16 object-contain opacity-50" />
-                    </div>
+                    <img src="/logo.png" alt="SK Fruits" className="w-16 h-16 object-contain opacity-50" />
                   )}
                 </div>
 
-                {/* Product Info */}
                 <div className="flex-1 space-y-3">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">
-                        {item.productName}
-                      </h3>
-                      <p className="text-gray-600 mt-1">Size: {item.sizeLabel}</p>
+                      <h3 className="text-xl font-bold" style={{ color: "var(--foreground)" }}>{item.productName}</h3>
+                      <p className="mt-1" style={{ color: "var(--muted)" }}>Size: {item.sizeLabel}</p>
                     </div>
                     <button
                       onClick={() => removeFromCart(item.id)}
-                      className="text-red-500 hover:text-red-700 transition-all duration-300 hover:scale-110 active:scale-95"
+                      className="transition-all duration-300 hover:scale-110 active:scale-95"
+                      style={{ color: "var(--destructive)" }}
                       title="Remove item"
                     >
-                      <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    {/* Quantity Controls */}
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="w-8 h-8 rounded-lg border-2 border-gray-200 hover:border-pink-500 flex items-center justify-center font-bold text-gray-700 hover:text-pink-600 transition-all duration-300 hover:bg-pink-50 active:scale-95"
+                        className="w-8 h-8 rounded-lg border-2 flex items-center justify-center font-bold transition-all duration-300 active:scale-95"
+                        style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
                       >
                         −
                       </button>
-                      <span className="text-lg font-semibold text-gray-900 w-8 text-center transition-all duration-300">
-                        {item.quantity}
-                      </span>
+                      <span className="text-lg font-semibold w-8 text-center" style={{ color: "var(--foreground)" }}>{item.quantity}</span>
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-8 h-8 rounded-lg border-2 border-gray-200 hover:border-pink-500 flex items-center justify-center font-bold text-gray-700 hover:text-pink-600 transition-all duration-300 hover:bg-pink-50 active:scale-95"
+                        className="w-8 h-8 rounded-lg border-2 flex items-center justify-center font-bold transition-all duration-300 active:scale-95"
+                        style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
                       >
                         +
                       </button>
                     </div>
-
-                    {/* Price */}
                     <div className="text-right">
-                      <div className="text-sm text-gray-600">
-                        ₹{item.price} × {item.quantity}
-                      </div>
-                      <div className="text-xl font-bold text-pink-600">
-                        ₹{item.subtotal.toFixed(2)}
-                      </div>
+                      <div className="text-sm" style={{ color: "var(--muted)" }}>₹{item.price} × {item.quantity}</div>
+                      <div className="text-xl font-bold" style={{ color: "var(--primary)" }}>₹{Number(item.subtotal || 0).toFixed(2)}</div>
                     </div>
                   </div>
                 </div>
@@ -160,22 +148,18 @@ export default function Cart() {
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-lg p-6 sticky top-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                Order Summary
-              </h2>
+            <div className="rounded-xl shadow-lg p-6 sticky top-8 border" style={{ background: "var(--background)", borderColor: "var(--border)" }}>
+              <h2 className="text-2xl font-bold mb-6 font-display" style={{ color: "var(--foreground)" }}>Order Summary</h2>
 
               <div className="space-y-4 mb-6">
-                <div className="flex justify-between text-gray-700">
-                  <span>Subtotal ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
+                <div className="flex justify-between" style={{ color: "var(--foreground)" }}>
+                  <span>Subtotal ({cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0)} items)</span>
                   <span className="font-semibold">₹{getCartTotal().toFixed(2)}</span>
                 </div>
-                <div className="border-t border-gray-200 pt-4">
+                <div className="border-t pt-4" style={{ borderColor: "var(--border)" }}>
                   <div className="flex justify-between items-center">
-                    <span className="text-xl font-bold text-gray-900">Total</span>
-                    <span className="text-2xl font-bold text-pink-600">
-                      ₹{getCartTotal().toFixed(2)}
-                    </span>
+                    <span className="text-xl font-bold" style={{ color: "var(--foreground)" }}>Total</span>
+                    <span className="text-2xl font-bold" style={{ color: "var(--primary)" }}>₹{getCartTotal().toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -183,13 +167,15 @@ export default function Cart() {
               <div className="space-y-3">
                 <button
                   onClick={handleCheckout}
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 rounded-xl font-semibold text-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95"
+                  className="w-full py-4 rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 text-white"
+                  style={{ background: "var(--primary)", borderRadius: "var(--radius-lg)" }}
                 >
-                  Checkout via WhatsApp
+                  Proceed to Checkout
                 </button>
                 <Link
                   to="/"
-                  className="block w-full text-center bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-300 hover:shadow-md active:scale-95"
+                  className="block w-full text-center py-3 rounded-xl font-semibold transition-all duration-300 hover:shadow-md active:scale-95"
+                  style={{ background: "var(--muted)", color: "var(--foreground)", borderRadius: "var(--radius-lg)" }}
                 >
                   Continue Shopping
                 </Link>
@@ -199,7 +185,8 @@ export default function Cart() {
                       clearCart();
                     }
                   }}
-                  className="w-full text-red-600 py-2 text-sm hover:text-red-700 transition-all duration-300 hover:bg-red-50 rounded-lg active:scale-95"
+                  className="w-full py-2 text-sm rounded-lg transition-all duration-300 active:scale-95"
+                  style={{ color: "var(--destructive)" }}
                 >
                   Clear Cart
                 </button>

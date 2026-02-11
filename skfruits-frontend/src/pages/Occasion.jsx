@@ -187,7 +187,7 @@ export default function Occasion() {
             {occasions.map((occasion) => (
               <Link
                 key={occasion.id}
-                to={`/occasion/${occasion.slug}`}
+                to={`/exotic/${occasion.slug}`}
                 onClick={() => handleOccasionClick(occasion)}
                 className="flex-shrink-0 flex flex-col items-center min-w-[140px] sm:min-w-[160px] group"
               >

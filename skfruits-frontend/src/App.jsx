@@ -1,7 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import { ToastProvider } from "./context/ToastContext";
+import { UserAuthProvider } from "./context/UserAuthContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -18,9 +19,19 @@ import NewArrivals from "./pages/NewArrivals";
 import CategoriesPage from "./pages/CategoriesPage";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import OrderSuccess from "./pages/OrderSuccess";
 import Search from "./pages/Search";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import ProfileAddresses from "./pages/ProfileAddresses";
+
+function RedirectOccasionToExotic() {
+  const { slug } = useParams();
+  return <Navigate to={slug ? `/exotic/${slug}` : "/exotic"} replace />;
+}
 
 function PublicLayout() {
   return (
@@ -33,14 +44,25 @@ function PublicLayout() {
         <Route path="/category/:slug" element={<CategoriesPage />} />
         <Route path="/seasonal" element={<Seasonal />} />
         <Route path="/seasonal/:slug" element={<Seasonal />} />
+        <Route path="/exotic" element={<Occasion />} />
+        <Route path="/exotic/:slug" element={<Occasion />} />
+        <Route path="/organic" element={<NewArrivals />} />
+        <Route path="/gift-boxes" element={<About />} />
+        <Route path="/blog" element={<Contact />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
-        <Route path="/occasion" element={<Occasion />} />
-        <Route path="/occasion/:slug" element={<Occasion />} />
-        <Route path="/new" element={<NewArrivals />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/order-success" element={<OrderSuccess />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/profile/addresses" element={<ProfileAddresses />} />
         <Route path="/search" element={<Search />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
+        {/* Redirect old paths to new (name-matched) paths */}
+        <Route path="/occasion" element={<Navigate to="/exotic" replace />} />
+        <Route path="/occasion/:slug" element={<RedirectOccasionToExotic />} />
+        <Route path="/new" element={<Navigate to="/organic" replace />} />
+        <Route path="/about" element={<Navigate to="/gift-boxes" replace />} />
+        <Route path="/contact" element={<Navigate to="/blog" replace />} />
       </Routes>
       <Footer />
       <ChatBot />
@@ -52,7 +74,8 @@ export default function App() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <CartProvider>
+        <UserAuthProvider>
+          <CartProvider>
           <BrowserRouter>
             <ScrollToTop />
             <ToastViewport />
@@ -73,7 +96,8 @@ export default function App() {
               <Route path="/*" element={<PublicLayout />} />
             </Routes>
           </BrowserRouter>
-        </CartProvider>
+          </CartProvider>
+        </UserAuthProvider>
       </ToastProvider>
     </AuthProvider>
   );

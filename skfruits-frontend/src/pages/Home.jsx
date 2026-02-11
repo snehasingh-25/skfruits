@@ -411,7 +411,7 @@ export default function Home() {
           <div className="flex items-center justify-between mb-8">
             <h2 className="font-display text-3xl font-bold text-design-foreground">Shop By Occasion</h2>
             <Link 
-              to="/occasion" 
+              to="/exotic" 
               className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group text-design-foreground hover:opacity-80"
             >
               View All
@@ -441,7 +441,7 @@ export default function Home() {
               {occasionsTriple.map((occasion, i) => (
                 <Link
                   key={`occ-${i}-${occasion.id}`}
-                  to={`/occasion/${occasion.slug}`}
+                  to={`/exotic/${occasion.slug}`}
                   className="flex-shrink-0 flex flex-col items-center min-w-[140px] sm:min-w-[160px] group"
                 >
                   <div className="w-32 h-32 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-lg flex items-center justify-center text-4xl sm:text-5xl group-hover:shadow-lg group-hover:scale-110 transition-all duration-300 overflow-hidden cursor-pointer bg-design-secondary"

@@ -1,13 +1,25 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { useCart } from "../context/CartContext";
+import { useUserAuth } from "../context/UserAuthContext";
 import Typed from "typed.js";
 import Fuse from "fuse.js";
 import { API } from "../api";
 
 export default function Navbar() {
   const { getCartCount } = useCart();
+  const { user, isAuthenticated, logout } = useUserAuth();
   const navigate = useNavigate();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) setUserMenuOpen(false);
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -47,10 +59,10 @@ export default function Navbar() {
     { path: "/", label: "All Fruits" },
     { path: "/categories", label: "Categories" },
     { path: "/seasonal", label: "Seasonal" },
-    { path: "/occasion", label: "Exotic" },
-    { path: "/new", label: "Organic" },
-    { path: "/about", label: "About" },
-    { path: "/contact", label: "Contact" },
+    { path: "/exotic", label: "Exotic" },
+    { path: "/organic", label: "Organic" },
+    { path: "/gift-boxes", label: "Gift Boxes" },
+    { path: "/blog", label: "Blog" },
   ];
 
   useEffect(() => {
@@ -388,6 +400,65 @@ export default function Navbar() {
               </div>
             </div>
 
+            {/* User auth: Login/Signup or user menu */}
+            <div className="hidden md:flex items-center gap-2" ref={userMenuRef}>
+              {isAuthenticated && user ? (
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setUserMenuOpen((o) => !o)}
+                    className="px-3 py-2 rounded-full text-sm font-medium transition-all"
+                    style={{ backgroundColor: "var(--secondary)", color: "var(--foreground)" }}
+                  >
+                    {user.name || user.email}
+                  </button>
+                  {userMenuOpen && (
+                    <div
+                      className="absolute right-0 top-full mt-1 py-1 rounded-lg shadow-lg border min-w-[160px] z-50"
+                      style={{ backgroundColor: "var(--background)", borderColor: "var(--border)" }}
+                    >
+                      <Link
+                        to="/profile/addresses"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="block w-full text-left px-4 py-2 text-sm hover:opacity-90"
+                        style={{ color: "var(--foreground)" }}
+                      >
+                        Addresses
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          logout();
+                          setUserMenuOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm hover:opacity-90"
+                        style={{ color: "var(--foreground)" }}
+                      >
+                        Log out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="px-3 py-2 rounded-full text-sm font-medium transition-all"
+                    style={{ color: "var(--foreground)", backgroundColor: "var(--secondary)" }}
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="px-3 py-2 rounded-full text-sm font-semibold transition-all btn-primary-brand"
+                    style={{ borderRadius: "var(--radius-lg)" }}
+                  >
+                    Sign up
+                  </Link>
+                </>
+              )}
+            </div>
+
             {/* Theme toggle */}
             <button
               type="button"
@@ -668,6 +739,50 @@ export default function Navbar() {
                 )}
               </Link>
             ))}
+            <div className="flex flex-col gap-2 px-4 py-3 border-t border-[var(--border)]">
+              {isAuthenticated && user ? (
+                <>
+                  <Link
+                    to="/profile/addresses"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="py-2.5 rounded-lg text-sm font-semibold text-center"
+                    style={{ color: "var(--foreground)", backgroundColor: "var(--secondary)" }}
+                  >
+                    Addresses
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      logout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="py-2.5 rounded-lg text-sm font-semibold"
+                    style={{ color: "var(--foreground)", backgroundColor: "var(--secondary)" }}
+                  >
+                    Log out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-center"
+                    style={{ color: "var(--foreground)", backgroundColor: "var(--secondary)" }}
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    to="/signup"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-center btn-primary-brand"
+                    style={{ borderRadius: "var(--radius-lg)" }}
+                  >
+                    Sign up
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>

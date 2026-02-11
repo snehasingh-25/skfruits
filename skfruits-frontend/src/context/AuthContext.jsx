@@ -49,13 +49,15 @@ export function AuthProvider({ children }) {
       const data = await res.json();
 
       if (res.ok) {
-        setToken(data.token);
-        setUser(data.user);
-        localStorage.setItem("adminToken", data.token);
-        return { success: true };
-      } else {
-        return { success: false, message: data.message || "Login failed" };
+        if (data.user?.isAdmin) {
+          setToken(data.token);
+          setUser(data.user);
+          localStorage.setItem("adminToken", data.token);
+          return { success: true };
+        }
+        return { success: false, message: "Please use the storefront login page." };
       }
+      return { success: false, message: data.message || data.error || "Login failed" };
     } catch (error) {
       return { success: false, message: "Network error. Please try again." };
     }
