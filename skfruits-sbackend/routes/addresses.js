@@ -1,7 +1,6 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import prisma from "../prisma.js";
-import { ADMIN_EMAIL } from "../utils/auth.js";
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
@@ -11,7 +10,7 @@ function requireCustomerAuth(req, res, next) {
   if (!token) return res.status(401).json({ error: "Login required" });
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    if (decoded.isAdmin || decoded.email === ADMIN_EMAIL) {
+    if (decoded.role === "admin") {
       return res.status(403).json({ error: "Customer account required" });
     }
     req.customerUserId = Number(decoded.userId);
@@ -60,7 +59,7 @@ router.post("/add", requireCustomerAuth, async (req, res) => {
     const err = validateAddressBody(req.body);
     if (err) return res.status(400).json({ error: Object.values(err)[0], fields: err });
 
-    const { fullName, phone, addressLine, city, state, pincode, isDefault } = req.body;
+    const { fullName, phone, addressLine, city, state, pincode, isDefault, latitude, longitude } = req.body;
     const userId = req.customerUserId;
 
     if (isDefault) await unsetDefault(userId);
@@ -74,6 +73,8 @@ router.post("/add", requireCustomerAuth, async (req, res) => {
         city: city.trim(),
         state: state.trim(),
         pincode: pincode.trim().replace(/\D/g, "").slice(0, 6),
+        latitude: latitude != null && Number.isFinite(Number(latitude)) ? Number(latitude) : null,
+        longitude: longitude != null && Number.isFinite(Number(longitude)) ? Number(longitude) : null,
         isDefault: !!isDefault,
       },
     });
@@ -95,7 +96,7 @@ router.put("/update/:id", requireCustomerAuth, async (req, res) => {
     });
     if (!existing) return res.status(404).json({ error: "Address not found" });
 
-    const { fullName, phone, addressLine, city, state, pincode, isDefault } = req.body;
+    const { fullName, phone, addressLine, city, state, pincode, isDefault, latitude, longitude } = req.body;
     if (isDefault && !existing.isDefault) await unsetDefault(req.customerUserId);
 
     const address = await prisma.address.update({
@@ -107,6 +108,8 @@ router.put("/update/:id", requireCustomerAuth, async (req, res) => {
         city: city.trim(),
         state: state.trim(),
         pincode: pincode.trim().replace(/\D/g, "").slice(0, 6),
+        latitude: latitude != null && Number.isFinite(Number(latitude)) ? Number(latitude) : null,
+        longitude: longitude != null && Number.isFinite(Number(longitude)) ? Number(longitude) : null,
         isDefault: !!isDefault,
       },
     });

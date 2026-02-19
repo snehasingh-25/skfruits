@@ -2,7 +2,6 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import prisma from "../prisma.js";
 import { randomUUID } from "crypto";
-import { ADMIN_EMAIL } from "../utils/auth.js";
 
 const router = express.Router();
 const CART_SESSION_HEADER = "x-cart-session-id";
@@ -18,7 +17,7 @@ function optionalCustomerAuth(req, res, next) {
   if (!token) return next();
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    if (decoded.isAdmin || decoded.email === ADMIN_EMAIL) return next();
+    if (decoded.role === "admin") return next();
     req.customerUserId = Number(decoded.userId);
   } catch (_) {}
   next();
@@ -68,6 +67,7 @@ async function hydrateCartItems(items) {
 
       const quantity = Math.max(1, item.quantity);
       const subtotal = price * quantity;
+      const stock = Number(product.stock ?? 0);
       return {
         id: String(item.id),
         productId: product.id,
@@ -78,6 +78,7 @@ async function hydrateCartItems(items) {
         price,
         quantity,
         subtotal,
+        stock,
       };
     })
     .filter(Boolean);
@@ -162,6 +163,20 @@ router.post("/items", optionalCustomerAuth, async (req, res) => {
     });
     if (!product) return res.status(404).json({ error: "Product not found" });
 
+    const stock = Number(product.stock ?? 0);
+    if (stock <= 0) {
+      return res.status(400).json({ error: "Product is out of stock" });
+    }
+    const currentQtyForProduct = cart.items
+      .filter((i) => i.productId === Number(productId))
+      .reduce((sum, i) => sum + i.quantity, 0);
+    if (currentQtyForProduct + quantity > stock) {
+      return res.status(400).json({
+        error: `Only ${stock} unit(s) available`,
+        available: stock,
+      });
+    }
+
     const sizeId = productSizeId === undefined || productSizeId === null ? null : Number(productSizeId);
     if (sizeId !== null) {
       const size = product.sizes.find((s) => s.id === sizeId);
@@ -220,6 +235,21 @@ router.patch("/items/:id", optionalCustomerAuth, async (req, res) => {
       where: { id, cartId: cart.id },
     });
     if (!existing) return res.status(404).json({ error: "Cart item not found" });
+
+    const product = await prisma.product.findUnique({
+      where: { id: existing.productId },
+    });
+    if (!product) return res.status(404).json({ error: "Product not found" });
+    const stock = Number(product.stock ?? 0);
+    const otherQtyForProduct = cart.items
+      .filter((i) => i.productId === existing.productId && i.id !== id)
+      .reduce((sum, i) => sum + i.quantity, 0);
+    if (quantity > 0 && otherQtyForProduct + quantity > stock) {
+      return res.status(400).json({
+        error: stock === 0 ? "Product is out of stock" : `Only ${stock} unit(s) available`,
+        available: stock,
+      });
+    }
 
     if (quantity <= 0) {
       await prisma.cartItem.delete({ where: { id } });

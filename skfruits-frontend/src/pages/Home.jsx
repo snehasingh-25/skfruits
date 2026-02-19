@@ -5,15 +5,24 @@ import { Link } from "react-router-dom";
 import BannerSlider from "../components/BannerSlider";
 import { MemoReelCarousel as ReelCarousel } from "../components/ReelCarousel";
 import GiftBoxLoader from "../components/GiftBoxLoader";
+import ProductCarouselSection from "../components/ProductCarouselSection";
 import { useProductLoader } from "../hooks/useProductLoader";
+import { useRecentlyViewed } from "../context/RecentlyViewedContext";
+import { useWishlist } from "../context/WishlistContext";
+import { useUserAuth } from "../context/UserAuthContext";
 
 export default function Home() {
+  const { recentIds } = useRecentlyViewed();
+  const { wishlistItems } = useWishlist();
+  const { isAuthenticated, getAuthHeaders } = useUserAuth();
   const [products, setProducts] = useState([]);
   const [trendingProducts, setTrendingProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [occasions, setOccasions] = useState([]);
   const [reels, setReels] = useState([]);
   const [banners, setBanners] = useState([]);
+  const [topRatedProducts, setTopRatedProducts] = useState([]);
+  const [buyAgainIds, setBuyAgainIds] = useState([]);
   const [visibleProductsCount, setVisibleProductsCount] = useState(10);
   const [loading, setLoading] = useState({
     categories: true,
@@ -95,6 +104,47 @@ export default function Home() {
       ac.abort();
     };
   }, []);
+
+  // Lazy: top-rated products
+  useEffect(() => {
+    const ac = new AbortController();
+    fetch(`${API}/products/top-rated?limit=12`, { signal: ac.signal })
+      .then((res) => res.json())
+      .then((data) => setTopRatedProducts(Array.isArray(data) ? data : []))
+      .catch(() => setTopRatedProducts([]));
+    return () => ac.abort();
+  }, []);
+
+  // Lazy: buy-again product IDs (authenticated)
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setBuyAgainIds([]);
+      return;
+    }
+    const headers = getAuthHeaders();
+    if (!headers.Authorization) return;
+    const ac = new AbortController();
+    fetch(`${API}/orders/my-orders`, { headers, credentials: "include", signal: ac.signal })
+      .then((res) => res.json())
+      .then((orders) => {
+        if (!Array.isArray(orders)) return;
+        const ids = [];
+        const seen = new Set();
+        for (const order of orders) {
+          const items = order.items || order.orderItems || [];
+          for (const item of items) {
+            const pid = item.productId ?? item.product?.id;
+            if (pid && !seen.has(pid)) {
+              seen.add(pid);
+              ids.push(pid);
+            }
+          }
+        }
+        setBuyAgainIds(ids.slice(0, 12));
+      })
+      .catch(() => setBuyAgainIds([]));
+    return () => ac.abort();
+  }, [isAuthenticated, getAuthHeaders]);
 
   // Clean up scroll-end timers on unmount
   useEffect(() => {
@@ -303,6 +353,30 @@ export default function Home() {
       {/* Primary Banner Slider - Only show when data is loaded */}
       {!isInitialLoad && <BannerSlider bannerType="primary" />}
 
+      {/* Personalized: Recently Viewed */}
+      {recentIds.length > 0 && (
+        <div className="max-w-7xl mx-auto">
+          <ProductCarouselSection title="Recently Viewed" productIds={recentIds} />
+        </div>
+      )}
+
+      {/* Personalized: From Your Wishlist */}
+      {wishlistItems.length > 0 && (
+        <div className="max-w-7xl mx-auto">
+          <ProductCarouselSection
+            title="From Your Wishlist"
+            products={wishlistItems.map((item) => item.product).filter(Boolean)}
+          />
+        </div>
+      )}
+
+      {/* Personalized: Buy Again */}
+      {buyAgainIds.length > 0 && (
+        <div className="max-w-7xl mx-auto">
+          <ProductCarouselSection title="Buy Again" productIds={buyAgainIds} />
+        </div>
+      )}
+
       {/* Shop By Category Section */}
       {categories.length > 0 ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -374,11 +448,11 @@ export default function Home() {
         </div>
       ) : null}
 
-      {/* Trending Products Section */}
+      {/* Popular Fruits (Trending) */}
       {trendingProducts.length > 0 ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
           <div className="flex items-center justify-between mb-10">
-            <h2 className="font-display text-3xl font-bold text-design-foreground">Trending Products</h2>
+            <h2 className="font-display text-3xl font-bold text-design-foreground">Popular Fruits</h2>
             <Link
               to="/categories?trending=true"
               className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group text-design-foreground hover:opacity-80"
@@ -405,7 +479,14 @@ export default function Home() {
         </div>
       ) : null}
 
-      {/* Shop By Occasion Section */}
+      {/* Top Rated */}
+      {topRatedProducts.length > 0 && (
+        <div className="max-w-7xl mx-auto">
+          <ProductCarouselSection title="Top Rated" products={topRatedProducts} />
+        </div>
+      )}
+
+      {/* Shop By Occasion Section (Seasonal Picks) */}
       {occasions.length > 0 ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between mb-8">

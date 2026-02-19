@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyToken } from "../utils/auth.js";
+import { requireRole } from "../utils/auth.js";
 import upload, { getImageUrl } from "../utils/upload.js";
 import prisma from "../prisma.js";
 import { cacheMiddleware, invalidateCache } from "../utils/cache.js";
@@ -26,7 +26,7 @@ router.get("/", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
 });
 
 // Get all banners (admin - includes inactive)
-router.get("/all", verifyToken, async (req, res) => {
+router.get("/all", requireRole("admin"), async (req, res) => {
   try {
     const banners = await prisma.banner.findMany({
       orderBy: [{ order: "asc" }, { createdAt: "desc" }],
@@ -39,7 +39,7 @@ router.get("/all", verifyToken, async (req, res) => {
 });
 
 // Get single banner (admin)
-router.get("/:id", verifyToken, async (req, res) => {
+router.get("/:id", requireRole("admin"), async (req, res) => {
   try {
     const banner = await prisma.banner.findUnique({
       where: { id: Number(req.params.id) },
@@ -56,7 +56,7 @@ router.get("/:id", verifyToken, async (req, res) => {
 });
 
 // Create banner (Admin only)
-router.post("/", verifyToken, upload.single("image"), async (req, res) => {
+router.post("/", requireRole("admin"), upload.single("image"), async (req, res) => {
   try {
     // Invalidate banners cache on create
     invalidateCache("/banners");
@@ -90,7 +90,7 @@ router.post("/", verifyToken, upload.single("image"), async (req, res) => {
 });
 
 // Update banner (Admin only)
-router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
+router.put("/:id", requireRole("admin"), upload.single("image"), async (req, res) => {
   try {
     const { title, subtitle, ctaText, ctaLink, bannerType, isActive, order, existingImage } = req.body;
 
@@ -129,7 +129,7 @@ router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
 });
 
 // Update order for multiple banners (Admin only)
-router.post("/reorder", verifyToken, async (req, res) => {
+router.post("/reorder", requireRole("admin"), async (req, res) => {
   try {
     const { items } = req.body; // Array of { id, order }
     
@@ -158,7 +158,7 @@ router.post("/reorder", verifyToken, async (req, res) => {
 });
 
 // Delete banner (Admin only)
-router.delete("/:id", verifyToken, async (req, res) => {
+router.delete("/:id", requireRole("admin"), async (req, res) => {
   try {
     // Invalidate banners cache on delete
     invalidateCache("/banners");

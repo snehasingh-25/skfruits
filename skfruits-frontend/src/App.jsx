@@ -3,9 +3,12 @@ import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import { ToastProvider } from "./context/ToastContext";
 import { UserAuthProvider } from "./context/UserAuthContext";
+import { WishlistProvider } from "./context/WishlistContext";
+import { RecentlyViewedProvider } from "./context/RecentlyViewedContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
+import DriverProtectedRoute from "./components/DriverProtectedRoute";
 import ChatBot from "./components/ChatBot";
 import ScrollToTop from "./components/ScrollToTop";
 import ToastViewport from "./components/ToastViewport";
@@ -23,10 +26,21 @@ import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 import Search from "./pages/Search";
 import AdminLogin from "./pages/AdminLogin";
+import AdminLayout from "./components/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
+import AdminOrderDetailPage from "./pages/admin/AdminOrderDetailPage";
+import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage";
+import AdminInventoryPage from "./pages/admin/AdminInventoryPage";
+import AdminReviewsPage from "./pages/admin/AdminReviewsPage";
+import AdminDriversPage from "./pages/admin/AdminDriversPage";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ProfileAddresses from "./pages/ProfileAddresses";
+import MyOrders from "./pages/MyOrders";
+import OrderDetails from "./pages/OrderDetails";
+import Wishlist from "./pages/Wishlist";
+import DriverDashboard from "./pages/DriverDashboard";
 
 function RedirectOccasionToExotic() {
   const { slug } = useParams();
@@ -56,6 +70,10 @@ function PublicLayout() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/profile/addresses" element={<ProfileAddresses />} />
+        <Route path="/profile/orders" element={<MyOrders />} />
+        <Route path="/profile/wishlist" element={<Wishlist />} />
+        <Route path="/orders/:id" element={<OrderDetails />} />
+        <Route path="/driver" element={<DriverProtectedRoute><DriverDashboard /></DriverProtectedRoute>} />
         <Route path="/search" element={<Search />} />
         {/* Redirect old paths to new (name-matched) paths */}
         <Route path="/occasion" element={<Navigate to="/exotic" replace />} />
@@ -75,28 +93,40 @@ export default function App() {
     <AuthProvider>
       <ToastProvider>
         <UserAuthProvider>
+          <WishlistProvider>
+          <RecentlyViewedProvider>
           <CartProvider>
           <BrowserRouter>
             <ScrollToTop />
             <ToastViewport />
             <Routes>
-              {/* Admin Routes (no navbar/footer) */}
+              {/* Admin: login has no layout; all other admin routes share sidebar + header via AdminLayout */}
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route
-                path="/admin/dashboard"
+                path="/admin"
                 element={
                   <ProtectedRoute>
-                    <AdminDashboard />
+                    <AdminLayout />
                   </ProtectedRoute>
                 }
-              />
-              <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
+              >
+                <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="orders" element={<AdminOrdersPage />} />
+                <Route path="orders/:id" element={<AdminOrderDetailPage />} />
+                <Route path="analytics" element={<AdminAnalyticsPage />} />
+                <Route path="inventory" element={<AdminInventoryPage />} />
+                <Route path="reviews" element={<AdminReviewsPage />} />
+                <Route path="drivers" element={<AdminDriversPage />} />
+              </Route>
 
               {/* Public Routes */}
               <Route path="/*" element={<PublicLayout />} />
             </Routes>
           </BrowserRouter>
           </CartProvider>
+          </RecentlyViewedProvider>
+          </WishlistProvider>
         </UserAuthProvider>
       </ToastProvider>
     </AuthProvider>

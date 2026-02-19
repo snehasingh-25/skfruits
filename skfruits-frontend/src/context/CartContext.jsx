@@ -137,7 +137,11 @@ export function CartProvider({ children }) {
       const data = await res.json();
       const newSessionId = res.headers.get("X-Cart-Session-Id") || data?.sessionId;
       if (newSessionId) setStoredSessionId(newSessionId);
-      if (res.ok) await fetchCart();
+      if (res.ok) {
+        await fetchCart();
+      } else {
+        toast.error(data.error || "Could not update quantity");
+      }
     } catch (err) {
       console.error("Update quantity error:", err);
       toast.error("Could not update quantity");

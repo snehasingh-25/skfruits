@@ -28,7 +28,7 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen bg-page-auth flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 max-w-md w-full border border-design">
+      <div className="rounded-2xl shadow-xl p-8 md:p-12 max-w-md w-full border" style={{ backgroundColor: "var(--card-white)", borderColor: "var(--border)" }}>
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <img src="/logo.png" alt="SK Fruits" className="h-14 w-auto" />

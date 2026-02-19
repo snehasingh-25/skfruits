@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyToken } from "../utils/auth.js";
+import { requireRole } from "../utils/auth.js";
 import prisma from "../prisma.js";
 const router = express.Router();
 
@@ -24,7 +24,7 @@ router.post("/", async (req, res) => {
 });
 
 // Get all messages (Admin only)
-router.get("/", verifyToken, async (req, res) => {
+router.get("/", requireRole("admin"), async (req, res) => {
   try {
     const messages = await prisma.contactMessage.findMany({
       orderBy: { createdAt: "desc" },
@@ -36,7 +36,7 @@ router.get("/", verifyToken, async (req, res) => {
 });
 
 // Mark message as read (Admin only)
-router.patch("/:id/read", verifyToken, async (req, res) => {
+router.patch("/:id/read", requireRole("admin"), async (req, res) => {
   try {
     const message = await prisma.contactMessage.update({
       where: { id: Number(req.params.id) },
@@ -49,7 +49,7 @@ router.patch("/:id/read", verifyToken, async (req, res) => {
 });
 
 // Delete message (Admin only)
-router.delete("/:id", verifyToken, async (req, res) => {
+router.delete("/:id", requireRole("admin"), async (req, res) => {
   try {
     await prisma.contactMessage.delete({
       where: { id: Number(req.params.id) },

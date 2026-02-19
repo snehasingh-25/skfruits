@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyToken } from "../utils/auth.js";
+import { requireRole } from "../utils/auth.js";
 import upload, { getImageUrl } from "../utils/upload.js";
 import prisma from "../prisma.js";
 import { cacheMiddleware, invalidateCache } from "../utils/cache.js";
@@ -41,7 +41,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // Create category (Admin only)
-router.post("/", verifyToken, upload.single("image"), async (req, res) => {
+router.post("/", requireRole("admin"), upload.single("image"), async (req, res) => {
   try {
     // Invalidate categories cache on create
     invalidateCache("/categories");
@@ -72,7 +72,7 @@ router.post("/", verifyToken, upload.single("image"), async (req, res) => {
 });
 
 // Update category (Admin only)
-router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
+router.put("/:id", requireRole("admin"), upload.single("image"), async (req, res) => {
   try {
     // Invalidate categories cache on update
     invalidateCache("/categories");
@@ -104,7 +104,7 @@ router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
 });
 
 // Update order for multiple categories (Admin only)
-router.post("/reorder", verifyToken, async (req, res) => {
+router.post("/reorder", requireRole("admin"), async (req, res) => {
   try {
     const { items } = req.body; // Array of { id, order }
     
@@ -133,7 +133,7 @@ router.post("/reorder", verifyToken, async (req, res) => {
 });
 
 // Delete category (Admin only)
-router.delete("/:id", verifyToken, async (req, res) => {
+router.delete("/:id", requireRole("admin"), async (req, res) => {
   try {
     const categoryId = Number(req.params.id);
     

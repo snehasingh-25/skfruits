@@ -1,22 +1,31 @@
 import express from "express";
-import { verifyToken } from "../utils/auth.js";
+import { requireRole } from "../utils/auth.js";
 import { uploadProductMedia, getImageUrl, getVideoUrl } from "../utils/upload.js";
 import prisma from "../prisma.js";
 import { cacheMiddleware, invalidateCache } from "../utils/cache.js";
 import { validateInstagramEmbeds } from "../utils/instagram.js";
+import { getPriceRange, getRecommendationsForProduct } from "../utils/recommendationEngine.js";
+
 const router = express.Router();
 
-// Get all products (public) - Cached for 5 minutes
+// Get all products (public) - Cached 5 min. Supports ?ids=1,2,3 for bulk fetch (preserves order).
 router.get("/", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
   try {
-    const { category, occasion, isNew, isFestival, isTrending, search } = req.query;
+    const { category, occasion, isNew, isFestival, isTrending, search, ids: idsParam } = req.query;
     const limitRaw = req.query.limit;
     const offsetRaw = req.query.offset;
     const limit = typeof limitRaw === "string" ? Math.min(Math.max(parseInt(limitRaw, 10) || 0, 0), 50) : 0;
     const offset = typeof offsetRaw === "string" ? Math.max(parseInt(offsetRaw, 10) || 0, 0) : 0;
-    
+
+    const requestedIds = typeof idsParam === "string"
+      ? idsParam.split(",").map((id) => parseInt(id.trim(), 10)).filter((n) => !Number.isNaN(n))
+      : [];
+
     // Build where clause
     const where = {};
+    if (requestedIds.length > 0) {
+      where.id = { in: requestedIds };
+    }
     if (category) {
       where.categories = {
         some: {
@@ -118,6 +127,12 @@ router.get("/", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
       products = await prisma.product.findMany(queryBase);
     }
 
+    // Preserve order when fetching by ids
+    if (requestedIds.length > 0 && products.length > 1) {
+      const orderMap = new Map(requestedIds.map((id, i) => [id, i]));
+      products.sort((a, b) => (orderMap.get(a.id) ?? 999) - (orderMap.get(b.id) ?? 999));
+    }
+
     // Parse JSON fields
     const parsed = products.map(p => ({
       ...p,
@@ -131,6 +146,128 @@ router.get("/", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
     res.json(parsed);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /products/top-rated — products with reviews, sorted by average rating (public)
+router.get("/top-rated", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
+  try {
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 12, 1), 24);
+    const grouped = await prisma.review.groupBy({
+      by: ["productId"],
+      _avg: { rating: true },
+      _count: { id: true },
+    });
+    const sorted = grouped
+      .sort((a, b) => (b._avg.rating ?? 0) - (a._avg.rating ?? 0))
+      .slice(0, limit)
+      .map((r) => r.productId);
+    if (sorted.length === 0) {
+      return res.json([]);
+    }
+    const products = await prisma.product.findMany({
+      where: { id: { in: sorted } },
+      include: { sizes: true, categories: { include: { category: true } }, occasions: { include: { occasion: true } } },
+    });
+    const byId = new Map(products.map((p) => [p.id, p]));
+    const ordered = sorted.map((id) => byId.get(id)).filter(Boolean);
+    const parsed = ordered.map((p) => ({
+      ...p,
+      images: p.images ? JSON.parse(p.images) : [],
+      videos: p.videos ? JSON.parse(p.videos) : [],
+      keywords: p.keywords ? JSON.parse(p.keywords) : [],
+      categories: p.categories ? p.categories.map((pc) => pc.category) : [],
+      occasions: p.occasions ? p.occasions.map((po) => po.occasion) : [],
+    }));
+    res.json(parsed);
+  } catch (error) {
+    console.error("Top-rated products error:", error);
+    res.status(500).json({ error: "Failed to fetch top-rated products" });
+  }
+});
+
+// GET /products/:id/recommendations — same category → similar price → popular → high-rated (public)
+router.get("/:id/recommendations", cacheMiddleware(10 * 60 * 1000), async (req, res) => {
+  try {
+    const productId = Number(req.params.id);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 8, 4), 20);
+    if (!productId || Number.isNaN(productId)) {
+      return res.status(400).json({ error: "Invalid product id" });
+    }
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        categories: { include: { category: true } },
+        occasions: { include: { occasion: true } },
+        sizes: true,
+      },
+    });
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+    const categoryIds = product.categories.map((pc) => pc.category.id);
+    const occasionIds = product.occasions.map((po) => po.occasion.id);
+    const priceRange = getPriceRange(product);
+    const recommendations = await getRecommendationsForProduct(
+      productId,
+      categoryIds,
+      occasionIds,
+      priceRange,
+      limit
+    );
+    const parsed = recommendations.map((p) => ({
+      ...p,
+      images: p.images ? JSON.parse(p.images) : [],
+      videos: p.videos ? JSON.parse(p.videos) : [],
+      keywords: p.keywords ? JSON.parse(p.keywords) : [],
+      categories: p.categories ? p.categories.map((pc) => pc.category) : [],
+      occasions: p.occasions ? p.occasions.map((po) => po.occasion) : [],
+    }));
+    res.json(parsed);
+  } catch (error) {
+    console.error("Product recommendations error:", error);
+    res.status(500).json({ error: "Failed to fetch recommendations" });
+  }
+});
+
+// GET /products/:id/reviews — averageRating, totalReviews, reviews list (public)
+router.get("/:id/reviews", async (req, res) => {
+  try {
+    const productId = Number(req.params.id);
+    if (!productId || Number.isNaN(productId)) {
+      return res.status(400).json({ error: "Invalid product id" });
+    }
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { id: true },
+    });
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+    const reviews = await prisma.review.findMany({
+      where: { productId },
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: { select: { name: true } },
+      },
+    });
+    const totalReviews = reviews.length;
+    const sumRating = reviews.reduce((s, r) => s + r.rating, 0);
+    const averageRating = totalReviews > 0 ? Math.round((sumRating / totalReviews) * 10) / 10 : 0;
+    res.json({
+      averageRating,
+      totalReviews,
+      reviews: reviews.map((r) => ({
+        id: r.id,
+        userName: r.user?.name ?? "Anonymous",
+        rating: r.rating,
+        comment: r.comment ?? "",
+        createdAt: r.createdAt,
+      })),
+    });
+  } catch (error) {
+    console.error("Product reviews GET error:", error);
+    res.status(500).json({ error: "Failed to fetch reviews" });
   }
 });
 
@@ -173,7 +310,7 @@ router.get("/:id", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
 });
 
 // Add product (Admin only)
-router.post("/", verifyToken, uploadProductMedia, async (req, res) => {
+router.post("/", requireRole("admin"), uploadProductMedia, async (req, res) => {
   try {
     // Invalidate products cache on create
     invalidateCache("/products");
@@ -283,7 +420,7 @@ router.post("/", verifyToken, uploadProductMedia, async (req, res) => {
 });
 
 // Update product (Admin only)
-router.put("/:id", verifyToken, uploadProductMedia, async (req, res) => {
+router.put("/:id", requireRole("admin"), uploadProductMedia, async (req, res) => {
   try {
     // Invalidate products cache on update
     invalidateCache("/products");
@@ -407,7 +544,7 @@ router.put("/:id", verifyToken, uploadProductMedia, async (req, res) => {
 });
 
 // Update order for multiple products (Admin only)
-router.post("/reorder", verifyToken, async (req, res) => {
+router.post("/reorder", requireRole("admin"), async (req, res) => {
   try {
     const { items } = req.body; // Array of { id, order }
     
@@ -436,7 +573,7 @@ router.post("/reorder", verifyToken, async (req, res) => {
 });
 
 // Delete product (Admin only)
-router.delete("/:id", verifyToken, async (req, res) => {
+router.delete("/:id", requireRole("admin"), async (req, res) => {
   try {
     // Invalidate products cache on delete
     invalidateCache("/products");

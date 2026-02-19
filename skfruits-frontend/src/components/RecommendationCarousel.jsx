@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, memo } from "react";
 import ProductCard from "./ProductCard";
 
-// Rotating section titles
 const SECTION_TITLES = [
   "You May Also Like",
   "Customers Also Loved",
@@ -9,17 +8,17 @@ const SECTION_TITLES = [
   "Similar Products",
 ];
 
-function RecommendationCarousel({ products = [], isLoading = false }) {
+function RecommendationCarousel({ products = [], isLoading = false, title: titleProp }) {
   const scrollContainerRef = useRef(null);
   const autoScrollTimeoutRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const [title, setTitle] = useState(SECTION_TITLES[0]);
+  const [title, setTitle] = useState(titleProp || SECTION_TITLES[0]);
 
-  // Set random title on mount
   useEffect(() => {
-    setTitle(SECTION_TITLES[Math.floor(Math.random() * SECTION_TITLES.length)]);
-  }, []);
+    if (titleProp) setTitle(titleProp);
+    else setTitle(SECTION_TITLES[Math.floor(Math.random() * SECTION_TITLES.length)]);
+  }, [titleProp]);
 
   // Check scroll position
   const checkScroll = () => {
@@ -102,7 +101,16 @@ function RecommendationCarousel({ products = [], isLoading = false }) {
         <h2 className="text-2xl sm:text-3xl font-extrabold mb-6" style={{ color: "oklch(20% .02 340)" }}>
           {title}
         </h2>
-        <div className="flex gap-4 overflow-x-hidden">
+        <div className="grid grid-cols-2 gap-4 sm:hidden">
+          {[...Array(4)].map((_, i) => (
+            <div
+              key={i}
+              className="h-80 rounded-lg animate-pulse"
+              style={{ backgroundColor: "oklch(92% .04 340)" }}
+            />
+          ))}
+        </div>
+        <div className="hidden sm:flex gap-4 overflow-x-hidden">
           {[...Array(5)].map((_, i) => (
             <div
               key={i}
@@ -131,8 +139,15 @@ function RecommendationCarousel({ products = [], isLoading = false }) {
         </p>
       </div>
 
-      {/* Carousel Container */}
-      <div className="relative group">
+      {/* Mobile: 2-column grid */}
+      <div className="grid grid-cols-2 gap-4 sm:hidden">
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
+
+      {/* Desktop: Carousel Container */}
+      <div className="relative group hidden sm:block">
         {/* Left Scroll Button */}
         {canScrollLeft && (
           <button
@@ -182,8 +197,8 @@ function RecommendationCarousel({ products = [], isLoading = false }) {
         )}
       </div>
 
-      {/* Scroll Indicator Dots (optional) */}
-      <div className="mt-4 flex justify-center gap-1.5">
+      {/* Scroll Indicator Dots (optional) - desktop only */}
+      <div className="mt-4 hidden sm:flex justify-center gap-1.5">
         {[...Array(Math.ceil(products.length / 4))].map((_, i) => (
           <div
             key={i}

@@ -69,8 +69,12 @@ export function UserAuthProvider({ children }) {
           return { success: false, error: data.error || data.message || "Login failed" };
         }
 
-        if (data.user?.isAdmin) {
-          return { success: false, error: "Please use the admin login page to sign in." };
+        const isAdmin = data.user?.role === "admin" || data.user?.isAdmin;
+        if (isAdmin) {
+          try {
+            localStorage.setItem("adminToken", data.token);
+          } catch (_) {}
+          return { success: true, redirectToAdmin: true };
         }
 
         const t = data.token;
@@ -78,7 +82,8 @@ export function UserAuthProvider({ children }) {
         setToken(t);
         setUser(u);
         setStoredToken(t);
-        return { success: true };
+        const isDriver = u?.role === "driver";
+        return { success: true, ...(isDriver && { redirectToDriver: true }) };
       } catch (err) {
         console.error("Login error:", err);
         return { success: false, error: "Network error. Please try again." };

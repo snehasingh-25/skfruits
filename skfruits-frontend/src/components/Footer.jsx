@@ -45,8 +45,8 @@ export default function Footer() {
 
   const linkMap = {
     "Home": "/",
-    "Gift Boxes": "/gift-boxes",
-    "Blog": "/blog",
+    "About Us": "/gift-boxes",
+    "Contact": "/blog",
     "Shop": "/categories",
     "New Arrivals": "/organic",
   };

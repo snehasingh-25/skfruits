@@ -2,17 +2,25 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { API } from "../api";
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 import { useToast } from "../context/ToastContext";
 import ProductCard from "../components/ProductCard";
 import RecommendationCarousel from "../components/RecommendationCarousel";
 import GiftBoxLoader from "../components/GiftBoxLoader";
+import StarRating from "../components/StarRating";
 import { useProductLoader } from "../hooks/useProductLoader";
 import { initializeInstagramEmbeds } from "../utils/instagramEmbed";
+import { useUserAuth } from "../context/UserAuthContext";
+import { useRecentlyViewed } from "../context/RecentlyViewedContext";
+import ProductCarouselSection from "../components/ProductCarouselSection";
 
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist, togglingId } = useWishlist();
+  const { recentIds, addViewed } = useRecentlyViewed();
+  const { isAuthenticated, getAuthHeaders } = useUserAuth();
   const toast = useToast();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -24,6 +32,15 @@ export default function ProductDetail() {
   const [loadingSimilar, setLoadingSimilar] = useState(false);
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+  const [reviewsData, setReviewsData] = useState({ averageRating: 0, totalReviews: 0, reviews: [] });
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [eligibility, setEligibility] = useState(null);
+  const [eligibilityLoading, setEligibilityLoading] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [submitReviewLoading, setSubmitReviewLoading] = useState(false);
+  const isWishlisted = product ? isInWishlist(product.id) : false;
+  const isWishlistToggling = product && togglingId === product.id;
   
   // Time-based loader (only shows if loading >= 1 second)
   const { showLoader: showProductLoader } = useProductLoader(loading);
@@ -86,6 +103,7 @@ export default function ProductDetail() {
       .then((res) => res.json())
       .then((data) => {
         setProduct(data);
+        if (data?.id) addViewed(data.id);
         // Handle single price products
         if (data?.hasSinglePrice && data.singlePrice) {
           setSelectedSize({
@@ -154,23 +172,131 @@ export default function ProductDetail() {
     return () => ac.abort();
   }, [id]);
 
+  // Fetch reviews for this product
+  useEffect(() => {
+    if (!id) return;
+    const ac = new AbortController();
+    setReviewsLoading(true);
+    fetch(`${API}/products/${id}/reviews`, { signal: ac.signal })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.averageRating !== undefined && Array.isArray(data.reviews)) {
+          setReviewsData({
+            averageRating: data.averageRating,
+            totalReviews: data.totalReviews,
+            reviews: data.reviews,
+          });
+        }
+      })
+      .catch((err) => {
+        if (err?.name !== "AbortError") console.error("Reviews fetch error:", err);
+      })
+      .finally(() => setReviewsLoading(false));
+    return () => ac.abort();
+  }, [id]);
+
+  // Fetch review eligibility when logged in
+  useEffect(() => {
+    if (!id || !isAuthenticated) {
+      setEligibility(null);
+      return;
+    }
+    const ac = new AbortController();
+    const headers = getAuthHeaders();
+    if (!headers.Authorization) return;
+    setEligibilityLoading(true);
+    fetch(`${API}/reviews/eligibility/${id}`, { headers, credentials: "include", signal: ac.signal })
+      .then((res) => res.json())
+      .then((data) => {
+        setEligibility({
+          canReview: data.canReview === true,
+          hasPurchased: data.hasPurchased === true,
+          existingReview: data.existingReview ?? null,
+        });
+      })
+      .catch((err) => {
+        if (err?.name !== "AbortError") console.error("Eligibility fetch error:", err);
+        setEligibility(null);
+      })
+      .finally(() => setEligibilityLoading(false));
+    return () => ac.abort();
+  }, [id, isAuthenticated, getAuthHeaders]);
+
+  const handleSubmitReview = async () => {
+    if (!product?.id || reviewRating < 1 || reviewRating > 5) {
+      toast.error("Please select a rating (1–5 stars)");
+      return;
+    }
+    setSubmitReviewLoading(true);
+    const headers = { ...getAuthHeaders(), "Content-Type": "application/json" };
+    try {
+      const res = await fetch(`${API}/reviews/add`, {
+        method: "POST",
+        headers,
+        credentials: "include",
+        body: JSON.stringify({ productId: product.id, rating: reviewRating, comment: reviewComment.trim() || undefined }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setEligibility((prev) => (prev ? { ...prev, canReview: false, existingReview: { id: data.id, rating: data.rating, comment: data.comment, createdAt: data.createdAt } } : null));
+        setReviewRating(0);
+        setReviewComment("");
+        toast.success("Thank you for your review!");
+        const refetch = await fetch(`${API}/products/${product.id}/reviews`);
+        const refetchData = await refetch.json();
+        if (refetch.ok && refetchData.averageRating !== undefined && Array.isArray(refetchData.reviews)) {
+          setReviewsData({
+            averageRating: refetchData.averageRating,
+            totalReviews: refetchData.totalReviews,
+            reviews: refetchData.reviews,
+          });
+        }
+      } else {
+        toast.error(data.error || "Could not submit review");
+      }
+    } catch (err) {
+      console.error("Submit review error:", err);
+      toast.error("Could not submit review");
+    } finally {
+      setSubmitReviewLoading(false);
+    }
+  };
+
+  const stock = typeof product?.stock === "number" ? product.stock : 0;
+  const outOfStock = stock <= 0;
+  const lowStock = stock > 0 && stock <= 5;
+  const maxQty = Math.max(1, stock);
+
   const handleAddToCart = () => {
-    // For single price products, selectedSize is auto-set, so we can proceed
+    if (outOfStock) {
+      toast.error("This product is out of stock");
+      return;
+    }
     if (!selectedSize && !(product?.hasSinglePrice && product?.singlePrice)) {
       toast.error("Please select a size");
       return;
     }
-
-    addToCart(product, selectedSize, quantity);
+    const qty = Math.min(quantity, maxQty);
+    addToCart(product, selectedSize, qty);
   };
 
   if (loading) {
     return (
       <>
-        <GiftBoxLoader 
-          isLoading={loading} 
-          showLoader={showProductLoader}
-        />
+        {showProductLoader ? (
+          <GiftBoxLoader 
+            isLoading={loading} 
+            showLoader={showProductLoader}
+          />
+        ) : (
+          <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--background)" }}>
+            <div 
+              className="animate-spin rounded-full w-10 h-10 border-2 border-t-transparent" 
+              style={{ borderColor: "var(--primary)" }} 
+              aria-hidden="true"
+            />
+          </div>
+        )}
       </>
     );
   }
@@ -179,7 +305,7 @@ export default function ProductDetail() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Product not found</h2>
+          <h2 className="text-2xl font-bold mb-4" style={{ color: "var(--foreground)" }}>Product not found</h2>
           <Link to="/" className="text-pink-600 hover:underline">
             Go back to home
           </Link>
@@ -195,7 +321,7 @@ export default function ProductDetail() {
         isLoading={loadingSimilar} 
         showLoader={showSimilarLoader}
       />
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
       <div className="max-w-7xl mx-auto">
         {/* Top bar */}
         <div className="px-4 sm:px-6 lg:px-8 pt-6">
@@ -264,7 +390,7 @@ export default function ProductDetail() {
                             ringColor: "oklch(88% .06 340)",
                           }}
                         >
-                          <div className="aspect-square bg-white">
+                          <div className="aspect-square" style={{ backgroundColor: "var(--card-white)" }}>
                             {item.type === "instagram" ? (
                               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500">
                                 <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -299,7 +425,7 @@ export default function ProductDetail() {
 
                 {/* Primary image, video, or Instagram embed */}
                 <div className="flex-1">
-                  <div className="relative rounded-3xl overflow-hidden bg-white border" style={{ borderColor: "oklch(92% .04 340)" }}>
+                  <div className="relative rounded-3xl overflow-hidden border" style={{ backgroundColor: "var(--card-white)", borderColor: "var(--border)" }}>
                     <div className="relative w-full" style={{ paddingBottom: activeMedia?.type === "instagram" ? "125%" : activeMedia?.type === "video" ? "56.25%" : "100%" }}>
                       {activeMedia?.type === "instagram" ? (
                         <div 
@@ -390,7 +516,7 @@ export default function ProductDetail() {
                             ].join(" ")}
                             style={{ borderColor: "oklch(92% .04 340)" }}
                           >
-                            <div className="aspect-square bg-white">
+                            <div className="aspect-square" style={{ backgroundColor: "var(--card-white)" }}>
                               {item.type === "video" ? (
                                 <video
                                   src={item.url}
@@ -423,7 +549,7 @@ export default function ProductDetail() {
             {/* Right: Sticky buy box */}
             <aside className="lg:col-span-5">
               <div className="lg:sticky lg:top-6">
-                <div className="rounded-3xl border bg-white p-6 shadow-sm" style={{ borderColor: "oklch(92% .04 340)" }}>
+                <div className="rounded-3xl border p-6 shadow-sm" style={{ backgroundColor: "var(--card-white)", borderColor: "var(--border)" }}>
                   <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight" style={{ color: "oklch(20% .02 340)" }}>
                     {product.name}
                   </h1>
@@ -550,6 +676,18 @@ export default function ProductDetail() {
                     </div>
                   )}
 
+                  {/* Stock status */}
+                  {outOfStock && (
+                    <div className="mt-6 rounded-2xl border px-4 py-3 text-sm font-semibold" style={{ borderColor: "var(--destructive)", color: "var(--destructive)", backgroundColor: "var(--secondary)" }}>
+                      Out of Stock
+                    </div>
+                  )}
+                  {lowStock && !outOfStock && (
+                    <div className="mt-6 text-sm font-medium" style={{ color: "var(--accent)" }}>
+                      Only {stock} left in stock
+                    </div>
+                  )}
+
                   {/* Quantity */}
                   <div className="mt-6">
                     <div className="text-sm font-bold" style={{ color: "oklch(20% .02 340)" }}>
@@ -559,7 +697,8 @@ export default function ProductDetail() {
                       <button
                         type="button"
                         onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                        className="w-9 h-9 rounded-xl border font-black"
+                        disabled={outOfStock}
+                        className="w-9 h-9 rounded-xl border font-black disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{ borderColor: "oklch(92% .04 340)", color: "oklch(20% .02 340)" }}
                       >
                         −
@@ -569,8 +708,9 @@ export default function ProductDetail() {
                       </div>
                       <button
                         type="button"
-                        onClick={() => setQuantity((q) => q + 1)}
-                        className="w-9 h-9 rounded-xl border font-black"
+                        onClick={() => setQuantity((q) => Math.min(maxQty, q + 1))}
+                        disabled={outOfStock || quantity >= maxQty}
+                        className="w-9 h-9 rounded-xl border font-black disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{ borderColor: "oklch(92% .04 340)", color: "oklch(20% .02 340)" }}
                       >
                         +
@@ -592,18 +732,46 @@ export default function ProductDetail() {
                     </div>
                   ) : null}
 
+                  {/* Wishlist toggle */}
+                  <button
+                    type="button"
+                    onClick={() => toggleWishlist(product.id)}
+                    disabled={isWishlistToggling}
+                    className="mt-4 w-full py-2.5 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-all duration-300 border wishlist-heart-btn disabled:opacity-60"
+                    style={{
+                      borderColor: "var(--border)",
+                      color: isWishlisted ? "var(--destructive)" : "var(--foreground)",
+                      backgroundColor: "var(--secondary)",
+                    }}
+                  >
+                    {isWishlisted ? (
+                      <svg className="w-5 h-5 wishlist-heart-filled" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5 wishlist-heart-outline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                    )}
+                    {isWishlisted ? "Saved to wishlist" : "Add to wishlist"}
+                  </button>
+
                   {/* CTAs */}
                   <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
                       onClick={handleAddToCart}
-                      disabled={!selectedSize && !(product?.hasSinglePrice && product?.singlePrice)}
+                      disabled={outOfStock || (!selectedSize && !(product?.hasSinglePrice && product?.singlePrice))}
                       className="w-full py-3 rounded-2xl font-bold transition-transform duration-200 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ backgroundColor: "oklch(92% .04 340)", color: "oklch(20% .02 340)" }}
                     >
-                      Add to cart
+                      {outOfStock ? "Out of stock" : "Add to cart"}
                     </button>
                     <button
                       onClick={() => {
+                        if (outOfStock) {
+                          toast.error("This product is out of stock");
+                          return;
+                        }
                         if (!selectedSize && !(product?.hasSinglePrice && product?.singlePrice)) {
                           toast.error("Please select a size");
                           return;
@@ -613,7 +781,7 @@ export default function ProductDetail() {
                         const message = `Hi! I'm interested in:\n\nProduct: ${product.name}\n${product.hasSinglePrice ? '' : `Size: ${sizeLabel}\n`}Quantity: ${quantity}\nPrice: ₹${price}\nTotal: ₹${(Number(price) * quantity).toFixed(2)}`;
                         window.open(`https://wa.me/917976948872?text=${encodeURIComponent(message)}`);
                       }}
-                      disabled={!selectedSize && !(product?.hasSinglePrice && product?.singlePrice)}
+                      disabled={outOfStock || (!selectedSize && !(product?.hasSinglePrice && product?.singlePrice))}
                       className="w-full py-3 rounded-2xl font-bold transition-transform duration-200 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ backgroundColor: "oklch(55% .18 145)", color: "white" }}
                     >
@@ -632,7 +800,7 @@ export default function ProductDetail() {
                 </div>
 
                 {/* Accordions */}
-                <div className="mt-4 rounded-3xl border bg-white overflow-hidden" style={{ borderColor: "oklch(92% .04 340)" }}>
+                <div className="mt-4 rounded-3xl border overflow-hidden" style={{ backgroundColor: "var(--card-white)", borderColor: "var(--border)" }}>
                   <button
                     type="button"
                     onClick={() => toggleSection("details")}
@@ -659,6 +827,146 @@ export default function ProductDetail() {
             </aside>
           </div>
 
+          {/* Reviews Section */}
+          <section className="mt-12 px-4 sm:px-6 lg:px-8" aria-labelledby="reviews-heading">
+            <h2 id="reviews-heading" className="text-2xl font-bold font-display mb-6" style={{ color: "var(--foreground)" }}>
+              Reviews
+            </h2>
+
+            {reviewsLoading ? (
+              <div className="rounded-2xl border p-6" style={{ borderColor: "var(--border)", background: "var(--background)" }}>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="h-8 w-24 rounded-lg animate-pulse" style={{ background: "var(--muted)" }} />
+                  <div className="h-5 w-20 rounded animate-pulse" style={{ background: "var(--muted)" }} />
+                </div>
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="rounded-xl border p-4 animate-pulse" style={{ borderColor: "var(--border)" }}>
+                      <div className="h-4 w-32 rounded mb-2" style={{ background: "var(--muted)" }} />
+                      <div className="h-3 w-full rounded" style={{ background: "var(--muted)" }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-wrap items-center gap-4 mb-6">
+                  <div className="flex items-center gap-2">
+                    <StarRating value={reviewsData.averageRating} readonly size="lg" />
+                    <span className="text-lg font-bold" style={{ color: "var(--foreground)" }}>
+                      {reviewsData.averageRating > 0 ? reviewsData.averageRating.toFixed(1) : "—"}
+                    </span>
+                  </div>
+                  <span className="text-sm text-muted">
+                    {reviewsData.totalReviews === 0
+                      ? "No reviews yet"
+                      : `${reviewsData.totalReviews} ${reviewsData.totalReviews === 1 ? "review" : "reviews"}`}
+                  </span>
+                </div>
+
+                {reviewsData.reviews.length === 0 ? (
+                  <div
+                    className="rounded-2xl border-2 border-dashed p-8 text-center"
+                    style={{ borderColor: "var(--border)", background: "var(--secondary)" }}
+                  >
+                    <p className="text-sm text-muted">
+                      No reviews yet. Be the first to share your experience!
+                    </p>
+                  </div>
+                ) : (
+                  <ul className="space-y-4 mb-8">
+                    {reviewsData.reviews.map((rev) => (
+                      <li
+                        key={rev.id}
+                        className="rounded-xl border p-4 transition-shadow"
+                        style={{ borderColor: "var(--border)", background: "var(--background)", boxShadow: "var(--shadow-soft)" }}
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                          <span className="font-semibold" style={{ color: "var(--foreground)" }}>
+                            {rev.userName || "Anonymous"}
+                          </span>
+                          <StarRating value={rev.rating} readonly size="sm" />
+                        </div>
+                        {rev.comment ? (
+                          <p className="text-sm mt-2 leading-relaxed" style={{ color: "var(--foreground)" }}>
+                            {rev.comment}
+                          </p>
+                        ) : null}
+                        <p className="text-xs mt-2 text-muted">
+                          {typeof rev.createdAt === "string"
+                            ? new Date(rev.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+                            : ""}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {/* Add review: show form if eligible, else friendly message */}
+                <div
+                  className="rounded-2xl border p-6"
+                  style={{ borderColor: "var(--border)", background: "var(--secondary)" }}
+                >
+                  {!isAuthenticated ? (
+                    <p className="text-sm text-muted">
+                      <button
+                        type="button"
+                        onClick={() => navigate("/login", { state: { from: `/product/${product?.id}` } })}
+                        className="font-semibold underline hover:no-underline"
+                        style={{ color: "var(--primary)" }}
+                      >
+                        Log in
+                      </button>{" "}
+                      to leave a review.
+                    </p>
+                  ) : eligibilityLoading ? (
+                    <div className="h-10 w-48 rounded animate-pulse" style={{ background: "var(--muted)" }} />
+                  ) : eligibility?.existingReview ? (
+                    <p className="text-sm text-muted">
+                      You&apos;ve already reviewed this product. Thank you!
+                    </p>
+                  ) : eligibility?.canReview ? (
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm font-semibold mb-2" style={{ color: "var(--foreground)" }}>
+                          Your rating
+                        </p>
+                        <StarRating value={reviewRating} onChange={setReviewRating} size="lg" />
+                      </div>
+                      <div>
+                        <label htmlFor="review-comment" className="text-sm font-semibold block mb-2" style={{ color: "var(--foreground)" }}>
+                          Comment (optional)
+                        </label>
+                        <textarea
+                          id="review-comment"
+                          value={reviewComment}
+                          onChange={(e) => setReviewComment(e.target.value)}
+                          placeholder="Share your experience..."
+                          rows={3}
+                          className="w-full rounded-xl border px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2"
+                          style={{ borderColor: "var(--border)", background: "var(--background)" }}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleSubmitReview}
+                        disabled={submitReviewLoading || reviewRating < 1}
+                        className="px-6 py-2.5 rounded-xl font-semibold transition-all disabled:opacity-60 btn-primary-brand"
+                        style={{ borderRadius: "var(--radius-lg)" }}
+                      >
+                        {submitReviewLoading ? "Submitting…" : "Submit review"}
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted">
+                      Purchase this product to leave a review.
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
+          </section>
+
           {/* Similar Products Section */}
           {similarProducts.length > 0 && (
             <section className="mt-16 px-4 sm:px-6 lg:px-8">
@@ -675,10 +983,20 @@ export default function ProductDetail() {
             </section>
           )}
 
-          {/* Recommendation Carousel Section */}
-          <RecommendationCarousel 
-            products={recommendedProducts} 
+          {/* Recently Viewed */}
+          {recentIds.length > 0 && (
+            <ProductCarouselSection
+              title="Recently Viewed"
+              productIds={recentIds}
+              excludeProductId={product?.id}
+            />
+          )}
+
+          {/* Recommended for You */}
+          <RecommendationCarousel
+            products={recommendedProducts}
             isLoading={loadingRecommendations}
+            title="Recommended for You"
           />
         </div>
       </div>

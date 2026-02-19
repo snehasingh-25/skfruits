@@ -56,13 +56,13 @@ export default function Navbar() {
   const toggleTheme = () => setIsDark((prev) => !prev);
 
   const navItems = [
-    { path: "/", label: "All Fruits" },
+    { path: "/", label: "Home" },
     { path: "/categories", label: "Categories" },
     { path: "/seasonal", label: "Seasonal" },
     { path: "/exotic", label: "Exotic" },
     { path: "/organic", label: "Organic" },
-    { path: "/gift-boxes", label: "Gift Boxes" },
-    { path: "/blog", label: "Blog" },
+    { path: "/gift-boxes", label: "About" },
+    { path: "/blog", label: "Contact" },
   ];
 
   useEffect(() => {
@@ -190,9 +190,6 @@ export default function Navbar() {
             >
               SK
             </div>
-            <span className="font-display font-semibold md:font-bold text-lg md:text-xl" style={{ color: "var(--foreground)" }}>
-              SK Fruits
-            </span>
           </Link>
 
           {/* Desktop Menu */}
@@ -205,19 +202,19 @@ export default function Navbar() {
                     isActive(item.path) ? "ring-1 ring-[var(--border)]" : ""
                   }`}
                   style={{
-                    color: isActive(item.path) ? "var(--foreground)" : "var(--muted)",
+                    color: isActive(item.path) ? "var(--foreground)" : "var(--foreground-muted)",
                     backgroundColor: isActive(item.path) ? "var(--secondary)" : "transparent",
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive(item.path)) {
-                      e.currentTarget.style.backgroundColor = "var(--hover-accent-muted)";
-                      e.currentTarget.style.color = "var(--primary-foreground)";
+                      e.currentTarget.style.backgroundColor = "var(--secondary)";
+                      e.currentTarget.style.color = "var(--foreground)";
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isActive(item.path)) {
                       e.currentTarget.style.backgroundColor = "transparent";
-                      e.currentTarget.style.color = "var(--muted)";
+                      e.currentTarget.style.color = "var(--foreground-muted)";
                     }
                   }}
                 >
@@ -296,7 +293,7 @@ export default function Navbar() {
                   <span
                     ref={typedElementRef}
                     className="absolute left-5 top-1/2 -translate-y-1/2 pointer-events-none text-sm z-20"
-                    style={{ color: 'var(--muted)' }}
+                    style={{ color: 'var(--foreground-muted)' }}
                   ></span>
                 )}
                 <button
@@ -310,7 +307,7 @@ export default function Navbar() {
                 >
                   <svg
                     className="w-4 h-4"
-                    style={{ color: 'var(--muted)' }}
+                    style={{ color: 'var(--foreground-muted)' }}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -332,7 +329,7 @@ export default function Navbar() {
                     style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }}
                   >
                     <div className="p-2">
-                      <div className="text-xs font-semibold px-3 py-2" style={{ color: 'var(--muted)' }}>
+                      <div className="text-xs font-semibold px-3 py-2" style={{ color: 'var(--foreground-muted)' }}>
                         Suggestions
                       </div>
                       {searchSuggestions.map((product) => {
@@ -370,7 +367,7 @@ export default function Navbar() {
                                 {product.name}
                               </div>
                               {((product.categories && product.categories.length > 0) || product.category) && (
-                                <div className="text-xs truncate" style={{ color: 'var(--muted)' }}>
+                                <div className="text-xs truncate" style={{ color: 'var(--foreground-muted)' }}>
                                   {product.categories && product.categories.length > 0
                                     ? product.categories.map(c => c.name || c.category?.name).join(", ")
                                     : product.category?.name}
@@ -417,6 +414,16 @@ export default function Navbar() {
                       className="absolute right-0 top-full mt-1 py-1 rounded-lg shadow-lg border min-w-[160px] z-50"
                       style={{ backgroundColor: "var(--background)", borderColor: "var(--border)" }}
                     >
+                      {user.role === "driver" && (
+                        <Link
+                          to="/driver"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="block w-full text-left px-4 py-2 text-sm hover:opacity-90 font-medium"
+                          style={{ color: "var(--primary)" }}
+                        >
+                          Driver dashboard
+                        </Link>
+                      )}
                       <Link
                         to="/profile/addresses"
                         onClick={() => setUserMenuOpen(false)}
@@ -424,6 +431,22 @@ export default function Navbar() {
                         style={{ color: "var(--foreground)" }}
                       >
                         Addresses
+                      </Link>
+                      <Link
+                        to="/profile/orders"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="block w-full text-left px-4 py-2 text-sm hover:opacity-90"
+                        style={{ color: "var(--foreground)" }}
+                      >
+                        My Orders
+                      </Link>
+                      <Link
+                        to="/profile/wishlist"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="block w-full text-left px-4 py-2 text-sm hover:opacity-90"
+                        style={{ color: "var(--foreground)" }}
+                      >
+                        Wishlist
                       </Link>
                       <button
                         type="button"
@@ -510,7 +533,7 @@ export default function Navbar() {
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="md:hidden p-2 rounded-lg transition-all duration-300 active:scale-95"
-              style={{ color: 'var(--muted)' }}
+              style={{ color: 'var(--foreground-muted)' }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--secondary)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
@@ -541,7 +564,7 @@ export default function Navbar() {
             >
               <svg
                 className="w-4 h-4"
-                style={{ color: "var(--muted)" }}
+                style={{ color: "var(--foreground-muted)" }}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -601,7 +624,7 @@ export default function Navbar() {
               <span
                 ref={typedElementRef}
                 className="absolute left-10 top-1/2 -translate-y-1/2 pointer-events-none text-sm z-20"
-                style={{ color: "var(--muted)" }}
+                style={{ color: "var(--foreground-muted)" }}
               ></span>
             )}
 
@@ -609,13 +632,14 @@ export default function Navbar() {
             {showSuggestions && searchSuggestions.length > 0 && (
               <div
                 ref={suggestionsRef}
-                className="absolute top-full left-0 mt-2 w-full bg-white rounded-lg shadow-xl border z-50 max-h-80 overflow-y-auto"
+                className="absolute top-full left-0 mt-2 w-full rounded-lg shadow-xl border z-50 max-h-80 overflow-y-auto"
+                style={{ backgroundColor: 'var(--card-white)', borderColor: 'var(--border)' }}
                 style={{ borderColor: "var(--border)", backgroundColor: "var(--background)" }}
               >
                 <div className="p-2">
                   <div
                     className="text-xs font-semibold px-3 py-2"
-                    style={{ color: "var(--muted)" }}
+                    style={{ color: "var(--foreground-muted)" }}
                   >
                     Suggestions
                   </div>
@@ -666,7 +690,7 @@ export default function Navbar() {
                           {product.category && (
                             <div
                               className="text-xs truncate"
-                              style={{ color: "var(--muted)" }}
+                              style={{ color: "var(--foreground-muted)" }}
                             >
                               {product.category.name}
                             </div>
@@ -714,7 +738,7 @@ export default function Navbar() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`px-4 py-3.5 text-base font-medium transition-all duration-300 active:scale-[0.98] border-b border-l-4 border-[var(--border)] last:border-b-0`}
                 style={{
-                  color: isActive(item.path) ? "var(--foreground)" : "var(--muted)",
+                  color: isActive(item.path) ? "var(--foreground)" : "var(--foreground-muted)",
                   backgroundColor: isActive(item.path) ? "var(--secondary)" : "transparent",
                   borderLeftColor: isActive(item.path) ? "var(--primary)" : "transparent",
                 }}
@@ -727,7 +751,7 @@ export default function Navbar() {
                 onMouseLeave={(e) => {
                   if (!isActive(item.path)) {
                     e.currentTarget.style.backgroundColor = "transparent";
-                    e.currentTarget.style.color = "var(--muted)";
+                    e.currentTarget.style.color = "var(--foreground-muted)";
                   }
                 }}
               >
@@ -742,6 +766,16 @@ export default function Navbar() {
             <div className="flex flex-col gap-2 px-4 py-3 border-t border-[var(--border)]">
               {isAuthenticated && user ? (
                 <>
+                  {user.role === "driver" && (
+                    <Link
+                      to="/driver"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="py-2.5 rounded-lg text-sm font-semibold text-center"
+                      style={{ color: "var(--primary)", backgroundColor: "var(--secondary)" }}
+                    >
+                      Driver dashboard
+                    </Link>
+                  )}
                   <Link
                     to="/profile/addresses"
                     onClick={() => setIsMobileMenuOpen(false)}
@@ -749,6 +783,22 @@ export default function Navbar() {
                     style={{ color: "var(--foreground)", backgroundColor: "var(--secondary)" }}
                   >
                     Addresses
+                  </Link>
+                  <Link
+                    to="/profile/orders"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="py-2.5 rounded-lg text-sm font-semibold text-center"
+                    style={{ color: "var(--foreground)", backgroundColor: "var(--secondary)" }}
+                  >
+                    My Orders
+                  </Link>
+                  <Link
+                    to="/profile/wishlist"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="py-2.5 rounded-lg text-sm font-semibold text-center"
+                    style={{ color: "var(--foreground)", backgroundColor: "var(--secondary)" }}
+                  >
+                    Wishlist
                   </Link>
                   <button
                     type="button"

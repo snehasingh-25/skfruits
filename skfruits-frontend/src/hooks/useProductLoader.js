@@ -9,8 +9,8 @@ import { useState, useEffect, useRef } from "react";
  * @returns {object} - { showLoader: boolean, loadingStartTime: number }
  */
 export function useProductLoader(isLoading) {
-  // Start with loader visible if already loading (for initial page load)
-  const [showLoader, setShowLoader] = useState(isLoading);
+  // Only show loader after min delay (100ms), so fast responses don't flash the gift box
+  const [showLoader, setShowLoader] = useState(false);
   const loadingStartTime = useRef(isLoading ? Date.now() : null);
   const minLoadTimeReached = useRef(false);
   const timeoutRef = useRef(null);
@@ -22,16 +22,11 @@ export function useProductLoader(isLoading) {
         loadingStartTime.current = Date.now();
         minLoadTimeReached.current = false;
 
-        // Show loader immediately
-        setShowLoader(true);
-
-        // Mark that minimum time has been reached after 0.1 seconds
+        // Only show the fancy loader after 100ms (avoids flash for fast local requests)
         timeoutRef.current = setTimeout(() => {
           minLoadTimeReached.current = true;
+          setShowLoader(true);
         }, 100);
-      } else {
-        // Already loading, ensure loader is shown
-        setShowLoader(true);
       }
     } else {
       // Loading completed
@@ -44,13 +39,11 @@ export function useProductLoader(isLoading) {
           timeoutRef.current = null;
         }
 
-        // If loading was very fast (< 0.1 seconds), hide loader immediately
-        if (loadDuration < 100 && !minLoadTimeReached.current) {
+        // If loading finished before we ever showed the loader, keep it hidden
+        if (!minLoadTimeReached.current) {
           setShowLoader(false);
-        } else {
-          // Loading took >= 0.1 seconds, keep loader showing
-          // The loader component will handle the fade-out animation
         }
+        // Otherwise loader was shown; GiftBoxLoader will handle fade-out
 
         // Reset for next load
         loadingStartTime.current = null;

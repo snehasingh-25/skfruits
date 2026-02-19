@@ -55,7 +55,7 @@ export function AuthProvider({ children }) {
           localStorage.setItem("adminToken", data.token);
           return { success: true };
         }
-        return { success: false, message: "Please use the storefront login page." };
+        return { success: false, message: "This account is not an administrator. Use the storefront login for customers and drivers." };
       }
       return { success: false, message: data.message || data.error || "Login failed" };
     } catch (error) {

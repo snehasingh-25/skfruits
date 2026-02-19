@@ -50,12 +50,13 @@ export default function GiftBoxLoader({ isLoading, showLoader, onComplete }) {
 
   return (
     <div 
-      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-white transition-opacity duration-500 ${
+      className={`fixed inset-0 z-[9999] flex items-center justify-center transition-opacity duration-500 ${
         animationPhase === "fading" ? "opacity-0" : "opacity-100"
       }`}
       style={{ 
         pointerEvents: animationPhase === "fading" ? "none" : "auto",
-        zIndex: 9999
+        zIndex: 9999,
+        backgroundColor: "var(--background)"
       }}
     >
       <div className="relative flex flex-col items-center justify-center">

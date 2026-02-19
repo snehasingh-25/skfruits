@@ -1,11 +1,15 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 import { memo, useMemo } from "react";
 import { useToast } from "../context/ToastContext";
 
 function ProductCard({ product, compact = false }) {
   const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist, togglingId } = useWishlist();
   const toast = useToast();
+  const isWishlisted = isInWishlist(product?.id);
+  const isToggling = togglingId === product?.id;
   const images = useMemo(() => {
     if (!product?.images) return [];
     if (Array.isArray(product.images)) return product.images;
@@ -16,29 +20,6 @@ function ProductCard({ product, compact = false }) {
       return [];
     }
   }, [product?.images]);
-
-  const handleAddToCart = () => {
-    // Handle single price products
-    if (product.hasSinglePrice && product.singlePrice) {
-      // Create a virtual size object for single price products
-      const virtualSize = { id: 0, label: "Standard", price: parseFloat(product.singlePrice) };
-      addToCart(product, virtualSize, 1);
-      return;
-    }
-    
-    if (!product.sizes || product.sizes.length === 0) {
-      toast.error("This product has no sizes available");
-      return;
-    }
-
-    // If only one size, add directly. Otherwise, navigate to product detail
-    if (product.sizes.length === 1) {
-      addToCart(product, product.sizes[0], 1);
-    } else {
-      // Navigate to product detail to select size
-      window.location.href = `/product/${product.id}`;
-    }
-  };
 
   // Get selling price and optional MRP (from singlePrice or lowest from sizes)
   const getPriceInfo = () => {
@@ -65,11 +46,37 @@ function ProductCard({ product, compact = false }) {
       ? Math.round(((displayMrp - displayPrice) / displayMrp) * 100)
       : null;
 
+  const stock = typeof product.stock === "number" ? product.stock : 0;
+  const outOfStock = stock <= 0;
+  const lowStock = stock > 0 && stock <= 5;
+
+  const handleAddToCart = () => {
+    if (outOfStock) {
+      toast.error("This product is out of stock");
+      return;
+    }
+    // Handle single price products
+    if (product.hasSinglePrice && product.singlePrice) {
+      const virtualSize = { id: 0, label: "Standard", price: parseFloat(product.singlePrice) };
+      addToCart(product, virtualSize, 1);
+      return;
+    }
+    if (!product.sizes || product.sizes.length === 0) {
+      toast.error("This product has no sizes available");
+      return;
+    }
+    if (product.sizes.length === 1) {
+      addToCart(product, product.sizes[0], 1);
+    } else {
+      window.location.href = `/product/${product.id}`;
+    }
+  };
+
   return (
-    <div className={`rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group ${compact ? "flex gap-3" : ""}`} style={{ backgroundColor: 'var(--background)' }}>
+    <div className={`card-soft overflow-hidden group ${compact ? "flex gap-3" : ""}`}>
       {/* Product Image */}
-      <Link to={`/product/${product.id}`} className={compact ? "shrink-0" : "block"}>
-        <div className={`relative flex items-center justify-center overflow-hidden cursor-pointer ${compact ? "h-20 w-20 rounded-lg" : "h-64"}`} style={{ backgroundColor: 'var(--background)' }}>
+      <Link to={`/product/${product.id}`} className={`${compact ? "shrink-0" : "block"} hover:opacity-95 transition-opacity duration-200`}>
+        <div className={`relative flex items-center justify-center overflow-hidden cursor-pointer ${compact ? "h-20 w-20 rounded-[var(--radius-md)]" : "h-64"}`} style={{ backgroundColor: 'var(--card-white)' }}>
           {images.length > 0 ? (
             <img
               src={images[0]}
@@ -85,7 +92,37 @@ function ProductCard({ product, compact = false }) {
               <img src="/logo.png" alt="SK Fruits" className="w-24 h-24 object-contain opacity-50" />
             </div>
           )}
-          
+
+          {/* Wishlist heart - Top Left (so it doesn't overlap badges) */}
+          {!compact && (
+            <button
+              type="button"
+              aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleWishlist(product.id);
+              }}
+              disabled={isToggling}
+              className="absolute top-3 left-3 z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 disabled:opacity-60 wishlist-heart-btn"
+              style={{
+                backgroundColor: "var(--background)",
+                color: isWishlisted ? "var(--destructive)" : "var(--foreground)",
+                boxShadow: "var(--shadow-soft, 0 2px 8px rgba(0,0,0,0.08))",
+              }}
+            >
+              {isWishlisted ? (
+                <svg className="w-5 h-5 wishlist-heart-filled" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 wishlist-heart-outline" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              )}
+            </button>
+          )}
+
           {/* Badges - Top Right */}
           {!compact && (
           <div className="absolute top-3 right-3 flex flex-col gap-1.5">
@@ -147,16 +184,29 @@ function ProductCard({ product, compact = false }) {
           </div>
         )}
 
+        {/* Stock status */}
+        {outOfStock && (
+          <p className="text-xs font-semibold mb-2" style={{ color: "var(--destructive)" }}>
+            Out of Stock
+          </p>
+        )}
+        {lowStock && !outOfStock && (
+          <p className="text-xs font-medium mb-2" style={{ color: "var(--accent)" }}>
+            Only {stock} left
+          </p>
+        )}
+
         {/* Add Button — Primary: yellow-400 bg, gray-900 text, hover orange */}
         <button
           onClick={handleAddToCart}
-          className={`btn-primary-brand rounded-lg font-medium transition-all duration-300 active:scale-95 text-sm flex items-center justify-center gap-2 ${compact ? "px-3 py-1.5" : "w-full py-2.5"}`}
+          disabled={outOfStock}
+          className={`rounded-lg font-medium transition-all duration-300 active:scale-95 text-sm flex items-center justify-center gap-2 ${compact ? "px-3 py-1.5" : "w-full py-2.5"} ${outOfStock ? "opacity-60 cursor-not-allowed" : "btn-primary-brand"}`}
           style={{ borderRadius: 'var(--radius-lg)' }}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
-          Add
+          {outOfStock ? "Out of Stock" : "Add"}
         </button>
       </div>
     </div>

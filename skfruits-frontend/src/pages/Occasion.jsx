@@ -155,13 +155,13 @@ export default function Occasion() {
   }
 
   return (
-    <div className="min-h-screen bg-white py-16">
+    <div className="min-h-screen py-16" style={{ backgroundColor: "var(--background)" }}>
       <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4" style={{ color: 'oklch(20% .02 340)' }}>
+          <h2 className="text-4xl font-bold mb-4" style={{ color: "var(--foreground)" }}>
             Shop by Occasion
           </h2>
-          <p className="text-lg" style={{ color: 'oklch(60% .02 340)' }}>
+          <p className="text-lg" style={{ color: "var(--foreground-muted)" }}>
             Find the perfect gift for every special moment
           </p>
         </div>
@@ -170,11 +170,11 @@ export default function Occasion() {
         <div className="relative mb-12">
           <button
             onClick={() => scrollOccasions("left")}
-            className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
-            style={{ borderColor: "oklch(92% .04 340)" }}
+            className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
+            style={{ backgroundColor: "var(--card-white)", borderColor: "var(--border)" }}
             aria-label="Scroll occasions left"
           >
-            <svg className="w-5 h-5" style={{ color: "oklch(40% .02 340)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" style={{ color: "var(--foreground-muted)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
@@ -194,7 +194,7 @@ export default function Occasion() {
                 <div
                   className="w-32 h-32 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-lg overflow-hidden flex items-center justify-center group-hover:shadow-lg group-hover:scale-110 transition-all duration-300"
                   style={{
-                    backgroundColor: "oklch(92% .04 340)",
+                    backgroundColor: "var(--muted)",
                   }}
                 >
                   {occasion.imageUrl ? (
@@ -207,7 +207,7 @@ export default function Occasion() {
                       <img src="/logo.png" alt="Gift Choice Logo" className="w-3/4 h-3/4 object-contain" />
                     )}
                 </div>
-                <h3 className="font-semibold text-sm text-center mt-2" style={{ color: "oklch(20% .02 340)" }}>
+                <h3 className="font-semibold text-sm text-center mt-2" style={{ color: "var(--foreground)" }}>
                   {occasion.name}
                 </h3>
               </Link>
@@ -216,11 +216,11 @@ export default function Occasion() {
 
           <button
             onClick={() => scrollOccasions("right")}
-            className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
-            style={{ borderColor: "oklch(92% .04 340)" }}
+            className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
+            style={{ backgroundColor: "var(--card-white)", borderColor: "var(--border)" }}
             aria-label="Scroll occasions right"
           >
-            <svg className="w-5 h-5" style={{ color: "oklch(40% .02 340)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" style={{ color: "var(--foreground-muted)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -230,11 +230,11 @@ export default function Occasion() {
         {selectedOccasion && slug && (
           <div className="mt-12">
             <div className="mb-8">
-              <h3 className="text-3xl font-bold mb-2" style={{ color: 'oklch(20% .02 340)' }}>
+              <h3 className="text-3xl font-bold mb-2" style={{ color: "var(--foreground)" }}>
                 {selectedOccasion.name}
               </h3>
               {selectedOccasion.description && (
-                <p className="text-lg mb-4" style={{ color: 'oklch(60% .02 340)' }}>
+                <p className="text-lg mb-4" style={{ color: "var(--foreground-muted)" }}>
                   {selectedOccasion.description}
                 </p>
               )}
@@ -242,7 +242,7 @@ export default function Occasion() {
               {/* Category Filter */}
               <div className="flex flex-wrap items-center gap-4 mb-6">
                 <div className="flex items-center gap-2">
-                  <label className="text-sm font-semibold" style={{ color: 'oklch(40% .02 340)' }}>
+                  <label className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
                     Filter by Category:
                   </label>
                   <select
@@ -250,12 +250,12 @@ export default function Occasion() {
                     onChange={handleCategoryChange}
                     className="px-4 py-2 rounded-lg border-2 text-sm transition-all duration-300 focus:outline-none"
                     style={{
-                      borderColor: 'oklch(92% .04 340)',
-                      backgroundColor: 'white',
-                      color: 'oklch(20% .02 340)'
+                      borderColor: "var(--border)",
+                      backgroundColor: "var(--background)",
+                      color: "var(--foreground)"
                     }}
-                    onFocus={(e) => e.target.style.borderColor = 'oklch(88% .06 340)'}
-                    onBlur={(e) => e.target.style.borderColor = 'oklch(92% .04 340)'}
+                    onFocus={(e) => e.target.style.borderColor = "var(--primary)"}
+                    onBlur={(e) => e.target.style.borderColor = "var(--border)"}
                   >
                     <option value="">All Categories</option>
                     {categories.map((cat) => (
@@ -271,11 +271,11 @@ export default function Occasion() {
                     onClick={clearCategoryFilter}
                     className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300"
                     style={{
-                      backgroundColor: 'oklch(92% .04 340)',
-                      color: 'oklch(20% .02 340)'
+                      backgroundColor: "var(--secondary)",
+                      color: "var(--foreground)"
                     }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = 'oklch(88% .06 340)'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = 'oklch(92% .04 340)'}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = "var(--muted)"}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = "var(--secondary)"}
                   >
                     Clear Filter
                   </button>
@@ -283,7 +283,7 @@ export default function Occasion() {
               </div>
 
               {categoryFilter && (
-                <p className="text-sm mb-4" style={{ color: 'oklch(60% .02 340)' }}>
+                <p className="text-sm mb-4" style={{ color: "var(--foreground-muted)" }}>
                   Showing products in {categories.find(c => c.slug === categoryFilter)?.name || categoryFilter} category
                 </p>
               )}
@@ -296,10 +296,10 @@ export default function Occasion() {
               </div>
             ) : (
               <div className="text-center py-16">
-                <div className="inline-block p-6 rounded-full mb-4" style={{ backgroundColor: 'oklch(92% .04 340)' }}>
+                <div className="inline-block p-6 rounded-full mb-4" style={{ backgroundColor: "var(--muted)" }}>
                   <img src="/logo.png" alt="Gift Choice Logo" className="w-16 h-16 object-contain" />
                 </div>
-                <p className="font-medium" style={{ color: 'oklch(60% .02 340)' }}>
+                <p className="font-medium" style={{ color: "var(--foreground-muted)" }}>
                   No products available for this occasion yet
                 </p>
               </div>
@@ -311,14 +311,14 @@ export default function Occasion() {
         {!slug && (
           <div className="mt-12">
             <div className="mb-8">
-              <h3 className="text-3xl font-bold mb-2" style={{ color: 'oklch(20% .02 340)' }}>
+              <h3 className="text-3xl font-bold mb-2" style={{ color: "var(--foreground)" }}>
                 All Products
               </h3>
 
               {/* Category Filter (still useful on /occasion) */}
               <div className="flex flex-wrap items-center gap-4 mb-6">
                 <div className="flex items-center gap-2">
-                  <label className="text-sm font-semibold" style={{ color: 'oklch(40% .02 340)' }}>
+                  <label className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
                     Filter by Category:
                   </label>
                   <select
@@ -326,12 +326,12 @@ export default function Occasion() {
                     onChange={handleCategoryChange}
                     className="px-4 py-2 rounded-lg border-2 text-sm transition-all duration-300 focus:outline-none"
                     style={{
-                      borderColor: 'oklch(92% .04 340)',
-                      backgroundColor: 'white',
-                      color: 'oklch(20% .02 340)'
+                      borderColor: "var(--border)",
+                      backgroundColor: "var(--background)",
+                      color: "var(--foreground)"
                     }}
-                    onFocus={(e) => e.target.style.borderColor = 'oklch(88% .06 340)'}
-                    onBlur={(e) => e.target.style.borderColor = 'oklch(92% .04 340)'}
+                    onFocus={(e) => e.target.style.borderColor = "var(--primary)"}
+                    onBlur={(e) => e.target.style.borderColor = "var(--border)"}
                   >
                     <option value="">All Categories</option>
                     {categories.map((cat) => (
@@ -347,11 +347,11 @@ export default function Occasion() {
                     onClick={clearCategoryFilter}
                     className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300"
                     style={{
-                      backgroundColor: 'oklch(92% .04 340)',
-                      color: 'oklch(20% .02 340)'
+                      backgroundColor: "var(--secondary)",
+                      color: "var(--foreground)"
                     }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = 'oklch(88% .06 340)'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = 'oklch(92% .04 340)'}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = "var(--muted)"}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = "var(--secondary)"}
                   >
                     Clear Filter
                   </button>
@@ -359,7 +359,7 @@ export default function Occasion() {
               </div>
 
               {categoryFilter && (
-                <p className="text-sm mb-4" style={{ color: 'oklch(60% .02 340)' }}>
+                <p className="text-sm mb-4" style={{ color: "var(--foreground-muted)" }}>
                   Showing products in {categories.find(c => c.slug === categoryFilter)?.name || categoryFilter} category
                 </p>
               )}
@@ -373,10 +373,10 @@ export default function Occasion() {
               </div>
             ) : (
               <div className="text-center py-16">
-                <div className="inline-block p-6 rounded-full mb-4" style={{ backgroundColor: 'oklch(92% .04 340)' }}>
+                <div className="inline-block p-6 rounded-full mb-4" style={{ backgroundColor: "var(--muted)" }}>
                   <img src="/logo.png" alt="Gift Choice Logo" className="w-16 h-16 object-contain" />
                 </div>
-                <p className="font-medium" style={{ color: 'oklch(60% .02 340)' }}>
+                <p className="font-medium" style={{ color: "var(--foreground-muted)" }}>
                   No products available yet
                 </p>
               </div>
@@ -387,10 +387,10 @@ export default function Occasion() {
         {/* Show all occasions if none selected */}
         {!selectedOccasion && occasions.length === 0 && (
           <div className="text-center py-16">
-            <div className="inline-block p-6 rounded-full mb-4" style={{ backgroundColor: 'oklch(92% .04 340)' }}>
+            <div className="inline-block p-6 rounded-full mb-4" style={{ backgroundColor: "var(--muted)" }}>
               <img src="/logo.png" alt="Gift Choice Logo" className="w-16 h-16 object-contain" />
             </div>
-            <p className="font-medium" style={{ color: 'oklch(60% .02 340)' }}>
+            <p className="font-medium" style={{ color: "var(--foreground-muted)" }}>
               No occasions available yet
             </p>
           </div>

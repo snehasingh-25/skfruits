@@ -20,6 +20,14 @@ export default function Login() {
     const result = await login(email.trim(), password);
 
     if (result.success) {
+      if (result.redirectToAdmin) {
+        window.location.href = "/admin/dashboard";
+        return;
+      }
+      if (result.redirectToDriver) {
+        navigate("/driver", { replace: true });
+        return;
+      }
       await mergeCart();
       navigate("/", { replace: true });
     } else {
@@ -115,6 +123,9 @@ export default function Login() {
           <Link to="/signup" className="font-semibold" style={{ color: "var(--primary)" }}>
             Sign up
           </Link>
+        </p>
+        <p className="mt-3 text-center text-sm" style={{ color: "var(--muted)" }}>
+          Admin? Sign in with your admin email — you&apos;ll be redirected to the dashboard.
         </p>
       </div>
     </div>

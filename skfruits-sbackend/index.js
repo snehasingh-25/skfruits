@@ -19,7 +19,19 @@ import sizeOptionRoutes from "./routes/size-options.js";
 import generateDescriptionRoutes from "./routes/generate-description.js";
 import chatRoutes from "./routes/chat.js";
 import addressRoutes from "./routes/addresses.js";
+import paymentRoutes from "./routes/payments.js";
+import adminOrderRoutes from "./routes/admin-orders.js";
+import adminAnalyticsRoutes from "./routes/admin-analytics.js";
+import adminProductsRoutes from "./routes/admin-products.js";
+import adminInventoryRoutes from "./routes/admin-inventory.js";
+import adminReviewRoutes from "./routes/admin-reviews.js";
+import adminDriverRoutes from "./routes/admin-drivers.js";
+import driverRoutes from "./routes/driver.js";
+import wishlistRoutes from "./routes/wishlist.js";
+import reviewRoutes from "./routes/reviews.js";
+import deliveryRoutes from "./routes/delivery.js";
 import cache from "./utils/cache.js";
+import { ensureAdminUser } from "./utils/ensureAdminUser.js";
 
 // Log startup information
 console.log("=== Server Startup ===");
@@ -149,6 +161,17 @@ app.use("/size-options", sizeOptionRoutes);
 app.use("/generate-description", generateDescriptionRoutes);
 app.use("/chat", chatRoutes);
 app.use("/addresses", addressRoutes);
+app.use("/payments", paymentRoutes);
+app.use("/admin/orders", adminOrderRoutes);
+app.use("/admin/analytics", adminAnalyticsRoutes);
+app.use("/admin/products", adminProductsRoutes);
+app.use("/admin/inventory", adminInventoryRoutes);
+app.use("/admin/reviews", adminReviewRoutes);
+app.use("/admin/drivers", adminDriverRoutes);
+app.use("/driver", driverRoutes);
+app.use("/wishlist", wishlistRoutes);
+app.use("/reviews", reviewRoutes);
+app.use("/delivery", deliveryRoutes);
 
 // Global error handling middleware (must be after all routes)
 app.use((err, req, res, next) => {
@@ -204,7 +227,7 @@ process.on("uncaughtException", (error) => {
 let server;
 try {
   console.log(`Attempting to start server on ${HOST}:${PORT}...`);
-  server = app.listen(PORT, HOST, () => {
+  server = app.listen(PORT, HOST, async () => {
     const actualPort = server.address().port;
     const actualAddress = server.address().address;
     console.log("=== Server Started Successfully ===");
@@ -216,6 +239,7 @@ try {
     console.log("✓ Backend caching: Enabled (5min TTL for products, categories, occasions, banners, reels)");
     console.log("✓ Environment:", process.env.NODE_ENV || "development");
     console.log("=== Ready to accept requests ===");
+    await ensureAdminUser();
   });
 
   server.on("error", (error) => {

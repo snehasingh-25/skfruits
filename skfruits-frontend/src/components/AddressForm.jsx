@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import GoogleAddressInput from "./GoogleAddressInput";
 
 const initialForm = {
   fullName: "",
@@ -7,6 +8,8 @@ const initialForm = {
   city: "",
   state: "",
   pincode: "",
+  latitude: null,
+  longitude: null,
   isDefault: false,
 };
 
@@ -38,6 +41,8 @@ export default function AddressForm({
         city: initialValues.city ?? "",
         state: initialValues.state ?? "",
         pincode: initialValues.pincode ?? "",
+        latitude: initialValues.latitude ?? null,
+        longitude: initialValues.longitude ?? null,
         isDefault: !!initialValues.isDefault,
       });
     }
@@ -72,8 +77,29 @@ export default function AddressForm({
       city: form.city.trim(),
       state: form.state.trim(),
       pincode: form.pincode.replace(/\D/g, "").slice(0, 6),
+      latitude: form.latitude,
+      longitude: form.longitude,
       isDefault: form.isDefault,
     });
+  };
+
+  const handlePlaceSelect = (data) => {
+    setForm((prev) => ({
+      ...prev,
+      addressLine: data.addressLine || prev.addressLine,
+      city: data.city || prev.city,
+      state: data.state || prev.state,
+      pincode: data.pincode || prev.pincode,
+      latitude: data.latitude ?? prev.latitude,
+      longitude: data.longitude ?? prev.longitude,
+    }));
+    setErrors((prev) => ({
+      ...prev,
+      addressLine: "",
+      city: "",
+      state: "",
+      pincode: "",
+    }));
   };
 
   const inputClass = (field) =>
@@ -113,6 +139,19 @@ export default function AddressForm({
           style={inputStyle("phone")}
         />
         {errors.phone && <p className="mt-1 text-sm" style={{ color: "var(--destructive)" }}>{errors.phone}</p>}
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--foreground)" }}>
+          Search address (optional)
+        </label>
+        <GoogleAddressInput
+          value={form.addressLine}
+          onChange={handlePlaceSelect}
+          placeholder="Search address on map to fill below"
+          className={inputClass("addressLine")}
+          style={inputStyle("addressLine")}
+          showMap={true}
+        />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--foreground)" }}>

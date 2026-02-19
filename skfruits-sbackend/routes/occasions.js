@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyToken } from "../utils/auth.js";
+import { requireRole } from "../utils/auth.js";
 import upload, { getImageUrl } from "../utils/upload.js";
 import prisma from "../prisma.js";
 import { cacheMiddleware, invalidateCache } from "../utils/cache.js";
@@ -25,7 +25,7 @@ router.get("/", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
 });
 
 // Get all occasions (admin - includes inactive)
-router.get("/all", verifyToken, async (req, res) => {
+router.get("/all", requireRole("admin"), async (req, res) => {
   try {
     const occasions = await prisma.occasion.findMany({
       include: {
@@ -93,7 +93,7 @@ router.get("/:slug", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
 });
 
 // Create occasion (Admin only)
-router.post("/", verifyToken, upload.single("image"), async (req, res) => {
+router.post("/", requireRole("admin"), upload.single("image"), async (req, res) => {
   try {
     // Invalidate occasions cache on create
     invalidateCache("/occasions");
@@ -123,7 +123,7 @@ router.post("/", verifyToken, upload.single("image"), async (req, res) => {
 });
 
 // Update occasion (Admin only)
-router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
+router.put("/:id", requireRole("admin"), upload.single("image"), async (req, res) => {
   try {
     // Invalidate occasions cache on update
     invalidateCache("/occasions");
@@ -162,7 +162,7 @@ router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
 });
 
 // Delete occasion (Admin only)
-router.delete("/:id", verifyToken, async (req, res) => {
+router.delete("/:id", requireRole("admin"), async (req, res) => {
   try {
     // Invalidate occasions cache on delete
     invalidateCache("/occasions");
@@ -179,7 +179,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
 });
 
 // Update order for multiple occasions (Admin only)
-router.post("/reorder", verifyToken, async (req, res) => {
+router.post("/reorder", requireRole("admin"), async (req, res) => {
   try {
     const { items } = req.body; // Array of { id, order }
     

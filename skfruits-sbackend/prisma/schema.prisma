@@ -7,16 +7,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  customer
+  admin
+  driver
+}
+
 model User {
-  id        Int       @id @default(autoincrement())
-  name      String
-  email     String    @unique
-  phone     String?
-  password  String    // bcrypt hashed
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  carts     Cart[]
-  addresses Address[]
+  id            Int           @id @default(autoincrement())
+  name          String
+  email         String        @unique
+  phone         String?
+  password      String        // bcrypt hashed
+  role          UserRole      @default(customer)
+  driverStatus  DriverStatus? // used when role = driver (available | busy | offline)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  carts          Cart[]
+  addresses      Address[]
+  orders         Order[]       @relation("OrderCustomer")
+  ordersAsDriver Order[]       @relation("OrderDriver") // orders assigned when role = driver
+  wishlists      Wishlist[]
+  reviews        Review[]
 }
 
 model Address {
@@ -28,6 +40,8 @@ model Address {
   city        String
   state       String
   pincode     String
+  latitude    Float?
+  longitude   Float?
   isDefault   Boolean  @default(false)
   createdAt   DateTime @default(now())
 
@@ -68,6 +82,7 @@ model Product {
   instagramEmbeds String?      @db.Text // JSON array of Instagram embed objects: [{url, enabled, createdAt}]
   keywords      String         @db.Text // JSON array for multilingual search
   order         Int            @default(0) // For ordering products
+  stock         Int            @default(0) // Inventory; never allow negative
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -77,6 +92,8 @@ model Product {
   occasions     ProductOccasion[]
   reels         Reel[]
   cartItems     CartItem[]
+  wishlists     Wishlist[]
+  reviews       Review[]
 
   @@index([createdAt])
   @@index([isTrending, createdAt])
@@ -106,18 +123,68 @@ model SizeOption {
   @@index([order])
 }
 
+model DeliveryRule {
+  id                    Int       @id @default(autoincrement())
+  minimumOrderAmount    Float     @default(0)
+  deliveryFee           Float     @default(0)
+  freeDeliveryThreshold Float?    // null = no free delivery; else order >= this => fee 0
+  createdAt             DateTime  @default(now())
+
+  @@index([minimumOrderAmount])
+}
+
+model DeliverySlot {
+  id         Int      @id @default(autoincrement())
+  date       DateTime @db.Date
+  startTime  String   // e.g. "09:00"
+  endTime    String   // e.g. "12:00"
+  maxOrders  Int?     // null = unlimited
+  bookedCount Int     @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  orders Order[]
+
+  @@index([date, isActive])
+  @@index([date])
+}
+
 model Order {
-  id        Int         @id @default(autoincrement())
-  customer  String
-  phone     String?     @db.Text
-  email     String?
-  address   String?     @db.Text
-  total     Float
-  status    String      @default("pending")
-  notes     String?     @db.Text
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  items     OrderItem[]
+  id                     Int           @id @default(autoincrement())
+  customer               String
+  phone                  String?       @db.Text
+  email                  String?
+  address                String?       @db.Text
+  addressLatitude        Float?
+  addressLongitude      Float?
+  total                  Float
+  status                 String        @default("pending")
+  notes                  String?       @db.Text
+  paymentMethod          String        @default("online") // "online" | "cod"
+  razorpayOrderId        String?       // Set when payment is online (for idempotency/audit)
+  razorpayPaymentId      String?       @unique // Set after verification; prevents duplicate orders
+  userId                 Int?          // Set when order is placed by logged-in user
+  deliveryFee            Float         @default(0)
+  estimatedDeliveryDate DateTime?     @db.Date
+  estimatedDeliveryTime DateTime?     // Time window or exact ETA (nullable)
+  deliverySlotId        Int?
+  driverId              Int?          // Legacy: optional assigned driver (Driver table)
+  driverUserId          Int?          // Assigned driver (User with role = driver)
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+  items                  OrderItem[]
+  user                   User?         @relation("OrderCustomer", fields: [userId], references: [id], onDelete: SetNull)
+  deliverySlot           DeliverySlot?  @relation(fields: [deliverySlotId], references: [id], onDelete: SetNull)
+  driver                 Driver?       @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  driverUser             User?         @relation("OrderDriver", fields: [driverUserId], references: [id], onDelete: SetNull)
+
+  @@index([razorpayPaymentId])
+  @@index([razorpayOrderId])
+  @@index([userId])
+  @@index([deliverySlotId])
+  @@index([driverId])
+  @@index([driverUserId])
 }
 
 model OrderItem {
@@ -253,6 +320,36 @@ model CartItem {
   @@index([cartId, productId, productSizeId])
 }
 
+model Wishlist {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  userId    Int
+  rating    Int      // 1-5
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([productId])
+  @@index([userId])
+}
+
 model Banner {
   id          Int       @id @default(autoincrement())
   title       String
@@ -267,4 +364,21 @@ model Banner {
   updatedAt   DateTime  @updatedAt
 
   @@index([bannerType, order])
+}
+
+enum DriverStatus {
+  available
+  busy
+  offline
+}
+
+model Driver {
+  id         Int          @id @default(autoincrement())
+  name       String
+  phone      String
+  status     DriverStatus @default(available)
+  currentLat Float?
+  currentLng Float?
+  createdAt  DateTime     @default(now())
+  orders     Order[]
 }

@@ -172,10 +172,10 @@ export default function CategoriesPage() {
       />
       <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="font-display text-4xl font-bold mb-4 text-white drop-shadow-sm">
+          <h2 className="font-display text-4xl font-bold mb-4" style={{ color: "var(--foreground)" }}>
             Shop by Category
           </h2>
-          <p className="text-lg text-white/90">
+          <p className="text-lg" style={{ color: "var(--foreground-muted)" }}>
             FreshFruit — Browse our wide range of categories
           </p>
         </div>
@@ -184,10 +184,11 @@ export default function CategoriesPage() {
         <div className="relative mb-12">
           <button
             onClick={() => scrollCategories("left")}
-            className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border border-design active:scale-95"
+            className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
+            style={{ backgroundColor: 'var(--card-white)', borderColor: 'var(--border)' }}
             aria-label="Scroll categories left"
           >
-            <svg className="w-5 h-5 text-design-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" style={{ color: "var(--foreground-muted)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
@@ -226,10 +227,11 @@ export default function CategoriesPage() {
 
           <button
             onClick={() => scrollCategories("right")}
-            className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border border-design active:scale-95"
+            className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
+            style={{ backgroundColor: 'var(--card-white)', borderColor: 'var(--border)' }}
             aria-label="Scroll categories right"
           >
-            <svg className="w-5 h-5 text-design-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" style={{ color: "var(--foreground-muted)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -239,11 +241,11 @@ export default function CategoriesPage() {
         {selectedCategory && slug && (
           <div className="mt-12">
             <div className="mb-8">
-              <h3 className="font-display text-3xl font-bold mb-2 text-white drop-shadow-sm">
+              <h3 className="font-display text-3xl font-bold mb-2" style={{ color: "var(--foreground)" }}>
                 {selectedCategory.name}
               </h3>
               {selectedCategory.description && (
-                <p className="text-lg mb-4 text-white/90">
+                <p className="text-lg mb-4" style={{ color: "var(--foreground-muted)" }}>
                   {selectedCategory.description}
                 </p>
               )}
@@ -251,7 +253,7 @@ export default function CategoriesPage() {
               {/* Occasion Filter */}
               <div className="flex flex-wrap items-center gap-4 mb-6">
                 <div className="flex items-center gap-2">
-                  <label className="text-sm font-semibold text-white">
+                  <label className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
                     Filter by Occasion:
                   </label>
                   <select
@@ -279,7 +281,7 @@ export default function CategoriesPage() {
               </div>
 
               {occasionFilter && (
-                <p className="text-sm mb-4 text-white/90">
+                <p className="text-sm mb-4" style={{ color: "var(--foreground-muted)" }}>
                   Showing products for {occasions.find(o => o.slug === occasionFilter)?.name || occasionFilter}
                 </p>
               )}
@@ -292,10 +294,10 @@ export default function CategoriesPage() {
               </div>
             ) : (
               <div className="text-center py-16">
-                <div className="inline-block p-6 rounded-full mb-4 bg-white/20">
+                <div className="inline-block p-6 rounded-full mb-4" style={{ backgroundColor: "var(--muted)" }}>
                   <img src="/logo.png" alt="SK Fruits" className="w-16 h-16 object-contain" />
                 </div>
-                <p className="font-medium text-white/90">
+                <p className="font-medium" style={{ color: "var(--foreground-muted)" }}>
                   No products available in this category yet
                 </p>
               </div>
@@ -307,14 +309,14 @@ export default function CategoriesPage() {
         {!slug && (
           <div className="mt-12">
             <div className="mb-8">
-              <h3 className="font-display text-3xl font-bold mb-2 text-white drop-shadow-sm">
+              <h3 className="font-display text-3xl font-bold mb-2" style={{ color: "var(--foreground)" }}>
                 {trendingFilter ? "Trending Products" : "All Products"}
               </h3>
 
               {/* Occasion Filter (still useful on /categories) */}
               <div className="flex flex-wrap items-center gap-4 mb-6">
                 <div className="flex items-center gap-2">
-                  <label className="text-sm font-semibold text-white">
+                  <label className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
                     Filter by Occasion:
                   </label>
                   <select
@@ -342,7 +344,7 @@ export default function CategoriesPage() {
               </div>
 
               {occasionFilter && (
-                <p className="text-sm mb-4 text-white/90">
+                <p className="text-sm mb-4" style={{ color: "var(--foreground-muted)" }}>
                   Showing products for {occasions.find(o => o.slug === occasionFilter)?.name || occasionFilter}
                 </p>
               )}
@@ -356,10 +358,10 @@ export default function CategoriesPage() {
               </div>
             ) : (
               <div className="text-center py-16">
-                <div className="inline-block p-6 rounded-full mb-4 bg-white/20">
+                <div className="inline-block p-6 rounded-full mb-4" style={{ backgroundColor: "var(--muted)" }}>
                   <img src="/logo.png" alt="SK Fruits" className="w-16 h-16 object-contain" />
                 </div>
-                <p className="font-medium text-white/90">
+                <p className="font-medium" style={{ color: "var(--foreground-muted)" }}>
                   No products available yet
                 </p>
               </div>
@@ -370,10 +372,10 @@ export default function CategoriesPage() {
         {/* Show all categories if none selected */}
         {!selectedCategory && categories.length === 0 && (
           <div className="text-center py-16">
-            <div className="inline-block p-6 rounded-full mb-4 bg-white/20">
+            <div className="inline-block p-6 rounded-full mb-4" style={{ backgroundColor: "var(--muted)" }}>
               <img src="/logo.png" alt="SK Fruits" className="w-16 h-16 object-contain" />
             </div>
-            <p className="font-medium text-white/90">
+            <p className="font-medium" style={{ color: "var(--foreground-muted)" }}>
               No categories available yet
             </p>
           </div>

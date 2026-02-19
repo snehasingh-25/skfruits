@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyToken } from "../utils/auth.js";
+import { requireRole } from "../utils/auth.js";
 import prisma from "../prisma.js";
 
 const router = express.Router();
@@ -17,7 +17,7 @@ router.get("/", async (req, res) => {
 });
 
 // Create a size option (Admin only) – e.g. when admin adds a new "custom" size
-router.post("/", verifyToken, async (req, res) => {
+router.post("/", requireRole("admin"), async (req, res) => {
   try {
     const { label, order } = req.body;
     if (!label || typeof label !== "string" || !label.trim()) {

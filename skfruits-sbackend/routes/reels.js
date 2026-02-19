@@ -1,5 +1,5 @@
 import express from "express";
-import { verifyToken } from "../utils/auth.js";
+import { requireRole } from "../utils/auth.js";
 import prisma from "../prisma.js";
 import { cacheMiddleware, invalidateCache } from "../utils/cache.js";
 import { uploadReelFiles, getVideoUrl, getImageUrl } from "../utils/upload.js";
@@ -31,7 +31,7 @@ router.get("/", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
 });
 
 // Get all reels (Admin only)
-router.get("/all", verifyToken, async (req, res) => {
+router.get("/all", requireRole("admin"), async (req, res) => {
   try {
     const reels = await prisma.reel.findMany({
       orderBy: [{ order: "asc" }, { createdAt: "desc" }],
@@ -55,7 +55,7 @@ router.get("/all", verifyToken, async (req, res) => {
 });
 
 // Create reel (Admin only)
-router.post("/", verifyToken, uploadReelFiles.fields([
+router.post("/", requireRole("admin"), uploadReelFiles.fields([
   { name: "video", maxCount: 1 },
   { name: "thumbnail", maxCount: 1 }
 ]), async (req, res) => {
@@ -111,7 +111,7 @@ router.post("/", verifyToken, uploadReelFiles.fields([
 });
 
 // Update reel (Admin only)
-router.put("/:id", verifyToken, uploadReelFiles.fields([
+router.put("/:id", requireRole("admin"), uploadReelFiles.fields([
   { name: "video", maxCount: 1 },
   { name: "thumbnail", maxCount: 1 }
 ]), async (req, res) => {
@@ -201,7 +201,7 @@ router.post("/:id/view", async (req, res) => {
 });
 
 // Update order for multiple reels (Admin only)
-router.post("/reorder", verifyToken, async (req, res) => {
+router.post("/reorder", requireRole("admin"), async (req, res) => {
   try {
     const { items } = req.body; // Array of { id, order }
     
@@ -230,7 +230,7 @@ router.post("/reorder", verifyToken, async (req, res) => {
 });
 
 // Delete reel (Admin only)
-router.delete("/:id", verifyToken, async (req, res) => {
+router.delete("/:id", requireRole("admin"), async (req, res) => {
   try {
     // Invalidate reels cache on delete
     invalidateCache("/reels");

@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import prisma from "../prisma.js";
 
 // Load environment variables explicitly with correct path
 const __filename = fileURLToPath(import.meta.url);
@@ -10,44 +11,101 @@ dotenv.config({ path: join(__dirname, "../.env") });
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
-// Hardcoded admin credentials from environment variables
-// Remove quotes if present and trim whitespace
-const ADMIN_EMAIL = (process.env.ADMIN_EMAIL)
-  .replace(/^["']|["']$/g, "")
-  .trim();
-const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD)
-  .replace(/^["']|["']$/g, "")
-  .trim();
+function getBearerToken(req) {
+  return req.headers.authorization?.replace(/^Bearer\s+/i, "").trim() || null;
+}
 
-// Debug logging - always show to help diagnose
-console.log("=== Admin credentials loaded in auth.js ===");
-console.log("Raw ADMIN_EMAIL from env:", process.env.ADMIN_EMAIL);
-console.log("Processed ADMIN_EMAIL:", ADMIN_EMAIL);
-console.log("ADMIN_PASSWORD is set:", ADMIN_PASSWORD ? "YES" : "NO");
-console.log("==========================================");
-
-export const verifyToken = (req, res, next) => {
+/** Require valid JWT and hydrate req.auth from token. */
+export const requireAuth = (req, res, next) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
-
-    if (!token) {
-      return res.status(401).json({ message: "No token provided" });
-    }
-
+    const token = getBearerToken(req);
+    if (!token) return res.status(401).json({ message: "No token provided" });
     const decoded = jwt.verify(token, JWT_SECRET);
-    
-    // Verify the email matches the hardcoded admin email
-    if (decoded.email !== ADMIN_EMAIL) {
-      return res.status(401).json({ message: "Unauthorized access" });
-    }
-    
-    req.userId = decoded.userId || 1; // Default admin ID
-    req.userEmail = decoded.email;
+    req.auth = decoded;
     next();
   } catch (error) {
     return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
 
-// Export admin credentials for login
-export { ADMIN_EMAIL, ADMIN_PASSWORD };
+/**
+ * Role-based middleware: requireRole(roleName)
+ * - Extracts JWT from Authorization: Bearer <token>
+ * - Validates token (signature + expiry)
+ * - Loads user from DB and checks user.role === roleName (never trust token role for authorization)
+ * If role !== required → rejects with 401 Unauthorized.
+ * On success sets req.userId, req.userEmail, req.role, req.auth.
+ */
+export const requireRole = (roleName) => async (req, res, next) => {
+  try {
+    const token = getBearerToken(req);
+    if (!token) return res.status(401).json({ message: "No token provided" });
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userId = Number(decoded.userId);
+    if (!userId) return res.status(401).json({ message: "Invalid token" });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, role: true },
+    });
+    if (!user || user.role !== roleName) {
+      return res.status(401).json({ message: "Unauthorized access" });
+    }
+
+    req.userId = user.id;
+    req.userEmail = user.email;
+    req.role = user.role;
+    req.auth = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
+};
+
+/** Admin-only middleware (alias for requireRole("admin")). */
+export const verifyToken = requireRole("admin");
+
+/** Require valid JWT and set req.customerUserId (for customer-only routes like my-orders). */
+export const requireCustomerAuth = (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.replace(/^Bearer\s+/i, "").trim();
+    if (!token) return res.status(401).json({ message: "Login required" });
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.customerUserId = Number(decoded.userId);
+    if (!req.customerUserId) return res.status(401).json({ message: "Invalid token" });
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
+};
+
+/** Optionally set req.customerUserId when valid JWT is present (for order creation to link user). */
+export const optionalCustomerAuth = (req, res, next) => {
+  const token = req.headers.authorization?.replace(/^Bearer\s+/i, "").trim();
+  if (!token) return next();
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const id = Number(decoded.userId);
+    if (id) req.customerUserId = id;
+  } catch (_) {}
+  next();
+};
+
+/** Optionally set req.isAdmin if valid admin token. Does not fail on missing/invalid token. */
+export const optionalAdminAuth = (req, res, next) => {
+  const token = req.headers.authorization?.replace(/^Bearer\s+/i, "").trim();
+  if (!token) return next();
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userId = Number(decoded.userId);
+    if (!userId) return next();
+    prisma.user
+      .findUnique({ where: { id: userId }, select: { role: true } })
+      .then((u) => {
+        if (u?.role === "admin") req.isAdmin = true;
+      })
+      .finally(() => next());
+  } catch (_) {
+    next();
+  }
+};

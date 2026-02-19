@@ -1,12 +1,16 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useToast } from "../context/ToastContext";
 import { useUserAuth } from "../context/UserAuthContext";
 import { API } from "../api";
 import AddressForm from "../components/AddressForm";
+import GoogleAddressInput from "../components/GoogleAddressInput";
+import { CART_SESSION_KEY } from "../context/CartContext";
 
-const CART_SESSION_KEY = "skfruits_cart_session";
+const RAZORPAY_SCRIPT_URL = "https://checkout.razorpay.com/v1/checkout.js";
+const PAYMENT_METHOD_ONLINE = "online";
+const PAYMENT_METHOD_COD = "cod";
 
 const initialForm = {
   name: "",
@@ -16,6 +20,8 @@ const initialForm = {
   state: "",
   pincode: "",
   email: "",
+  latitude: null,
+  longitude: null,
 };
 
 const initialErrors = { ...initialForm };
@@ -26,6 +32,22 @@ function getSessionId() {
   } catch {
     return "";
   }
+}
+
+function loadRazorpayScript() {
+  return new Promise((resolve, reject) => {
+    if (window.Razorpay) {
+      resolve();
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = RAZORPAY_SCRIPT_URL;
+    script.crossOrigin = "anonymous";
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load payment gateway"));
+    document.body.appendChild(script);
+  });
 }
 
 function validatePhone(value) {
@@ -45,15 +67,66 @@ export default function Checkout() {
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState(initialErrors);
   const [submitting, setSubmitting] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHOD_ONLINE);
+  const [paymentError, setPaymentError] = useState(null);
   const [addresses, setAddresses] = useState([]);
   const [loadingAddresses, setLoadingAddresses] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [addAddressModalOpen, setAddAddressModalOpen] = useState(false);
   const [savingNewAddress, setSavingNewAddress] = useState(false);
+  const [deliverySummary, setDeliverySummary] = useState(null);
+  const [deliverySlots, setDeliverySlots] = useState([]);
+  const [selectedSlotId, setSelectedSlotId] = useState(null);
+  const [loadingSummary, setLoadingSummary] = useState(true);
+  const [loadingSlots, setLoadingSlots] = useState(true);
+  const [slotsError, setSlotsError] = useState(false);
+  const [summaryError, setSummaryError] = useState(null);
+  const [saveAddressForNextTime, setSaveAddressForNextTime] = useState(true);
+  const paymentInProgressRef = useRef(false);
+  const usedManualFormRef = useRef(false);
 
   useEffect(() => {
     refreshCart?.();
   }, [refreshCart]);
+
+  const sessionId = getSessionId();
+
+  useEffect(() => {
+    if (!isLoaded || !sessionId) {
+      setLoadingSummary(false);
+      return;
+    }
+    setLoadingSummary(true);
+    setSummaryError(null);
+    const url = selectedSlotId
+      ? `${API}/delivery/checkout-summary?slotId=${selectedSlotId}`
+      : `${API}/delivery/checkout-summary`;
+    fetch(url, { headers: { "X-Cart-Session-Id": sessionId } })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.status === 400 ? "Invalid cart" : "Failed to load"))))
+      .then((data) => setDeliverySummary(data))
+      .catch((err) => {
+        setSummaryError(err.message || "Could not load delivery details");
+        setDeliverySummary(null);
+      })
+      .finally(() => setLoadingSummary(false));
+  }, [isLoaded, sessionId, cartItems.length, selectedSlotId]);
+
+  const fetchSlots = () => {
+    setLoadingSlots(true);
+    setSlotsError(false);
+    fetch(`${API}/delivery/slots?days=7`)
+      .then((res) => (res.ok ? res.json() : { slots: [] }))
+      .then((data) => setDeliverySlots(data.slots || []))
+      .catch(() => {
+        setDeliverySlots([]);
+        setSlotsError(true);
+      })
+      .finally(() => setLoadingSlots(false));
+  };
+
+  useEffect(() => {
+    fetchSlots();
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -108,6 +181,8 @@ export default function Checkout() {
           state: addr.state,
           pincode: addr.pincode,
           email: form.email?.trim() || undefined,
+          latitude: addr.latitude ?? undefined,
+          longitude: addr.longitude ?? undefined,
         };
       }
     }
@@ -119,16 +194,55 @@ export default function Checkout() {
       state: form.state.trim(),
       pincode: form.pincode.trim(),
       email: form.email?.trim() || undefined,
+      latitude: form.latitude ?? undefined,
+      longitude: form.longitude ?? undefined,
     };
+  };
+
+  const saveAddressToAccount = async (details) => {
+    if (!details?.name || !details?.address || !details?.city || !details?.state || !details?.pincode) return;
+    try {
+      await fetch(`${API}/addresses/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        body: JSON.stringify({
+          fullName: details.name,
+          phone: details.phone || "",
+          addressLine: details.address,
+          city: details.city,
+          state: details.state,
+          pincode: details.pincode,
+          latitude: details.latitude ?? null,
+          longitude: details.longitude ?? null,
+          isDefault: addresses.length === 0,
+        }),
+      });
+    } catch {
+      // Non-blocking; order already succeeded
+    }
+  };
+
+  const isSlotOrDeliveryError = (message) => {
+    if (!message || typeof message !== "string") return false;
+    const lower = message.toLowerCase();
+    return lower.includes("slot") || lower.includes("delivery");
+  };
+
+  const handleSlotError = () => {
+    setSelectedSlotId(null);
+    setPaymentError(null);
+    fetchSlots();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setPaymentError(null);
     if (cartItems.length === 0) {
       toast.error("Your cart is empty");
       return;
     }
     const useManualForm = !isAuthenticated || !selectedAddressId || !addresses.find((a) => a.id === selectedAddressId);
+    usedManualFormRef.current = useManualForm;
     if (useManualForm && !validate()) return;
     const sessionId = getSessionId();
     if (!sessionId) {
@@ -136,29 +250,166 @@ export default function Checkout() {
       navigate("/cart");
       return;
     }
+    if (paymentInProgressRef.current || submitting) return;
+
+    const customerDetails = getCustomerDetails();
+    const checkoutData = {
+      sessionId,
+      customerDetails,
+      ...(selectedSlotId != null && { deliverySlotId: selectedSlotId }),
+    };
+
+    if (paymentMethod === PAYMENT_METHOD_COD) {
+      setSubmitting(true);
+      try {
+        const res = await fetch(`${API}/orders/create`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+          body: JSON.stringify({
+            sessionId,
+            customerDetails,
+            paymentMethod: "cod",
+            ...(selectedSlotId != null && { deliverySlotId: selectedSlotId }),
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          const errMsg = data.error || "Could not place order";
+          setPaymentError(errMsg);
+          toast.error(errMsg);
+          if (isSlotOrDeliveryError(errMsg)) handleSlotError();
+          return;
+        }
+        if (isAuthenticated && usedManualFormRef.current && saveAddressForNextTime) {
+          await saveAddressToAccount(customerDetails);
+        }
+        navigate(`/order-success?orderId=${data.orderId}`, { replace: true });
+      } catch (err) {
+        console.error(err);
+        toast.error("Something went wrong. Please try again.");
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
 
     setSubmitting(true);
+    paymentInProgressRef.current = true;
     try {
-      const customerDetails = getCustomerDetails();
-      const res = await fetch(`${API}/orders/create`, {
+      const createRes = await fetch(`${API}/payments/create-order`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Cart-Session-Id": sessionId,
+        },
         body: JSON.stringify({
           sessionId,
-          customerDetails,
+          ...(selectedSlotId != null && { deliverySlotId: selectedSlotId }),
         }),
       });
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast.error(data.error || "Could not place order");
+      const createData = await createRes.json();
+      if (!createRes.ok) {
+        const errMsg = createData.error || "Could not create payment order";
+        setPaymentError(errMsg);
+        toast.error(errMsg);
+        if (isSlotOrDeliveryError(errMsg)) handleSlotError();
+        setSubmitting(false);
+        paymentInProgressRef.current = false;
         return;
       }
-      navigate(`/order-success?orderId=${data.orderId}`, { replace: true });
+
+      const { razorpayOrderId, amount, currency } = createData;
+      let keyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
+      if (!keyId) {
+        try {
+          const configRes = await fetch(`${API}/payments/config`);
+          const config = await configRes.json();
+          keyId = config.razorpayKeyId || "";
+        } catch { keyId = ""; }
+      }
+      if (!keyId) {
+        setPaymentError("Payment gateway not configured");
+        toast.error("Payment is not available. Try Cash on Delivery.");
+        return;
+      }
+
+      await loadRazorpayScript();
+      const details = getCustomerDetails();
+
+      const options = {
+        key: keyId,
+        amount: String(amount),
+        currency: currency || "INR",
+        name: "SK Fruits",
+        description: "Order payment",
+        order_id: razorpayOrderId,
+        prefill: {
+          name: details.name || "",
+          email: details.email || "",
+          contact: details.phone || "",
+        },
+        theme: {
+          color:
+            typeof getComputedStyle !== "undefined"
+              ? getComputedStyle(document.documentElement).getPropertyValue("--payment-accent").trim() || "#0d9488"
+              : "#0d9488",
+        },
+        modal: {
+          ondismiss: () => {
+            paymentInProgressRef.current = false;
+            setSubmitting(false);
+          },
+        },
+        handler: async (response) => {
+          try {
+            const verifyRes = await fetch(`${API}/payments/verify`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                checkoutData,
+              }),
+            });
+            const verifyData = await verifyRes.json();
+            if (!verifyRes.ok) {
+              const errMsg = verifyData.error || "Payment verification failed";
+              setPaymentError(errMsg);
+              toast.error(errMsg);
+              if (isSlotOrDeliveryError(errMsg)) handleSlotError();
+              paymentInProgressRef.current = false;
+              setSubmitting(false);
+              return;
+            }
+            if (isAuthenticated && usedManualFormRef.current && saveAddressForNextTime) {
+              await saveAddressToAccount(checkoutData.customerDetails);
+            }
+            paymentInProgressRef.current = false;
+            setSubmitting(false);
+            navigate(`/order-success?orderId=${verifyData.orderId}`, { replace: true });
+          } catch (err) {
+            console.error(err);
+            setPaymentError("Network error. Your payment may have succeeded; we will confirm shortly.");
+            toast.error("Verification failed. If amount was deducted, we will confirm your order shortly.");
+            paymentInProgressRef.current = false;
+            setSubmitting(false);
+          }
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", () => {
+        setPaymentError("Payment failed or was cancelled.");
+        toast.error("Payment failed or was cancelled. You can try again.");
+        paymentInProgressRef.current = false;
+        setSubmitting(false);
+      });
+      rzp.open();
     } catch (err) {
       console.error(err);
       toast.error("Something went wrong. Please try again.");
-    } finally {
+      paymentInProgressRef.current = false;
       setSubmitting(false);
     }
   };
@@ -180,7 +431,7 @@ export default function Checkout() {
       setSelectedAddressId(data.id);
       setAddAddressModalOpen(false);
       toast.success("Address added");
-    } catch (e) {
+    } catch {
       toast.error("Something went wrong");
     } finally {
       setSavingNewAddress(false);
@@ -208,8 +459,12 @@ export default function Checkout() {
     return null;
   }
 
-  const total = cartItems.reduce((sum, item) => sum + Number(item.subtotal || 0), 0);
   const itemCount = cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+  const fallbackSubtotal = cartItems.reduce((sum, item) => sum + Number(item.subtotal || 0), 0);
+  const subtotal = deliverySummary ? deliverySummary.subtotal : fallbackSubtotal;
+  const discountAmount = deliverySummary ? Number(deliverySummary.discountAmount || 0) : 0;
+  const deliveryFee = deliverySummary ? deliverySummary.deliveryFee : 0;
+  const total = deliverySummary ? deliverySummary.total : Math.max(0, fallbackSubtotal + 0);
 
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8" style={{ background: "var(--background)" }}>
@@ -318,6 +573,30 @@ export default function Checkout() {
                   </div>
                   <div className="sm:col-span-2">
                     <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--foreground)" }}>
+                      Search address (optional)
+                    </label>
+                    <GoogleAddressInput
+                      value={form.address}
+                      onChange={(data) => {
+                        setForm((prev) => ({
+                          ...prev,
+                          address: data.addressLine || prev.address,
+                          city: data.city || prev.city,
+                          state: data.state || prev.state,
+                          pincode: data.pincode || prev.pincode,
+                          latitude: data.latitude ?? prev.latitude,
+                          longitude: data.longitude ?? prev.longitude,
+                        }));
+                        setErrors((prev) => ({ ...prev, address: "", city: "", state: "", pincode: "" }));
+                      }}
+                      placeholder="Search address to fill below"
+                      className="w-full px-4 py-2.5 rounded-lg border text-[var(--foreground)] placeholder-[var(--muted)] focus:outline-none focus:ring-2 transition-all"
+                      style={{ background: "var(--background)", borderColor: "var(--border)" }}
+                      showMap={true}
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--foreground)" }}>
                       Address Line <span className="text-[var(--destructive)]">*</span>
                     </label>
                     <input
@@ -378,9 +657,170 @@ export default function Checkout() {
                     />
                     {errors.pincode && <p className="mt-1 text-sm" style={{ color: "var(--destructive)" }}>{errors.pincode}</p>}
                   </div>
+                  {isAuthenticated && (
+                    <div className="sm:col-span-2 flex items-center gap-2 mt-2">
+                      <input
+                        type="checkbox"
+                        id="save-address-checkout"
+                        checked={saveAddressForNextTime}
+                        onChange={(e) => setSaveAddressForNextTime(e.target.checked)}
+                        className="w-4 h-4 rounded border-2"
+                        style={{ accentColor: "var(--primary)" }}
+                      />
+                      <label htmlFor="save-address-checkout" className="text-sm cursor-pointer" style={{ color: "var(--foreground)" }}>
+                        Save this address for future orders
+                      </label>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
+
+            {/* Delivery ETA & Fee — backend-driven */}
+            <div
+              className="rounded-xl p-6 shadow-sm border transition-opacity"
+              style={{
+                background: "var(--background)",
+                borderColor: "var(--border)",
+                boxShadow: "var(--shadow-soft)",
+              }}
+            >
+              <h2 className="text-xl font-semibold font-display mb-4" style={{ color: "var(--foreground)" }}>
+                Delivery
+              </h2>
+              {loadingSummary ? (
+                <div className="space-y-2">
+                  <div className="h-12 rounded-lg animate-pulse" style={{ background: "var(--muted)" }} />
+                  <div className="h-10 rounded-lg animate-pulse w-2/3" style={{ background: "var(--muted)" }} />
+                </div>
+              ) : summaryError ? (
+                <div className="space-y-2">
+                  <p className="text-sm" style={{ color: "var(--destructive)" }}>{summaryError}</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSummaryError(null);
+                      setLoadingSummary(true);
+                      const url = selectedSlotId ? `${API}/delivery/checkout-summary?slotId=${selectedSlotId}` : `${API}/delivery/checkout-summary`;
+                      fetch(url, { headers: { "X-Cart-Session-Id": sessionId } })
+                        .then((res) => (res.ok ? res.json() : Promise.reject(new Error("Failed to load"))))
+                        .then((data) => setDeliverySummary(data))
+                        .catch((err) => setSummaryError(err.message || "Could not load"))
+                        .finally(() => setLoadingSummary(false));
+                    }}
+                    className="text-sm font-medium underline"
+                    style={{ color: "var(--primary)" }}
+                  >
+                    Try again
+                  </button>
+                </div>
+              ) : deliverySummary ? (
+                <div className="space-y-4">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="text-base font-medium" style={{ color: "var(--foreground)" }}>
+                      {deliverySummary.estimatedDeliveryText}
+                    </span>
+                    {deliverySummary.isFreeDelivery && (
+                      <span
+                        className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
+                        style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
+                      >
+                        Free delivery
+                      </span>
+                    )}
+                  </div>
+                  {!deliverySummary.isFreeDelivery && deliverySummary.deliveryFee > 0 && (
+                    <p className="text-sm" style={{ color: "var(--muted)" }}>
+                      Delivery fee: ₹{Number(deliverySummary.deliveryFee).toFixed(2)}
+                    </p>
+                  )}
+                </div>
+              ) : null}
+            </div>
+
+            {/* Delivery slot selector */}
+            {!loadingSlots && deliverySlots.length > 0 && (
+              <div
+                className="rounded-xl p-6 shadow-sm border"
+                style={{
+                  background: "var(--background)",
+                  borderColor: "var(--border)",
+                  boxShadow: "var(--shadow-soft)",
+                }}
+              >
+                <h2 className="text-xl font-semibold font-display mb-4" style={{ color: "var(--foreground)" }}>
+                  Choose delivery slot
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {deliverySlots.filter((s) => s.available).map((slot) => {
+                    const isSelected = selectedSlotId === slot.id;
+                    const slotDate = new Date(slot.date);
+                    const dateLabel = slotDate.toLocaleDateString("en-IN", {
+                      weekday: "short",
+                      day: "numeric",
+                      month: "short",
+                    });
+                    return (
+                      <button
+                        key={slot.id}
+                        type="button"
+                        onClick={() => setSelectedSlotId(isSelected ? null : slot.id)}
+                        className="checkout-slot-btn text-left rounded-xl p-4 border-2 transition-all duration-200 hover:shadow-md focus:outline-none active:scale-[0.99]"
+                        style={{
+                          background: isSelected ? "var(--secondary)" : "var(--background)",
+                          borderColor: isSelected ? "var(--primary)" : "var(--border)",
+                          boxShadow: isSelected ? "var(--shadow-soft)" : undefined,
+                        }}
+                      >
+                        <div className="font-medium text-sm" style={{ color: "var(--foreground)" }}>
+                          {dateLabel}
+                        </div>
+                        <div className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>
+                          {slot.startTime} – {slot.endTime}
+                        </div>
+                        {isSelected && (
+                          <span className="mt-2 inline-block text-xs font-semibold" style={{ color: "var(--primary)" }}>
+                            Selected
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                {selectedSlotId && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSlotId(null)}
+                    className="mt-3 text-sm font-medium underline"
+                    style={{ color: "var(--muted)" }}
+                  >
+                    Clear selection
+                  </button>
+                )}
+              </div>
+            )}
+            {!loadingSlots && deliverySlots.length === 0 && (
+              <div
+                className="rounded-xl p-4 border border-dashed"
+                style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}
+              >
+                <p className="text-sm">
+                  {slotsError
+                    ? "Could not load delivery slots. You can still place the order; we'll use the default delivery date."
+                    : "No delivery slots available for the next 7 days. Default ETA applies."}
+                </p>
+                {slotsError && (
+                  <button
+                    type="button"
+                    onClick={fetchSlots}
+                    className="mt-2 text-sm font-medium underline"
+                    style={{ color: "var(--primary)" }}
+                  >
+                    Try again
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Add address modal (checkout) */}
             {addAddressModalOpen && (
@@ -462,18 +902,76 @@ export default function Checkout() {
               <div className="mt-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
                 <div className="flex justify-between text-sm mb-1" style={{ color: "var(--foreground)" }}>
                   <span>Subtotal ({itemCount} items)</span>
-                  <span>₹{total.toFixed(2)}</span>
+                  <span>₹{Number(subtotal).toFixed(2)}</span>
+                </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-sm mb-1" style={{ color: "var(--success)" }}>
+                    <span>Discount</span>
+                    <span>-₹{Number(discountAmount).toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm mb-1" style={{ color: "var(--foreground)" }}>
+                  <span>
+                    Delivery
+                    {deliverySummary?.isFreeDelivery && (
+                      <span className="ml-1 text-xs" style={{ color: "var(--primary)" }}>Free</span>
+                    )}
+                  </span>
+                  <span>
+                    {loadingSummary && !deliverySummary
+                      ? "—"
+                      : deliverySummary?.isFreeDelivery
+                        ? "₹0.00"
+                        : `₹${Number(deliveryFee).toFixed(2)}`}
+                  </span>
                 </div>
                 <div className="flex justify-between font-bold text-lg mt-2" style={{ color: "var(--foreground)" }}>
                   <span>Total</span>
-                  <span style={{ color: "var(--primary)" }}>₹{total.toFixed(2)}</span>
+                  <span style={{ color: "var(--primary)" }}>₹{Number(total).toFixed(2)}</span>
                 </div>
               </div>
+
+              {/* Payment method */}
+              <div className="mt-6 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
+                <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--foreground)" }}>
+                  Payment method
+                </h3>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition" style={{ borderColor: paymentMethod === PAYMENT_METHOD_ONLINE ? "var(--primary)" : "var(--border)", background: paymentMethod === PAYMENT_METHOD_ONLINE ? "var(--secondary)" : "transparent" }}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      checked={paymentMethod === PAYMENT_METHOD_ONLINE}
+                      onChange={() => { setPaymentMethod(PAYMENT_METHOD_ONLINE); setPaymentError(null); }}
+                      className="w-4 h-4"
+                    />
+                    <span style={{ color: "var(--foreground)" }}>Pay Online</span>
+                    <span className="text-xs" style={{ color: "var(--muted)" }}>UPI, Card, Netbanking, Wallets</span>
+                  </label>
+                  <label className="flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition" style={{ borderColor: paymentMethod === PAYMENT_METHOD_COD ? "var(--primary)" : "var(--border)", background: paymentMethod === PAYMENT_METHOD_COD ? "var(--secondary)" : "transparent" }}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      checked={paymentMethod === PAYMENT_METHOD_COD}
+                      onChange={() => { setPaymentMethod(PAYMENT_METHOD_COD); setPaymentError(null); }}
+                      className="w-4 h-4"
+                    />
+                    <span style={{ color: "var(--foreground)" }}>Cash on Delivery</span>
+                    <span className="text-xs" style={{ color: "var(--muted)" }}>Pay when you receive</span>
+                  </label>
+                </div>
+              </div>
+
+              {paymentError && (
+                <div className="mt-4 p-3 rounded-xl text-sm" style={{ background: "var(--destructive)", color: "white" }}>
+                  {paymentError}
+                </div>
+              )}
 
               {/* Section 4 — Place Order CTA */}
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || loadingSummary || !!summaryError}
                 className="w-full mt-6 py-4 rounded-xl font-semibold text-lg transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.99] disabled:opacity-60 disabled:pointer-events-none"
                 style={{
                   background: "var(--btn-primary-bg)",
@@ -481,7 +979,7 @@ export default function Checkout() {
                   borderRadius: "var(--radius-lg)",
                 }}
               >
-                {submitting ? "Placing order…" : "Place Order"}
+                {submitting ? (paymentMethod === PAYMENT_METHOD_COD ? "Placing order…" : "Opening payment…") : "Place Order"}
               </button>
             </div>
           </div>

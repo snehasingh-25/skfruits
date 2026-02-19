@@ -1,8 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useToast } from "../context/ToastContext";
+import { useRecentlyViewed } from "../context/RecentlyViewedContext";
+import ProductCarouselSection from "../components/ProductCarouselSection";
 
 export default function Cart() {
+  const { recentIds } = useRecentlyViewed();
   const {
     cartItems,
     isLoaded,
@@ -118,11 +121,21 @@ export default function Cart() {
                     </button>
                   </div>
 
+                  {(typeof item.stock === "number" && item.stock <= 5 && item.stock > 0) && (
+                    <p className="text-xs font-medium mb-1" style={{ color: "var(--accent)" }}>
+                      Only {item.stock} left
+                    </p>
+                  )}
+                  {(typeof item.stock === "number" && item.stock === 0) && (
+                    <p className="text-xs font-semibold mb-1" style={{ color: "var(--destructive)" }}>
+                      Out of stock — remove or reduce quantity
+                    </p>
+                  )}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="w-8 h-8 rounded-lg border-2 flex items-center justify-center font-bold transition-all duration-300 active:scale-95"
+                        className="w-8 h-8 rounded-lg border-2 flex items-center justify-center font-bold transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
                       >
                         −
@@ -130,7 +143,8 @@ export default function Cart() {
                       <span className="text-lg font-semibold w-8 text-center" style={{ color: "var(--foreground)" }}>{item.quantity}</span>
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-8 h-8 rounded-lg border-2 flex items-center justify-center font-bold transition-all duration-300 active:scale-95"
+                        disabled={typeof item.stock === "number" && item.quantity >= item.stock}
+                        className="w-8 h-8 rounded-lg border-2 flex items-center justify-center font-bold transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
                       >
                         +
@@ -167,8 +181,7 @@ export default function Cart() {
               <div className="space-y-3">
                 <button
                   onClick={handleCheckout}
-                  className="w-full py-4 rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 text-white"
-                  style={{ background: "var(--primary)", borderRadius: "var(--radius-lg)" }}
+                  className="w-full py-4 rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 btn-primary-brand"
                 >
                   Proceed to Checkout
                 </button>
@@ -194,6 +207,13 @@ export default function Cart() {
             </div>
           </div>
         </div>
+
+        {/* Optional: Recently Viewed */}
+        {recentIds.length > 0 && (
+          <div className="mt-12">
+            <ProductCarouselSection title="Recently Viewed" productIds={recentIds} />
+          </div>
+        )}
       </div>
     </div>
   );

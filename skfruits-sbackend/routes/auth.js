@@ -2,7 +2,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import prisma from "../prisma.js";
-import { ADMIN_EMAIL, ADMIN_PASSWORD } from "../utils/auth.js";
+import { requireRole } from "../utils/auth.js";
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
@@ -31,11 +31,12 @@ router.post("/signup", async (req, res) => {
         name: trimmedName,
         email: normalizedEmail,
         password: hashedPassword,
+        role: "customer",
       },
     });
 
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { userId: user.id, role: user.role },
       JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -50,7 +51,7 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// POST /auth/login — admin first, then customer
+// POST /auth/login — single path: find user by email, verify password, issue JWT with role (admin/driver/customer)
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body || {};
@@ -59,40 +60,49 @@ router.post("/login", async (req, res) => {
     }
 
     const normalizedEmail = normalizeEmail(email);
-    const normalizedPassword = (password || "").replace(/^["']|["']$/g, "").trim();
-    const normalizedAdminEmail = (ADMIN_EMAIL || "").replace(/^["']|["']$/g, "").trim().toLowerCase();
-    const normalizedAdminPassword = (ADMIN_PASSWORD || "").replace(/^["']|["']$/g, "").trim();
+    const rawPassword = (password || "").replace(/^["']|["']$/g, "").trim();
 
-    // Admin login (unchanged behavior)
-    if (normalizedEmail === normalizedAdminEmail && normalizedAdminPassword && normalizedPassword === normalizedAdminPassword) {
-      // Keep isAdmin so /auth/verify (admin) and cart (customer) can distinguish
-      const token = jwt.sign(
-        { userId: 1, email: ADMIN_EMAIL, isAdmin: true },
-        JWT_SECRET,
-        { expiresIn: "7d" }
-      );
-      return res.json({
-        token,
-        user: { id: 1, email: ADMIN_EMAIL, isAdmin: true },
-      });
-    }
-
-    // Customer login
     const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (!user) return res.status(401).json({ error: "Invalid email or password", message: "Invalid email or password" });
 
-    const match = await bcrypt.compare(normalizedPassword, user.password);
+    const match = await bcrypt.compare(rawPassword, user.password);
     if (!match) return res.status(401).json({ error: "Invalid email or password", message: "Invalid email or password" });
 
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { userId: user.id, role: user.role },
       JWT_SECRET,
       { expiresIn: "7d" }
     );
 
+    if (user.role === "admin") {
+      return res.json({
+        token,
+        user: { id: user.id, email: user.email, isAdmin: true, role: "admin" },
+      });
+    }
+
+    if (user.role === "driver") {
+      return res.json({
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone ?? undefined,
+          role: "driver",
+        },
+      });
+    }
+
     res.json({
       token,
-      user: { id: user.id, name: user.name, email: user.email, phone: user.phone ?? undefined },
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone ?? undefined,
+        role: "customer",
+      },
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -100,25 +110,49 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// GET /auth/me — validate token and return user (customer or admin)
+// GET /auth/me — validate token and return user (role from DB; never trust token role for authorization)
 router.get("/me", async (req, res) => {
   try {
     const token = req.headers.authorization?.replace(/^Bearer\s+/i, "").trim();
     if (!token) return res.status(401).json({ error: "No token provided" });
 
     const decoded = jwt.verify(token, JWT_SECRET);
-
-    if (decoded.isAdmin || decoded.email === ADMIN_EMAIL) {
-      return res.json({ user: { id: 1, email: ADMIN_EMAIL } });
-    }
+    const userId = Number(decoded.userId);
+    if (!userId) return res.status(401).json({ error: "Invalid token" });
 
     const user = await prisma.user.findUnique({
-      where: { id: Number(decoded.userId) },
-      select: { id: true, name: true, email: true, phone: true, createdAt: true },
+      where: { id: userId },
+      select: { id: true, name: true, email: true, phone: true, role: true, createdAt: true },
     });
     if (!user) return res.status(401).json({ error: "User not found" });
 
-    res.json({ user });
+    if (user.role === "admin") {
+      return res.json({ user: { id: user.id, email: user.email, isAdmin: true, role: "admin" } });
+    }
+
+    if (user.role === "driver") {
+      return res.json({
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone ?? undefined,
+          createdAt: user.createdAt,
+          role: "driver",
+        },
+      });
+    }
+
+    res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone ?? undefined,
+        createdAt: user.createdAt,
+        role: "customer",
+      },
+    });
   } catch (error) {
     if (error.name === "TokenExpiredError" || error.name === "JsonWebTokenError") {
       return res.status(401).json({ error: "Invalid or expired token" });
@@ -128,20 +162,8 @@ router.get("/me", async (req, res) => {
 });
 
 // GET /auth/verify — admin-only token verification (used by admin dashboard)
-router.get("/verify", async (req, res) => {
-  try {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ message: "No token provided" });
-
-    const decoded = jwt.verify(token, JWT_SECRET);
-    if (decoded.email !== ADMIN_EMAIL) {
-      return res.status(401).json({ message: "Unauthorized access" });
-    }
-
-    res.json({ valid: true, user: { id: 1, email: ADMIN_EMAIL } });
-  } catch (error) {
-    res.status(401).json({ message: "Invalid token" });
-  }
+router.get("/verify", requireRole("admin"), async (req, res) => {
+  res.json({ valid: true, user: { id: req.userId, email: req.userEmail } });
 });
 
 export default router;

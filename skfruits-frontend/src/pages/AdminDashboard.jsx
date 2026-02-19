@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { API } from "../api";
 import { useToast } from "../context/ToastContext";
@@ -7,7 +7,6 @@ import ProductForm from "../components/admin/ProductForm";
 import CategoryForm from "../components/admin/CategoryForm";
 import ProductList from "../components/admin/ProductList";
 import CategoryList from "../components/admin/CategoryList";
-import OrderList from "../components/admin/OrderList";
 import MessageList from "../components/admin/MessageList";
 import ReelForm from "../components/admin/ReelForm";
 import ReelList from "../components/admin/ReelList";
@@ -18,15 +17,23 @@ import SeasonalList from "../components/admin/SeasonalList";
 import BannerForm from "../components/admin/BannerForm";
 import BannerList from "../components/admin/BannerList";
 
+const DASHBOARD_TABS = ["products", "categories", "seasonal", "occasions", "banners", "reels", "messages"];
+
 export default function AdminDashboard() {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState("products");
+  const tabFromUrl = searchParams.get("tab") || "products";
+  const [activeTab, setActiveTab] = useState(DASHBOARD_TABS.includes(tabFromUrl) ? tabFromUrl : "products");
+
+  useEffect(() => {
+    const t = searchParams.get("tab") || "products";
+    if (DASHBOARD_TABS.includes(t)) setActiveTab(t);
+  }, [searchParams]);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [occasions, setOccasions] = useState([]);
-  const [orders, setOrders] = useState([]);
   const [messages, setMessages] = useState([]);
   const [reels, setReels] = useState([]);
   const [banners, setBanners] = useState([]);
@@ -110,15 +117,6 @@ export default function AdminDashboard() {
           toast.error("Session expired. Please login again.");
           logout();
         }
-      } else if (activeTab === "orders") {
-        const res = await fetch(`${API}/orders`, { headers });
-        if (res.ok) {
-          const data = await res.json();
-          setOrders(data);
-        } else if (res.status === 401) {
-          toast.error("Session expired. Please login again.");
-          logout();
-        }
       } else if (activeTab === "messages") {
         const res = await fetch(`${API}/contact`, { headers });
         if (res.ok) {
@@ -193,191 +191,59 @@ export default function AdminDashboard() {
     { id: "banners", label: "Banners", icon: null },
     { id: "reels", label: "Reels", icon: null },
     { id: "orders", label: "Orders", icon: null },
+    { id: "analytics", label: "Analytics", icon: null },
+    { id: "inventory", label: "Inventory", icon: null },
+    { id: "reviews", label: "Reviews", icon: null },
     { id: "messages", label: "Messages", icon: null },
   ];
 
+  const setTab = (tabId) => {
+    setActiveTab(tabId);
+    setEditingProduct(null);
+    setEditingCategory(null);
+    setEditingSeasonal(null);
+    setEditingOccasion(null);
+    setEditingReel(null);
+    setEditingBanner(null);
+    if (DASHBOARD_TABS.includes(tabId)) {
+      setSearchParams(tabId === "products" ? {} : { tab: tabId });
+    }
+  };
+
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: "var(--background)" }}>
-      {/* Sidebar (desktop) */}
-      <aside className="hidden lg:flex lg:flex-col w-72 border-r" style={{ backgroundColor: "var(--background)", borderColor: "var(--border)" }}>
-        <div className="px-6 py-5 border-b" style={{ borderColor: "var(--border)" }}>
-          <div className="flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm"
-              style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
-            >
-              SK
-            </div>
-            <div className="min-w-0">
-              <div className="font-display text-sm font-semibold truncate" style={{ color: "var(--foreground)" }}>SK Fruits</div>
-              <div className="text-xs truncate max-w-[14rem]" style={{ color: "var(--muted)" }}>{user?.email}</div>
-            </div>
-          </div>
+    <>
+      {/* Mobile-only: horizontal tabs (desktop uses AdminLayout sidebar) */}
+      <div className="lg:hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {tabs.map((tab) =>
+            ["orders", "analytics", "inventory", "reviews"].includes(tab.id) ? (
+              <Link
+                key={tab.id}
+                to={tab.id === "orders" ? "/admin/orders" : `/admin/${tab.id}`}
+                className="shrink-0 px-4 py-2.5 rounded-full font-semibold transition-all"
+                style={{ backgroundColor: "var(--secondary)", color: "var(--foreground)" }}
+              >
+                {tab.label}
+              </Link>
+            ) : (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setTab(tab.id)}
+                className="shrink-0 px-4 py-2.5 rounded-full font-semibold transition-all"
+                style={{
+                  backgroundColor: activeTab === tab.id ? "var(--primary)" : "var(--secondary)",
+                  color: activeTab === tab.id ? "var(--primary-foreground)" : "var(--foreground)",
+                }}
+              >
+                {tab.label}
+              </button>
+            )
+          )}
         </div>
+      </div>
 
-        <nav className="p-3 flex-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                setActiveTab(tab.id);
-                setEditingProduct(null);
-                setEditingCategory(null);
-                setEditingSeasonal(null);
-                setEditingOccasion(null);
-                setEditingReel(null);
-                setEditingBanner(null);
-              }}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-left"
-              style={{
-                backgroundColor: activeTab === tab.id ? "var(--primary)" : "transparent",
-                color: activeTab === tab.id ? "var(--primary-foreground)" : "var(--foreground)",
-              }}
-              onMouseEnter={(e) => {
-                if (activeTab !== tab.id) {
-                  e.currentTarget.style.backgroundColor = "var(--secondary)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeTab !== tab.id) {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }
-              }}
-            >
-              
-              <span>{tab.label}</span>
-            </button>
-          ))}
-        </nav>
-
-        <div className="p-4 border-t flex flex-col gap-2" style={{ borderColor: "var(--border)" }}>
-          <button
-            onClick={() => navigate("/")}
-            className="w-full px-4 py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 transition-all"
-            style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
-            onMouseEnter={(e) => { e.currentTarget.style.filter = "brightness(1.05)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.filter = "none"; }}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-            View Shop
-          </button>
-          <button
-            onClick={logout}
-            className="w-full px-4 py-2.5 rounded-lg transition font-medium"
-            style={{ backgroundColor: "var(--secondary)", color: "var(--foreground)" }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--border)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "var(--secondary)"; }}
-          >
-            Logout
-          </button>
-        </div>
-      </aside>
-
-      {/* Main */}
-      <main className="flex-1 min-w-0">
-        {/* Top bar (mobile + page header) — same height, blur, border as main header */}
-        <div
-          className="sticky top-0 z-40 bg-[var(--background)]/95 backdrop-blur-sm border-b"
-          style={{ borderColor: "var(--border)" }}
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between gap-4 h-16 md:h-20">
-              <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm"
-                  style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
-                >
-                  SK
-                </div>
-                <div className="min-w-0">
-                  <h1 className="font-display text-xl md:text-2xl font-bold" style={{ color: "var(--foreground)" }}>
-                    Admin <span style={{ color: "var(--primary)" }}>Dashboard</span>
-                  </h1>
-                  <p className="text-sm mt-0.5 truncate" style={{ color: "var(--muted)" }}>Welcome, {user?.email}</p>
-                </div>
-              </div>
-
-              <div className="hidden sm:flex items-center gap-3">
-                <button
-                  onClick={() => navigate("/")}
-                  className="px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all"
-                  style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.filter = "brightness(1.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.filter = "none";
-                  }}
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                  </svg>
-                  View Shop
-                </button>
-                <button
-                  onClick={logout}
-                  className="px-4 py-2 rounded-lg transition font-medium bg-[var(--secondary)]"
-                  style={{ color: "var(--foreground)" }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "var(--border)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "var(--secondary)";
-                  }}
-                >
-                  Logout
-                </button>
-              </div>
-            </div>
-
-            {/* Top menu (mobile) */}
-            <div className="lg:hidden mt-4">
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => {
-                      setActiveTab(tab.id);
-                      setEditingProduct(null);
-                    setEditingCategory(null);
-                    setEditingSeasonal(null);
-                    setEditingOccasion(null);
-                    setEditingReel(null);
-                    setEditingBanner(null);
-                  }}
-                    className="shrink-0 px-4 py-2.5 rounded-full font-semibold transition-all"
-                    style={{
-                      backgroundColor: activeTab === tab.id ? "var(--primary)" : "var(--secondary)",
-                      color: activeTab === tab.id ? "var(--primary-foreground)" : "var(--foreground)",
-                    }}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-              <div className="flex gap-2 sm:hidden mt-2">
-                <button
-                  onClick={() => navigate("/")}
-                  className="flex-1 px-4 py-2.5 rounded-lg transition font-medium"
-                  style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
-                >
-                  View Shop
-                </button>
-                <button
-                  onClick={logout}
-                  className="px-4 py-2.5 rounded-lg transition font-medium"
-                  style={{ backgroundColor: "var(--secondary)", color: "var(--foreground)" }}
-                >
-                  Logout
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 ">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 ">
           {/* Content */}
           {loading ? (
             <div className="rounded-lg shadow p-12 text-center" style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)" }}>
@@ -463,10 +329,6 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {activeTab === "orders" && (
-              <OrderList orders={orders} onUpdate={loadData} />
-            )}
-
             {activeTab === "reels" && (
               <div>
                 <ReelForm
@@ -487,8 +349,7 @@ export default function AdminDashboard() {
             )}
             </>
           )}
-        </div>
-      </main>
-    </div>
+      </div>
+    </>
   );
 }

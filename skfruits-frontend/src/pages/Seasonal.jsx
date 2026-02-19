@@ -63,7 +63,7 @@ export default function Seasonal() {
                 {selectedSeasonal.name}
               </h1>
               {selectedSeasonal.description && (
-                <p className="text-lg whitespace-pre-wrap" style={{ color: "var(--muted)" }}>
+                <p className="text-lg whitespace-pre-wrap" style={{ color: "var(--foreground-muted)" }}>
                   {selectedSeasonal.description}
                 </p>
               )}
@@ -84,7 +84,7 @@ export default function Seasonal() {
     return (
       <div className="min-h-screen py-16 flex items-center justify-center" style={{ backgroundColor: "var(--background)" }}>
         <div className="text-center">
-          <p className="text-lg" style={{ color: "var(--muted)" }}>Seasonal item not found.</p>
+          <p className="text-lg" style={{ color: "var(--foreground-muted)" }}>Seasonal item not found.</p>
           <Link to="/seasonal" className="mt-4 inline-block text-[var(--primary)] font-semibold hover:underline">Back to Seasonal</Link>
         </div>
       </div>
@@ -96,13 +96,13 @@ export default function Seasonal() {
     <div className="min-h-screen py-16 bg-page-products">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h1 className="font-display text-4xl font-bold mb-4 text-white drop-shadow-sm">Seasonal</h1>
-          <p className="text-lg text-white/90">Fresh picks for the season</p>
+          <h1 className="font-display text-4xl font-bold mb-4" style={{ color: "var(--foreground)" }}>Seasonal</h1>
+          <p className="text-lg" style={{ color: "var(--foreground-muted)" }}>Fresh picks for the season</p>
         </div>
 
         {seasonals.length === 0 ? (
           <div className="text-center py-16 rounded-xl" style={{ backgroundColor: "var(--background)" }}>
-            <p className="text-lg" style={{ color: "var(--muted)" }}>No seasonal items at the moment. Check back soon!</p>
+            <p className="text-lg" style={{ color: "var(--foreground-muted)" }}>No seasonal items at the moment. Check back soon!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -125,7 +125,7 @@ export default function Seasonal() {
                     {item.name}
                   </h2>
                   {item.description && (
-                    <p className="text-sm line-clamp-2 flex-1" style={{ color: "var(--muted)" }}>
+                    <p className="text-sm line-clamp-2 flex-1" style={{ color: "var(--foreground-muted)" }}>
                       {item.description}
                     </p>
                   )}
