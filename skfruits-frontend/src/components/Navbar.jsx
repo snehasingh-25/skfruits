@@ -12,10 +12,22 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
+  const [mobileUserMenuOpen, setMobileUserMenuOpen] = useState(false);
+  const mobileUserMenuRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target)) setUserMenuOpen(false);
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (mobileUserMenuRef.current && !mobileUserMenuRef.current.contains(e.target)) {
+        setMobileUserMenuOpen(false);
+      }
     };
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
@@ -528,6 +540,84 @@ export default function Navbar() {
                 Your Cart
               </span>
             </Link>
+
+            {/* Mobile User Menu - visible only on mobile when authenticated */}
+            {isAuthenticated && user && (
+              <div className="md:hidden relative" ref={mobileUserMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setMobileUserMenuOpen(!mobileUserMenuOpen)}
+                  className="p-2.5 rounded-full transition-all duration-300 active:scale-95"
+                  style={{ backgroundColor: 'var(--secondary)' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--background)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'var(--secondary)'; }}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--foreground)' }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </button>
+                {mobileUserMenuOpen && (
+                  <div
+                    className="absolute right-0 top-full mt-2 py-2 rounded-lg shadow-lg border min-w-[180px] z-50"
+                    style={{ backgroundColor: "var(--background)", borderColor: "var(--border)" }}
+                  >
+                    <div className="px-4 py-2 border-b" style={{ borderColor: "var(--border)" }}>
+                      <div className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                        {user.name || user.email}
+                      </div>
+                      <div className="text-xs" style={{ color: "var(--foreground-muted)" }}>
+                        {user.email}
+                      </div>
+                    </div>
+                    {user.role === "driver" && (
+                      <Link
+                        to="/driver"
+                        onClick={() => setMobileUserMenuOpen(false)}
+                        className="block w-full text-left px-4 py-2 text-sm hover:opacity-90 font-medium"
+                        style={{ color: "var(--primary)" }}
+                      >
+                        Driver dashboard
+                      </Link>
+                    )}
+                    <Link
+                      to="/profile/addresses"
+                      onClick={() => setMobileUserMenuOpen(false)}
+                      className="block w-full text-left px-4 py-2 text-sm hover:opacity-90"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      Addresses
+                    </Link>
+                    <Link
+                      to="/profile/orders"
+                      onClick={() => setMobileUserMenuOpen(false)}
+                      className="block w-full text-left px-4 py-2 text-sm hover:opacity-90"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      My Orders
+                    </Link>
+                    <Link
+                      to="/profile/wishlist"
+                      onClick={() => setMobileUserMenuOpen(false)}
+                      className="block w-full text-left px-4 py-2 text-sm hover:opacity-90"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      Wishlist
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        logout();
+                        setMobileUserMenuOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm hover:opacity-90 border-t"
+                      style={{ color: "var(--foreground)", borderColor: "var(--border)" }}
+                    >
+                      Log out
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Mobile Menu Button (visible < md) */}
             <button
