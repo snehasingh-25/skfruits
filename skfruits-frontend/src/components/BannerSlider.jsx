@@ -60,9 +60,8 @@ export default function BannerSlider({ bannerType = "primary" }) {
 
   const currentBanner = banners[currentIndex];
 
-  // Banner aspect ratio: 3189×1408 px = 2.265:1 (width:height)
-  // padding-bottom = (1408 / 3189) * 100 = 44.15%
-  const bannerAspectRatio = (1408 / 3189) * 100;
+  // Banner dimensions: 1920×720 — aspect ratio 720/1920 = 37.5%
+  const bannerAspectRatio = (720 / 1920) * 100;
 
   return (
     <div 

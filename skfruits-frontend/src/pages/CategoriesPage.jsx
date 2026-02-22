@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { API } from "../api";
+import { shuffleArray } from "../utils/shuffle";
 import { Link } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import GiftBoxLoader from "../components/GiftBoxLoader";
@@ -80,7 +81,7 @@ export default function CategoriesPage() {
       const filteredData = trending 
         ? (Array.isArray(data) ? data.filter(p => p.isTrending) : [])
         : (Array.isArray(data) ? data : []);
-      setProducts(filteredData);
+      setProducts(shuffleArray(filteredData));
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
@@ -105,7 +106,7 @@ export default function CategoriesPage() {
       const filteredData = trending 
         ? (Array.isArray(data) ? data.filter(p => p.isTrending) : [])
         : (Array.isArray(data) ? data : []);
-      setProducts(filteredData);
+      setProducts(shuffleArray(filteredData));
     } catch (error) {
       console.error("Error fetching products:", error);
       setProducts([]);

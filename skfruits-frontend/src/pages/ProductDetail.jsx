@@ -591,98 +591,60 @@ export default function ProductDetail() {
                     {product.name}
                   </h1>
 
-                  <div className="mt-3 flex flex-wrap items-baseline gap-2">
-                    {selectedWeight ? (
-                      (() => {
+                  {/* Price once at top: current, struck MRP, discount */}
+                  <div className="mt-4 flex flex-wrap items-baseline gap-2">
+                    {(() => {
+                      let selling = null;
+                      let mrp = null;
+                      if (selectedWeight && product?.weightOptions) {
                         try {
                           const weightOpts = Array.isArray(product.weightOptions) ? product.weightOptions : JSON.parse(product.weightOptions);
-                          const weightInfo = weightOpts.find(w => w.weight === selectedWeight);
-                          if (!weightInfo) return null;
-                          return (
+                          const w = weightOpts.find((x) => x.weight === selectedWeight);
+                          if (w) {
+                            selling = Number(w.price);
+                            mrp = w.originalPrice != null && w.originalPrice !== "" ? Number(w.originalPrice) : null;
+                          }
+                        } catch { /* weightOptions parse */ }
+                      } else if (selectedSize) {
+                        selling = Number(selectedSize.price);
+                        mrp = selectedSize.originalPrice != null && selectedSize.originalPrice !== "" ? Number(selectedSize.originalPrice) : (product?.hasSinglePrice ? (product?.originalPrice != null ? Number(product.originalPrice) : null) : null);
+                      } else if (product?.hasSinglePrice && product?.singlePrice != null) {
+                        selling = Number(product.singlePrice);
+                        mrp = product.originalPrice != null && product.originalPrice !== "" ? Number(product.originalPrice) : null;
+                      } else if (product?.sizes?.length) {
+                        const minSize = product.sizes.reduce((a, b) => (Number(a.price) <= Number(b.price) ? a : b));
+                        selling = Number(minSize.price);
+                        mrp = minSize.originalPrice != null && minSize.originalPrice !== "" ? Number(minSize.originalPrice) : null;
+                      }
+                      if (selling == null) return <span className="text-sm text-design-muted">Select size to see price</span>;
+                      const showFrom = product?.sizes?.length && !selectedSize;
+                      const discountPct = mrp != null && mrp > selling ? Math.round(((mrp - selling) / mrp) * 100) : 0;
+                      return (
+                        <>
+                          <span className="text-2xl font-bold tracking-tight" style={{ color: "var(--foreground)" }}>
+                            {showFrom ? "From " : ""}₹{selling.toLocaleString("en-IN")}
+                          </span>
+                          {mrp != null && mrp > selling && (
                             <>
-                              <div className="text-2xl font-extrabold" style={{ color: "oklch(20% .02 340)" }}>
-                                ₹{Number(weightInfo.price).toLocaleString("en-IN")}
-                              </div>
-                              {weightInfo.originalPrice != null && Number(weightInfo.originalPrice) > Number(weightInfo.price) && (
-                                <>
-                                  <span className="text-base line-through" style={{ color: "oklch(55% .02 340)" }}>
-                                    ₹{Number(weightInfo.originalPrice).toLocaleString("en-IN")}
-                                  </span>
-                                  <span className="text-sm font-semibold text-green-600">
-                                    {Math.round(((weightInfo.originalPrice - weightInfo.price) / weightInfo.originalPrice) * 100)}% OFF
-                                  </span>
-                                </>
-                              )}
-                              <div className="text-sm font-semibold" style={{ color: "oklch(55% .02 340)" }}>
-                                {selectedWeight}
-                              </div>
-                            </>
-                          );
-                        } catch {
-                          return null;
-                        }
-                      })()
-                    ) : selectedSize ? (
-                      <>
-                        <div className="text-2xl font-extrabold" style={{ color: "oklch(20% .02 340)" }}>
-                          ₹{Number(selectedSize.price).toLocaleString("en-IN")}
-                        </div>
-                        {(() => {
-                          const mrp = selectedSize.originalPrice ?? (product?.hasSinglePrice ? product?.originalPrice : null);
-                          if (mrp == null || Number(mrp) <= Number(selectedSize.price)) return null;
-                          return (
-                            <>
-                              <span className="text-base line-through" style={{ color: "oklch(55% .02 340)" }}>
-                                ₹{Number(mrp).toLocaleString("en-IN")}
+                              <span className="text-base line-through text-design-muted">
+                                ₹{mrp.toLocaleString("en-IN")}
                               </span>
-                              <span className="text-sm font-semibold text-green-600">
-                                {Math.round(((mrp - selectedSize.price) / mrp) * 100)}% OFF
+                              <span className="text-sm font-semibold" style={{ color: "var(--success)" }}>
+                                {discountPct}% OFF
                               </span>
                             </>
-                          );
-                        })()}
-                        <div className="text-sm font-semibold" style={{ color: "oklch(55% .02 340)" }}>
-                          {selectedSize.label}
-                        </div>
-                      </>
-                    ) : product?.hasSinglePrice && product?.singlePrice != null ? (
-                      <>
-                        <div className="text-2xl font-extrabold" style={{ color: "oklch(20% .02 340)" }}>
-                          ₹{Number(product.singlePrice).toLocaleString("en-IN")}
-                        </div>
-                        {product.originalPrice != null && Number(product.originalPrice) > Number(product.singlePrice) && (
-                          <>
-                            <span className="text-base line-through" style={{ color: "oklch(55% .02 340)" }}>
-                              ₹{Number(product.originalPrice).toLocaleString("en-IN")}
-                            </span>
-                            <span className="text-sm font-semibold text-green-600">
-                              {Math.round(((product.originalPrice - product.singlePrice) / product.originalPrice) * 100)}% OFF
-                            </span>
-                          </>
-                        )}
-                      </>
-                    ) : (
-                      <div className="text-sm font-semibold" style={{ color: "oklch(55% .02 340)" }}>
-                        Select a size to see price
-                      </div>
-                    )}
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
 
 
-                  {/* Weight selector - for weight-based products like fruits */}
+                  {/* Weight selector - compact label-only buttons */}
                   {product?.weightOptions ? (
                     <div className="mt-6">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm font-bold" style={{ color: "oklch(20% .02 340)" }}>
-                          Select weight
-                        </div>
-                        {selectedWeight ? (
-                          <div className="text-xs font-semibold" style={{ color: "oklch(55% .02 340)" }}>
-                            Selected: {selectedWeight}
-                          </div>
-                        ) : null}
-                      </div>
-                      <div className="mt-3 grid grid-cols-2 gap-3">
+                      <p className="text-xs font-semibold text-design-foreground mb-2.5">Select weight</p>
+                      <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
                         {(() => {
                           try {
                             const weightOpts = Array.isArray(product.weightOptions) ? product.weightOptions : JSON.parse(product.weightOptions);
@@ -692,33 +654,22 @@ export default function ProductDetail() {
                                 <button
                                   key={weightOpt.weight}
                                   type="button"
+                                  aria-pressed={active}
+                                  aria-label={`Weight ${weightOpt.weight}`}
                                   onClick={() => setSelectedWeight(weightOpt.weight)}
-                                  className={[
-                                    "rounded-2xl border px-4 py-3 text-left transition-transform duration-200",
-                                    active ? "ring-2 ring-offset-2" : "hover:shadow-sm active:scale-[0.99]",
-                                  ].join(" ")}
-                                  style={{
-                                    borderColor: active ? "oklch(88% .06 340)" : "oklch(92% .04 340)",
-                                  }}
+                                  className="min-h-[36px] rounded-xl border px-2.5 py-2 text-xs font-medium transition-all duration-200 hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
+                                  style={
+                                    active
+                                      ? { borderColor: "var(--foreground)", borderWidth: "1.5px", backgroundColor: "var(--muted)", color: "var(--foreground)" }
+                                      : { borderColor: "var(--border)", backgroundColor: "var(--card)" }
+                                  }
                                 >
-                                  <div className="text-sm font-bold" style={{ color: "oklch(20% .02 340)" }}>
-                                    {weightOpt.weight}
-                                  </div>
-                                  <div className="flex flex-wrap items-baseline gap-1.5 mt-0.5">
-                                    <span className="text-sm font-extrabold" style={{ color: "oklch(40% .02 340)" }}>
-                                      ₹{Number(weightOpt.price).toLocaleString("en-IN")}
-                                    </span>
-                                    {weightOpt.originalPrice != null && Number(weightOpt.originalPrice) > Number(weightOpt.price) && (
-                                      <span className="text-xs line-through" style={{ color: "oklch(55% .02 340)" }}>
-                                        ₹{Number(weightOpt.originalPrice).toLocaleString("en-IN")}
-                                      </span>
-                                    )}
-                                  </div>
+                                  {weightOpt.weight}
                                 </button>
                               );
                             });
                           } catch {
-                            return <div className="text-sm text-red-600">Error loading weight options</div>;
+                            return <div className="text-sm text-destructive col-span-full">Error loading weight options</div>;
                           }
                         })()}
                       </div>
@@ -746,45 +697,29 @@ export default function ProductDetail() {
                     </div>
                   ) : product.sizes?.length ? (
                     <div className="mt-6">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm font-bold" style={{ color: "oklch(20% .02 340)" }}>
-                          Select size
-                        </div>
-                        {selectedSize ? (
-                          <div className="text-xs font-semibold" style={{ color: "oklch(55% .02 340)" }}>
-                            Selected: {selectedSize.label}
-                          </div>
-                        ) : null}
-                      </div>
-                      <div className="mt-3 grid grid-cols-2 gap-3">
+                      <p className="text-xs font-semibold text-design-foreground mb-2.5">Select size</p>
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
                         {product.sizes.map((size) => {
                           const active = selectedSize?.id === size.id;
+                          const outOfStock = Math.max(0, Number(size.stock ?? 0)) <= 0;
                           return (
                             <button
                               key={size.id}
                               type="button"
-                              onClick={() => setSelectedSize(size)}
-                              className={[
-                                "rounded-2xl border px-4 py-3 text-left transition-transform duration-200",
-                                active ? "ring-2 ring-offset-2" : "hover:shadow-sm active:scale-[0.99]",
-                              ].join(" ")}
-                              style={{
-                                borderColor: active ? "oklch(88% .06 340)" : "oklch(92% .04 340)",
-                              }}
+                              aria-pressed={active}
+                              aria-label={`Size ${size.label}${outOfStock ? ", out of stock" : ""}`}
+                              disabled={outOfStock}
+                              onClick={() => !outOfStock && setSelectedSize(size)}
+                              className={`min-h-[36px] rounded-xl border px-2.5 py-2 text-xs font-medium transition-all duration-200 min-w-0 hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 ${outOfStock ? "line-through" : ""}`}
+                              style={
+                                active
+                                  ? { borderColor: "var(--foreground)", borderWidth: "1.5px", backgroundColor: "var(--muted)", color: "var(--foreground)" }
+                                  : outOfStock
+                                    ? { borderColor: "var(--border)", backgroundColor: "var(--muted)", color: "var(--muted-foreground)" }
+                                    : { borderColor: "var(--border)", backgroundColor: "var(--card)" }
+                              }
                             >
-                              <div className="text-sm font-bold" style={{ color: "oklch(20% .02 340)" }}>
-                                {size.label}
-                              </div>
-                              <div className="flex flex-wrap items-baseline gap-1.5 mt-0.5">
-                                <span className="text-sm font-extrabold" style={{ color: "oklch(40% .02 340)" }}>
-                                  ₹{Number(size.price).toLocaleString("en-IN")}
-                                </span>
-                                {size.originalPrice != null && Number(size.originalPrice) > Number(size.price) && (
-                                  <span className="text-xs line-through" style={{ color: "oklch(55% .02 340)" }}>
-                                    ₹{Number(size.originalPrice).toLocaleString("en-IN")}
-                                  </span>
-                                )}
-                              </div>
+                              {size.label}
                             </button>
                           );
                         })}
@@ -904,29 +839,14 @@ export default function ProductDetail() {
                           toast.error("Please select a weight or size");
                           return;
                         }
-                        let label = "Standard";
-                        let price = product.singlePrice;
-                        if (selectedWeight) {
-                          try {
-                            const weightOpts = Array.isArray(product.weightOptions) ? product.weightOptions : JSON.parse(product.weightOptions);
-                            const w = weightOpts.find((o) => o.weight === selectedWeight);
-                            if (w) {
-                              label = selectedWeight;
-                              price = w.price;
-                            }
-                          } catch { /* use defaults */ }
-                        } else if (selectedSize) {
-                          label = selectedSize.label;
-                          price = selectedSize.price;
-                        }
-                        const message = `Hi! I'm interested in:\n\nProduct: ${product.name}\n${selectedWeight ? `Weight: ${label}\n` : product.hasSinglePrice ? "" : `Size: ${label}\n`}Quantity: ${quantity}\nPrice: ₹${price}\nTotal: ₹${(Number(price) * quantity).toFixed(2)}`;
-                        window.open(`https://wa.me/917976948872?text=${encodeURIComponent(message)}`);
+                        handleAddToCart();
+                        navigate("/checkout");
                       }}
                       disabled={outOfStock || (!selectedWeight && !selectedSize && !(product?.hasSinglePrice && product?.singlePrice))}
                       className="w-full py-3 rounded-2xl font-bold transition-transform duration-200 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ backgroundColor: "oklch(55% .18 145)", color: "white" }}
                     >
-                      WhatsApp
+                      Checkout
                     </button>
                   </div>
 

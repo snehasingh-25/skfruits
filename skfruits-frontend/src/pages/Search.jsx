@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { API } from "../api";
+import { shuffleArray } from "../utils/shuffle";
 import ProductCard from "../components/ProductCard";
 import GiftBoxLoader from "../components/GiftBoxLoader";
 import { useProductLoader } from "../hooks/useProductLoader";
@@ -51,7 +52,7 @@ export default function Search() {
       try {
         const res = await fetch(url);
         const data = await res.json();
-        const safeData = Array.isArray(data) ? data : [];
+        const safeData = shuffleArray(Array.isArray(data) ? data : []);
         setProducts(safeData);
         
         // If no results and we have a query, fall back to all products in selected category (and other active filters).
@@ -71,7 +72,7 @@ export default function Search() {
             fallbackProducts = Array.isArray(allProducts) ? allProducts : [];
           }
 
-          setSuggestedProducts(fallbackProducts);
+          setSuggestedProducts(shuffleArray(fallbackProducts));
           setShowSuggestions(fallbackProducts.length > 0);
         } else {
           setSuggestedProducts([]);

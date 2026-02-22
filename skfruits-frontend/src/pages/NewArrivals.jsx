@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { API } from "../api";
+import { shuffleArray } from "../utils/shuffle";
 import ProductCard from "../components/ProductCard";
 
 export default function NewArrivals() {
@@ -8,7 +9,7 @@ export default function NewArrivals() {
   useEffect(() => {
     fetch(`${API}/products`)
       .then(res => res.json())
-      .then(data => setProducts(data.filter(p => p.isNew)));
+      .then(data => setProducts(shuffleArray((Array.isArray(data) ? data : []).filter(p => p.isNew))));
   }, []);
 
   return (

@@ -10,6 +10,7 @@ import { useProductLoader } from "../hooks/useProductLoader";
 import { useRecentlyViewed } from "../context/RecentlyViewedContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useUserAuth } from "../context/UserAuthContext";
+import { shuffleArray } from "../utils/shuffle";
 
 export default function Home() {
   const { recentIds } = useRecentlyViewed();
@@ -40,69 +41,29 @@ export default function Home() {
   const isProductsLoading = loading.products;
   useProductLoader(isProductsLoading);
 
+  // Single request for homepage data (faster: 1 round-trip instead of 5)
   useEffect(() => {
     const ac = new AbortController();
-
-    // Fetch categories
-    fetch(`${API}/categories`, { signal: ac.signal })
+    fetch(`${API}/home`, { signal: ac.signal })
       .then((res) => res.json())
       .then((data) => {
-        setCategories(Array.isArray(data) ? data : []);
-        setLoading((prev) => ({ ...prev, categories: false }));
-      })
-      .catch(() => {
-        setLoading((prev) => ({ ...prev, categories: false }));
-      });
-
-    // Fetch occasions
-    fetch(`${API}/occasions`, { signal: ac.signal })
-      .then((res) => res.json())
-      .then((data) => {
-        setOccasions(Array.isArray(data) ? data : []);
-        setLoading((prev) => ({ ...prev, occasions: false }));
-      })
-      .catch(() => {
-        setLoading((prev) => ({ ...prev, occasions: false }));
-      });
-
-    // Fetch products
-    fetch(`${API}/products`, { signal: ac.signal })
-      .then((res) => res.json())
-      .then((data) => {
-        const list = Array.isArray(data) ? data : [];
+        if (!data || data.error) {
+          setLoading((prev) => ({ ...prev, categories: false, occasions: false, products: false, reels: false, banners: false }));
+          return;
+        }
+        setCategories(Array.isArray(data.categories) ? data.categories : []);
+        setOccasions(Array.isArray(data.occasions) ? data.occasions : []);
+        const list = shuffleArray(Array.isArray(data.products) ? data.products : []);
         setProducts(list);
         setTrendingProducts(list.filter((p) => p.isTrending));
-        setLoading((prev) => ({ ...prev, products: false }));
+        setReels(Array.isArray(data.reels) ? data.reels : []);
+        setBanners(Array.isArray(data.banners) ? data.banners : []);
+        setLoading((prev) => ({ ...prev, categories: false, occasions: false, products: false, reels: false, banners: false }));
       })
       .catch(() => {
-        setLoading((prev) => ({ ...prev, products: false }));
+        setLoading((prev) => ({ ...prev, categories: false, occasions: false, products: false, reels: false, banners: false }));
       });
-
-    // Fetch reels
-    fetch(`${API}/reels`, { signal: ac.signal })
-      .then((res) => res.json())
-      .then((data) => {
-        setReels(Array.isArray(data) ? data : []);
-        setLoading((prev) => ({ ...prev, reels: false }));
-      })
-      .catch(() => {
-        setLoading((prev) => ({ ...prev, reels: false }));
-      });
-
-    // Fetch primary banners for hero section
-    fetch(`${API}/banners?type=primary`, { signal: ac.signal })
-      .then((res) => res.json())
-      .then((data) => {
-        setBanners(Array.isArray(data) ? data : []);
-        setLoading((prev) => ({ ...prev, banners: false }));
-      })
-      .catch(() => {
-        setLoading((prev) => ({ ...prev, banners: false }));
-      });
-
-    return () => {
-      ac.abort();
-    };
+    return () => ac.abort();
   }, []);
 
   // Lazy: top-rated products
@@ -246,7 +207,6 @@ export default function Home() {
 
   // Check if any data is still loading
   const isInitialLoad = loading.categories || loading.occasions || loading.products || loading.reels || loading.banners;
-  const heroBanner = banners.length > 0 ? banners[0] : null;
 
   // Time-based loader for all data (similar to useProductLoader)
   const [showAnyLoader, setShowAnyLoader] = useState(isInitialLoad);
@@ -303,81 +263,53 @@ export default function Home() {
       {/* Hide content while loader is showing */}
       {!showAnyLoader && (
         <>
-          {/* Hero Section - Shows immediately on initial load */}
-          {isInitialLoad && (
-        <div className="relative w-full overflow-hidden h-[300px] sm:h-[400px] lg:h-[500px]">
-          {/* Use banner image if available, otherwise use gradient */}
-          {heroBanner && heroBanner.imageUrl ? (
-            <>
+          {/* Hero Section - desktop: text left, image right; phone: photo as bg with text overlay */}
+          <section className="w-full overflow-hidden bg-[#f3ece1] relative min-h-[70vh] lg:min-h-0">
+            {/* Phone: photo as full-bleed background (low opacity + blur) */}
+            <div className="absolute inset-0 z-0 lg:hidden">
               <img
-                src={heroBanner.imageUrl}
-                alt={heroBanner.title || "SK Fruits"}
-                className="w-full h-full object-cover"
+                src="/hero2.png"
+                alt=""
+                aria-hidden
+                className="absolute inset-0 w-full h-full object-cover object-center opacity-40 blur-sm"
                 loading="eager"
                 fetchPriority="high"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent"></div>
-            </>
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/20 via-[var(--accent)]/15 to-[var(--primary)]/10"></div>
-          )}
-          
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center px-4">
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 text-white drop-shadow-lg">
-                {heroBanner?.title || "SK Fruits"}
-              </h1>
-              <p className="text-lg sm:text-xl text-white/90 mb-6 drop-shadow-md">
-                {heroBanner?.subtitle || "FreshFruit — Premium fresh fruits for every occasion"}
-              </p>
             </div>
-          </div>
-          
-          {/* Decorative elements - only show if no banner image */}
-          {!heroBanner && (
-            <>
-              <div className="absolute top-10 left-10 w-16 h-16 opacity-20 rounded-full p-2 bg-white/30">
-                <img src="/logo.png" alt="SK Fruits" className="w-full h-full object-contain" />
+            <div className="relative z-10 flex flex-col lg:flex-row lg:items-stretch">
+              {/* Text - overlay on phone, left column on desktop */}
+              <div className="flex flex-col justify-center lg:w-1/2 px-6 sm:px-8 md:px-10 lg:px-12 xl:px-16 py-12 sm:py-16 lg:py-12 min-h-[70vh] lg:min-h-0">
+                <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-design-foreground">
+                  SK Fruits
+                </h1>
+                <div className="mt-4 sm:mt-5 font-bold text-xl sm:text-2xl md:text-3xl lg:text-3xl uppercase tracking-wide leading-tight" style={{ color: "#8B6914" }}>
+                  <div>Fresh</div>
+                  <div>Grocery</div>
+                  <div>Delivery</div>
+                </div>
+                <p className="mt-4 sm:mt-5 text-sm sm:text-base md:text-lg text-design-muted max-w-xl leading-relaxed">
+                  Discover everyday essentials, fresh produce, and quality brands all under one roof at your favorite grocery store.
+                </p>
               </div>
-              <div className="absolute bottom-10 right-10 w-16 h-16 opacity-20 rounded-full p-2 bg-white/30">
-                <img src="/logo.png" alt="SK Fruits" className="w-full h-full object-contain" />
+              {/* Image - right on desktop only; hidden on phone (bg layer used instead) */}
+              <div
+                className="relative hidden lg:block lg:shrink-0 lg:w-auto"
+                style={{ width: 1000, height: 500, maxWidth: "100%" }}
+              >
+                <img
+                  src="/hero2.png"
+                  alt="SK Fruits - Fresh premium fruits"
+                  width={1000}
+                  height={500}
+                  className="w-full h-full object-cover object-center"
+                  loading="eager"
+                  fetchPriority="high"
+                />
               </div>
-              <div className="absolute top-1/2 right-20 w-14 h-14 opacity-20 rounded-full p-2 bg-white/30">
-                <img src="/logo.png" alt="SK Fruits" className="w-full h-full object-contain" />
-              </div>
-            </>
-          )}
-        </div>
-      )}
+            </div>
+          </section>
 
-      {/* Primary Banner Slider - Only show when data is loaded */}
-      {!isInitialLoad && <BannerSlider bannerType="primary" />}
-
-      {/* Personalized: Recently Viewed */}
-      {recentIds.length > 0 && (
-        <div className="max-w-7xl mx-auto">
-          <ProductCarouselSection title="Recently Viewed" productIds={recentIds} />
-        </div>
-      )}
-
-      {/* Personalized: From Your Wishlist */}
-      {wishlistItems.length > 0 && (
-        <div className="max-w-7xl mx-auto">
-          <ProductCarouselSection
-            title="From Your Wishlist"
-            products={wishlistItems.map((item) => item.product).filter(Boolean)}
-          />
-        </div>
-      )}
-
-      {/* Personalized: Buy Again */}
-      {buyAgainIds.length > 0 && (
-        <div className="max-w-7xl mx-auto">
-          <ProductCarouselSection title="Buy Again" productIds={buyAgainIds} />
-        </div>
-      )}
-
-      {/* Shop By Category Section */}
+          {/* Shop By Category Section */}
       {categories.length > 0 ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between mb-8">
@@ -448,6 +380,9 @@ export default function Home() {
         </div>
       ) : null}
 
+          {/* Primary Banner Slider (admin-managed banners) */}
+          {!isInitialLoad && <BannerSlider bannerType="primary" />}
+
       {/* Popular Fruits (Trending) */}
       {trendingProducts.length > 0 ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
@@ -483,6 +418,32 @@ export default function Home() {
       {topRatedProducts.length > 0 && (
         <div className="max-w-7xl mx-auto">
           <ProductCarouselSection title="Top Rated" products={topRatedProducts} />
+        </div>
+      )}
+
+       {/* Personalized: Recently Viewed */}
+       {recentIds.length > 0 && (
+        <div className="max-w-7xl mx-auto">
+          <ProductCarouselSection title="Recently Viewed" productIds={recentIds} />
+        </div>
+      )}
+
+      {/* Mins banner image */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <img
+          src="/mins.png"
+          alt=""
+          width={752}
+          height={332}
+          className="w-full max-w-[752px] h-auto mx-auto object-contain rounded-xl"
+          style={{ aspectRatio: "752 / 332" }}
+        />
+      </div>
+
+      {/* Personalized: Buy Again */}
+      {buyAgainIds.length > 0 && (
+        <div className="max-w-7xl mx-auto">
+          <ProductCarouselSection title="Buy Again" productIds={buyAgainIds} />
         </div>
       )}
 
@@ -561,7 +522,7 @@ export default function Home() {
       {!showAnyLoader && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
           <div className="flex items-center justify-between mb-10">
-            <h2 className="font-display text-3xl font-bold text-design-foreground">Gifts</h2>
+            <h2 className="font-display text-3xl font-bold text-design-foreground">Our Products</h2>
             {products.length > 0 && (
               <Link
                 to="/shop"
@@ -594,6 +555,16 @@ export default function Home() {
 
       {/* Secondary Banner Section - Between Gifts and Reels */}
       {!isInitialLoad && <BannerSlider bannerType="secondary" />}
+      
+      {/* Personalized: From Your Wishlist */}
+      {wishlistItems.length > 0 && (
+        <div className="max-w-7xl mx-auto">
+          <ProductCarouselSection
+            title="From Your Wishlist"
+            products={wishlistItems.map((item) => item.product).filter(Boolean)}
+          />
+        </div>
+      )}
 
       {/* Reels Section */}
       {reels.length > 0 && (

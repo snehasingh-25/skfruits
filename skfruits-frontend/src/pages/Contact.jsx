@@ -51,7 +51,7 @@ export default function Contact() {
               Contact Us
             </h1>
             <p className="text-xl max-w-3xl mx-auto leading-relaxed" style={{ color: "var(--foreground-muted)" }}>
-              Ready to find the perfect gift? Get in touch with our team for product inquiries, 
+              Get in touch with our team for product inquiries, 
               custom orders, or partnership opportunities.
             </p>
           </div>
@@ -200,9 +200,9 @@ export default function Contact() {
                 Our Address
               </h3>
               <p className="text-lg leading-relaxed" style={{ color: "var(--foreground-muted)" }}>
-                Sewa Sadan Rd, near Sitaram Ji Ki Bawri,<br />
+                {/* Sewa Sadan Rd, near Sitaram Ji Ki Bawri,<br />
                 Bhopal Ganj, Bhilwara,<br />
-                Rajasthan 311001
+                Rajasthan 311001 */}
               </p>
             </div>
 
@@ -212,7 +212,7 @@ export default function Contact() {
               </h3>
               <div className="space-y-2">
                 <p className="text-lg" style={{ color: "var(--foreground-muted)" }}>
-                  <span className="font-semibold" style={{ color: "var(--foreground)" }}>Yash Jhanwar:</span> +91 79769 48872
+                  <span className="font-semibold" style={{ color: "var(--foreground)" }}></span>
                 </p>
               </div>
             </div>
@@ -222,7 +222,7 @@ export default function Contact() {
                 Email Address
               </h3>
               <p className="text-lg" style={{ color: "var(--foreground-muted)" }}>
-                yashj.6628@gmail.com
+                
               </p>
             </div>
 
@@ -231,8 +231,8 @@ export default function Contact() {
                 Business Hours
               </h3>
               <div className="space-y-1" style={{ color: "var(--foreground-muted)" }}>
-                <p className="text-lg">Monday - Saturday: 9:00 AM - 7:00 PM</p>
-                <p className="text-lg">Sunday: 10:00 AM - 5:00 PM</p>
+                <p className="text-lg">Monday - Saturday: 9:00 AM - 10:00 PM</p>
+                <p className="text-lg">Sunday: 10:00 AM - 10:00 PM</p>
               </div>
             </div>
           </div>

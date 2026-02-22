@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { API } from "../api";
+import { shuffleArray } from "../utils/shuffle";
 import ProductCard from "./ProductCard";
 
 /**
@@ -39,7 +40,7 @@ export default function ProductCarouselSection({
     fetch(`${API}/products?ids=${idsToFetch.join(",")}`, { signal: ac.signal })
       .then((res) => res.json())
       .then((data) => {
-        setProducts(Array.isArray(data) ? data : []);
+        setProducts(shuffleArray(Array.isArray(data) ? data : []));
       })
       .catch((err) => {
         if (err?.name !== "AbortError") console.error("ProductCarouselSection fetch error:", err);

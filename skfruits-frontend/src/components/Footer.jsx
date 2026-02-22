@@ -75,7 +75,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-sm transition-all duration-300 hover:translate-x-1 text-design-foreground hover:opacity-80"
               >
-                @giftchoicebhl
+                
               </a>
             </div>
           </div>
@@ -107,7 +107,7 @@ export default function Footer() {
             <div className="space-y-2 text-sm text-design-foreground">
               <p className="flex items-start gap-2">
                 <span className="mt-0.5">📍</span>
-                <span>Sewa Sadan Rd, near Sitaram Ji Ki Bawri, Bhopal Ganj, Bhilwara, Rajasthan 311001</span>
+                <span></span>
               </p>
               <p className="flex items-center gap-2">
                 <span>📱</span>
@@ -115,7 +115,7 @@ export default function Footer() {
                   href="tel:+917976948872" 
                   className="hover:underline transition-all duration-300 text-design-foreground hover:opacity-80"
                 >
-                  79769 48872
+                  
                 </a>
               </p>
               <p className="flex items-center gap-2">
@@ -124,7 +124,7 @@ export default function Footer() {
                   href="mailto:yashj.6628@gmail.com" 
                   className="hover:underline transition-all duration-300 text-design-foreground hover:opacity-80"
                 >
-                  yashj.6628@gmail.com
+                  
                 </a>
               </p>
             </div>

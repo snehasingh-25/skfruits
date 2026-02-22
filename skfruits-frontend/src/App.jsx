@@ -85,7 +85,7 @@ function PublicLayout() {
         <Route path="/contact" element={<Navigate to="/blog" replace />} />
       </Routes>
       <Footer />
-      <ChatBot />
+      {/* <ChatBot /> */}
     </>
   );
 }

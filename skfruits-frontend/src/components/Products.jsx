@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { API } from "../api";
+import { shuffleArray } from "../utils/shuffle";
 import GiftBoxLoader from "./GiftBoxLoader";
 import { useProductLoader } from "../hooks/useProductLoader";
 
@@ -15,7 +16,7 @@ export default function Products() {
     fetch(`${API}/products`)
       .then(res => res.json())
       .then(data => {
-        setProducts(data);
+        setProducts(shuffleArray(Array.isArray(data) ? data : []));
         setLoading(false);
       })
       .catch(() => {

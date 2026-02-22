@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { API } from "../api";
+import { shuffleArray } from "../utils/shuffle";
 import ProductCard from "../components/ProductCard";
 import GiftBoxLoader from "../components/GiftBoxLoader";
 import { useProductLoader } from "../hooks/useProductLoader";
@@ -29,7 +30,7 @@ export default function Occasion() {
       const qs = params.toString();
       const res = await fetch(`${API}/products${qs ? `?${qs}` : ""}`);
       const data = await res.json();
-      setProducts(data || []);
+      setProducts(shuffleArray(Array.isArray(data) ? data : []));
     } catch (error) {
       console.error("Error fetching products:", error);
       setProducts([]);
@@ -47,7 +48,7 @@ export default function Occasion() {
         params.append("category", category);
         const res = await fetch(`${API}/products?${params.toString()}`);
         const data = await res.json();
-        setProducts(data || []);
+        setProducts(shuffleArray(Array.isArray(data) ? data : []));
         
         // Also fetch occasion details
         const occasionRes = await fetch(`${API}/occasions/${occasionSlug}`);
@@ -58,7 +59,7 @@ export default function Occasion() {
         const res = await fetch(`${API}/occasions/${occasionSlug}`);
         const data = await res.json();
         setSelectedOccasion(data);
-        setProducts(data.products || []);
+        setProducts(shuffleArray(Array.isArray(data.products) ? data.products : []));
       }
     } catch (error) {
       console.error("Error fetching occasion products:", error);
