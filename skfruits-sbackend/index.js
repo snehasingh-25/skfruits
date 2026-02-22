@@ -55,9 +55,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://giftchoice.net",
-      "https://www.giftchoice.net",
-      "https://midnightblue-fish-476058.hostingersite.com"
+      "https://skfruits.com",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Cart-Session-Id"],
