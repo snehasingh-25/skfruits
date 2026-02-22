@@ -21,8 +21,27 @@ function ProductCard({ product, compact = false }) {
     }
   }, [product?.images]);
 
-  // Get selling price and optional MRP (from singlePrice or lowest from sizes)
+  // Get selling price and optional MRP (check weights first, then sizes, then single price)
   const getPriceInfo = () => {
+    // Check for weight-based products first
+    if (product.weightOptions) {
+      try {
+        const weightOpts = Array.isArray(product.weightOptions) ? product.weightOptions : JSON.parse(product.weightOptions);
+        if (weightOpts.length > 0) {
+          const minWeight = weightOpts.reduce((prev, curr) => {
+            const prevPrice = parseFloat(prev.price);
+            const currPrice = parseFloat(curr.price);
+            return currPrice < prevPrice ? curr : prev;
+          });
+          const selling = parseFloat(minWeight.price);
+          const mrp = minWeight.originalPrice != null ? parseFloat(minWeight.originalPrice) : null;
+          return { selling, mrp };
+        }
+      } catch {
+        // Fall through to other options
+      }
+    }
+    
     if (product.hasSinglePrice && product.singlePrice != null) {
       const selling = parseFloat(product.singlePrice);
       const mrp = product.originalPrice != null && product.originalPrice !== "" ? parseFloat(product.originalPrice) : null;
@@ -46,7 +65,23 @@ function ProductCard({ product, compact = false }) {
       ? Math.round(((displayMrp - displayPrice) / displayMrp) * 100)
       : null;
 
-  const stock = typeof product.stock === "number" ? product.stock : 0;
+  // Variant-aware stock: use per-weight or per-size stock when present
+  const stock = useMemo(() => {
+    if (product.weightOptions) {
+      try {
+        const opts = Array.isArray(product.weightOptions) ? product.weightOptions : JSON.parse(product.weightOptions);
+        if (opts.length) {
+          const total = opts.reduce((sum, w) => sum + Math.max(0, Number(w.stock ?? product.stock ?? 0)), 0);
+          return total;
+        }
+      } catch {}
+    }
+    if (product.sizes?.length) {
+      const total = product.sizes.reduce((sum, s) => sum + Math.max(0, Number(s.stock ?? 0)), 0);
+      if (total > 0) return total;
+    }
+    return Math.max(0, typeof product.stock === "number" ? product.stock : 0);
+  }, [product]);
   const outOfStock = stock <= 0;
   const lowStock = stock > 0 && stock <= 5;
 
@@ -55,12 +90,31 @@ function ProductCard({ product, compact = false }) {
       toast.error("This product is out of stock");
       return;
     }
+    
+    // Handle weight-based products (fruits)
+    if (product.weightOptions) {
+      try {
+        const weightOpts = Array.isArray(product.weightOptions) ? product.weightOptions : JSON.parse(product.weightOptions);
+        if (weightOpts.length === 1) {
+          // Single weight option - add directly
+          addToCart(product, null, 1, weightOpts[0].weight);
+        } else {
+          // Multiple weight options - go to detail page
+          window.location.href = `/product/${product.id}`;
+        }
+      } catch {
+        toast.error("Error loading weight options");
+      }
+      return;
+    }
+    
     // Handle single price products
     if (product.hasSinglePrice && product.singlePrice) {
       const virtualSize = { id: 0, label: "Standard", price: parseFloat(product.singlePrice) };
       addToCart(product, virtualSize, 1);
       return;
     }
+    
     if (!product.sizes || product.sizes.length === 0) {
       toast.error("This product has no sizes available");
       return;
@@ -165,7 +219,8 @@ function ProductCard({ product, compact = false }) {
           <div className={compact ? "mb-1.5 flex items-baseline gap-2" : "mb-3 flex flex-wrap items-baseline gap-2"}>
             <span className={compact ? "text-sm font-bold" : "text-lg font-bold"} style={{ color: 'var(--foreground)' }}>
               ₹{Number(displayPrice).toLocaleString('en-IN')}
-              {!product.hasSinglePrice && product.sizes && product.sizes.length > 1 && (
+              {((!product.hasSinglePrice && product.sizes && product.sizes.length > 1) ||
+                (product.weightOptions && (Array.isArray(product.weightOptions) ? product.weightOptions : []).length > 1)) && (
                 <span className="text-sm font-normal ml-1 text-design-muted">onwards</span>
               )}
             </span>

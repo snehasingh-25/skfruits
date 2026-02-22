@@ -133,12 +133,13 @@ router.get("/", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
       products.sort((a, b) => (orderMap.get(a.id) ?? 999) - (orderMap.get(b.id) ?? 999));
     }
 
-    // Parse JSON fields
+    // Parse JSON fields (weightOptions for weight-based products e.g. fruits)
     const parsed = products.map(p => ({
       ...p,
       images: p.images ? JSON.parse(p.images) : [],
       videos: p.videos ? JSON.parse(p.videos) : [],
       keywords: p.keywords ? JSON.parse(p.keywords) : [],
+      weightOptions: p.weightOptions ? (() => { try { const w = JSON.parse(p.weightOptions); return Array.isArray(w) ? w : []; } catch { return []; } })() : [],
       categories: p.categories ? p.categories.map(pc => pc.category) : [],
       occasions: p.occasions ? p.occasions.map(po => po.occasion) : [],
     }));
@@ -176,6 +177,7 @@ router.get("/top-rated", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
       images: p.images ? JSON.parse(p.images) : [],
       videos: p.videos ? JSON.parse(p.videos) : [],
       keywords: p.keywords ? JSON.parse(p.keywords) : [],
+      weightOptions: p.weightOptions ? (() => { try { const w = JSON.parse(p.weightOptions); return Array.isArray(w) ? w : []; } catch { return []; } })() : [],
       categories: p.categories ? p.categories.map((pc) => pc.category) : [],
       occasions: p.occasions ? p.occasions.map((po) => po.occasion) : [],
     }));
@@ -220,6 +222,7 @@ router.get("/:id/recommendations", cacheMiddleware(10 * 60 * 1000), async (req, 
       images: p.images ? JSON.parse(p.images) : [],
       videos: p.videos ? JSON.parse(p.videos) : [],
       keywords: p.keywords ? JSON.parse(p.keywords) : [],
+      weightOptions: p.weightOptions ? (() => { try { const w = JSON.parse(p.weightOptions); return Array.isArray(w) ? w : []; } catch { return []; } })() : [],
       categories: p.categories ? p.categories.map((pc) => pc.category) : [],
       occasions: p.occasions ? p.occasions.map((po) => po.occasion) : [],
     }));
@@ -295,12 +298,16 @@ router.get("/:id", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    const weightOptions = product.weightOptions
+      ? (() => { try { const w = JSON.parse(product.weightOptions); return Array.isArray(w) ? w : []; } catch { return []; } })()
+      : [];
     res.json({
       ...product,
       images: product.images ? JSON.parse(product.images) : [],
       videos: product.videos ? JSON.parse(product.videos) : [],
       instagramEmbeds: product.instagramEmbeds ? JSON.parse(product.instagramEmbeds) : [],
       keywords: product.keywords ? JSON.parse(product.keywords) : [],
+      weightOptions,
       categories: product.categories ? product.categories.map(pc => pc.category) : [],
       occasions: product.occasions ? product.occasions.map(po => po.occasion) : [],
     });
@@ -315,7 +322,7 @@ router.post("/", requireRole("admin"), uploadProductMedia, async (req, res) => {
     // Invalidate products cache on create
     invalidateCache("/products");
     
-    const { name, description, badge, isFestival, isNew, isTrending, isReady60Min, hasSinglePrice, singlePrice, originalPrice, categoryIds, sizes, keywords, occasionIds, existingImages, existingVideos, instagramEmbeds } = req.body;
+    const { name, description, badge, isFestival, isNew, isTrending, isReady60Min, hasSinglePrice, singlePrice, originalPrice, categoryIds, sizes, weightOptions, keywords, occasionIds, existingImages, existingVideos, instagramEmbeds } = req.body;
 
     // Upload images; for duplicate/create, existingImages can provide initial URLs
     let imageUrls = [];
@@ -344,20 +351,28 @@ router.post("/", requireRole("admin"), uploadProductMedia, async (req, res) => {
       videoUrls.push(url);
     }
 
-    // Parse sizes, keywords, and Instagram embeds
+    // Parse sizes, weights, keywords, and Instagram embeds
     const sizesArray = sizes ? JSON.parse(sizes) : [];
+    const weightOptionsArray = weightOptions ? JSON.parse(weightOptions) : [];
     const keywordsArray = keywords ? JSON.parse(keywords) : [];
     const instagramEmbedsArray = instagramEmbeds ? JSON.parse(instagramEmbeds) : [];
     const validatedInstagramEmbeds = validateInstagramEmbeds(instagramEmbedsArray);
 
-    // Convert price strings to floats for sizes; support originalPrice (MRP)
+    // Convert price strings to floats for sizes; support originalPrice (MRP) and stock
     const sizesWithFloatPrices = sizesArray.map(size => ({
       label: size.label,
       price: parseFloat(size.price) || 0,
       originalPrice: size.originalPrice != null && size.originalPrice !== "" ? parseFloat(size.originalPrice) : null,
+      stock: Math.max(0, parseInt(size.stock, 10) || 0),
     }));
 
-    // Parse category and occasion IDs
+    // Convert price strings to floats for weights; support originalPrice (MRP) and stock
+    const weightsWithFloatPrices = weightOptionsArray.map(weight => ({
+      weight: weight.weight,
+      price: parseFloat(weight.price) || 0,
+      originalPrice: weight.originalPrice != null && weight.originalPrice !== "" ? parseFloat(weight.originalPrice) : null,
+      stock: Math.max(0, parseInt(weight.stock, 10) || 0),
+    }));
     const categoryIdsArray = categoryIds ? JSON.parse(categoryIds) : [];
     const occasionIdsArray = occasionIds ? JSON.parse(occasionIds) : [];
 
@@ -377,6 +392,7 @@ router.post("/", requireRole("admin"), uploadProductMedia, async (req, res) => {
         videos: videoUrls.length > 0 ? JSON.stringify(videoUrls) : null,
         instagramEmbeds: validatedInstagramEmbeds.length > 0 ? JSON.stringify(validatedInstagramEmbeds) : null,
         keywords: JSON.stringify(keywordsArray),
+        weightOptions: weightsWithFloatPrices.length > 0 ? JSON.stringify(weightsWithFloatPrices) : null,
         categories: {
           create: categoryIdsArray.map(categoryId => ({
             categoryId: Number(categoryId)
@@ -425,7 +441,7 @@ router.put("/:id", requireRole("admin"), uploadProductMedia, async (req, res) =>
     // Invalidate products cache on update
     invalidateCache("/products");
     
-    const { name, description, badge, isFestival, isNew, isTrending, isReady60Min, hasSinglePrice, singlePrice, originalPrice, categoryIds, sizes, keywords, existingImages, existingVideos, instagramEmbeds, occasionIds } = req.body;
+    const { name, description, badge, isFestival, isNew, isTrending, isReady60Min, hasSinglePrice, singlePrice, originalPrice, categoryIds, sizes, weightOptions, keywords, existingImages, existingVideos, instagramEmbeds, occasionIds } = req.body;
 
     const existingProduct = await prisma.product.findUnique({
       where: { id: Number(req.params.id) },
@@ -450,20 +466,28 @@ router.put("/:id", requireRole("admin"), uploadProductMedia, async (req, res) =>
       videoUrls.push(url);
     }
 
-    // Parse sizes, keywords, and Instagram embeds
+    // Parse sizes, weights, keywords, and Instagram embeds
     const sizesArray = sizes ? JSON.parse(sizes) : [];
+    const weightOptionsArray = weightOptions ? JSON.parse(weightOptions) : [];
     const keywordsArray = keywords ? JSON.parse(keywords) : [];
     const instagramEmbedsArray = instagramEmbeds ? JSON.parse(instagramEmbeds) : [];
     const validatedInstagramEmbeds = validateInstagramEmbeds(instagramEmbedsArray);
 
-    // Convert price strings to floats for sizes; support originalPrice (MRP)
+    // Convert price strings to floats for sizes; support originalPrice (MRP) and stock
     const sizesWithFloatPrices = sizesArray.map(size => ({
       label: size.label,
       price: parseFloat(size.price) || 0,
       originalPrice: size.originalPrice != null && size.originalPrice !== "" ? parseFloat(size.originalPrice) : null,
+      stock: Math.max(0, parseInt(size.stock, 10) || 0),
     }));
 
-    // Delete old sizes and create new ones
+    // Convert price strings to floats for weights; support originalPrice (MRP) and stock
+    const weightsWithFloatPrices = weightOptionsArray.map(weight => ({
+      weight: weight.weight,
+      price: parseFloat(weight.price) || 0,
+      originalPrice: weight.originalPrice != null && weight.originalPrice !== "" ? parseFloat(weight.originalPrice) : null,
+      stock: Math.max(0, parseInt(weight.stock, 10) || 0),
+    }));
     await prisma.productSize.deleteMany({
       where: { productId: Number(req.params.id) },
     });
@@ -499,6 +523,7 @@ router.put("/:id", requireRole("admin"), uploadProductMedia, async (req, res) =>
         videos: videoUrls.length > 0 ? JSON.stringify(videoUrls) : null,
         instagramEmbeds: validatedInstagramEmbeds.length > 0 ? JSON.stringify(validatedInstagramEmbeds) : null,
         keywords: JSON.stringify(keywordsArray),
+        weightOptions: weightsWithFloatPrices.length > 0 ? JSON.stringify(weightsWithFloatPrices) : null,
         categories: {
           create: categoryIdsArray.map(categoryId => ({
             categoryId: Number(categoryId)

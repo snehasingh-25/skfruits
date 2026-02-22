@@ -28,9 +28,9 @@ export default function AdminInventoryPage() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [editingId, setEditingId] = useState(null);
+  const [editingRowId, setEditingRowId] = useState(null);
   const [editValue, setEditValue] = useState("");
-  const [savingId, setSavingId] = useState(null);
+  const [savingRowId, setSavingRowId] = useState(null);
 
   const getHeaders = () => ({
     Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
@@ -67,27 +67,32 @@ export default function AdminInventoryPage() {
   }, [navigate, logout, toast]);
 
   const startEdit = (row) => {
-    setEditingId(row.productId);
+    setEditingRowId(row.rowId);
     setEditValue(String(row.stock));
   };
 
   const cancelEdit = () => {
-    setEditingId(null);
+    setEditingRowId(null);
     setEditValue("");
   };
 
-  const saveStock = async (productId) => {
+  const saveStock = async (row) => {
     const val = parseInt(editValue, 10);
     if (!Number.isInteger(val) || val < 0) {
       toast.error("Enter a non-negative number");
       return;
     }
-    setSavingId(productId);
+    setSavingRowId(row.rowId);
     try {
-      const res = await fetch(`${API}/admin/products/update-stock/${productId}`, {
+      const body = {
+        stock: val,
+        ...(row.sizeId != null && { sizeId: row.sizeId }),
+        ...(row.selectedWeight != null && row.selectedWeight !== "" && { selectedWeight: row.selectedWeight }),
+      };
+      const res = await fetch(`${API}/admin/products/update-stock/${row.productId}`, {
         method: "PUT",
         headers: getHeaders(),
-        body: JSON.stringify({ stock: val }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -95,15 +100,19 @@ export default function AdminInventoryPage() {
         return;
       }
       setList((prev) =>
-        prev.map((p) => (p.productId === productId ? { ...p, stock: data.stock, status: getStatus(data.stock) } : p))
+        prev.map((r) =>
+          r.rowId === row.rowId
+            ? { ...r, stock: data.stock, status: getStatus(data.stock) }
+            : r
+        )
       );
-      setEditingId(null);
+      setEditingRowId(null);
       setEditValue("");
       toast.success("Stock updated");
     } catch (err) {
       toast.error("Failed to update stock");
     } finally {
-      setSavingId(null);
+      setSavingRowId(null);
     }
   };
 
@@ -116,137 +125,151 @@ export default function AdminInventoryPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {error && (
-          <div
-            className="rounded-xl border p-4 mb-6 flex items-center justify-between"
-            style={{ borderColor: "var(--destructive)", background: "var(--secondary)" }}
+      {error && (
+        <div
+          className="rounded-xl border p-4 mb-6 flex items-center justify-between"
+          style={{ borderColor: "var(--destructive)", background: "var(--secondary)" }}
+        >
+          <p style={{ color: "var(--destructive)" }}>{error}</p>
+          <button
+            type="button"
+            onClick={fetchInventory}
+            className="px-3 py-1.5 rounded-lg text-sm font-medium"
+            style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
           >
-            <p style={{ color: "var(--destructive)" }}>{error}</p>
-            <button
-              type="button"
-              onClick={fetchInventory}
-              className="px-3 py-1.5 rounded-lg text-sm font-medium"
-              style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
-            >
-              Retry
-            </button>
-          </div>
-        )}
+            Retry
+          </button>
+        </div>
+      )}
 
-        {loading ? (
+      {loading ? (
+        <div
+          className="rounded-xl border p-8 text-center"
+          style={{ borderColor: "var(--border)", background: "var(--secondary)" }}
+        >
           <div
-            className="rounded-xl border p-8 text-center"
-            style={{ borderColor: "var(--border)", background: "var(--secondary)" }}
-          >
-            <div
-              className="inline-block h-10 w-10 rounded-full border-2 border-t-transparent animate-spin mx-auto"
-              style={{ borderColor: "var(--primary)" }}
-            />
-            <p className="mt-4 text-sm" style={{ color: "var(--muted)" }}>
-              Loading inventory…
-            </p>
-          </div>
-        ) : list.length === 0 ? (
-          <div
-            className="rounded-xl border p-12 text-center"
-            style={{ borderColor: "var(--border)", background: "var(--secondary)" }}
-          >
-            <p className="font-medium" style={{ color: "var(--foreground)" }}>
-              No products found.
-            </p>
-          </div>
-        ) : (
-          <div
-            className="rounded-xl border overflow-hidden shadow-sm"
-            style={{ borderColor: "var(--border)", background: "var(--background)" }}
-          >
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead style={{ background: "var(--muted)" }}>
-                  <tr>
-                    <th className="px-4 py-3 text-left font-semibold" style={{ color: "var(--foreground)" }}>
-                      Product Name
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold" style={{ color: "var(--foreground)" }}>
-                      Current Stock
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold" style={{ color: "var(--foreground)" }}>
-                      Stock Status
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold" style={{ color: "var(--foreground)" }}>
-                      Update Stock
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {list.map((row) => (
-                    <tr key={row.productId} className="border-t" style={{ borderColor: "var(--border)" }}>
-                      <td className="px-4 py-3 font-medium" style={{ color: "var(--foreground)" }}>
-                        {row.name}
-                      </td>
-                      <td className="px-4 py-3" style={{ color: "var(--foreground)" }}>
-                        {editingId === row.productId ? (
-                          <input
-                            type="number"
-                            min={0}
-                            value={editValue}
-                            onChange={(e) => setEditValue(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") saveStock(row.productId);
-                              if (e.key === "Escape") cancelEdit();
-                            }}
-                            className="w-24 px-3 py-2 rounded-lg border text-sm"
-                            style={{ borderColor: "var(--border)", background: "var(--background)", color: "var(--foreground)" }}
-                            autoFocus
-                          />
-                        ) : (
-                          row.stock
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <StockStatusBadge status={row.status} />
-                      </td>
-                      <td className="px-4 py-3">
-                        {editingId === row.productId ? (
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => saveStock(row.productId)}
-                              disabled={savingId === row.productId}
-                              className="px-3 py-1.5 rounded-lg text-xs font-semibold disabled:opacity-50"
-                              style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
-                            >
-                              {savingId === row.productId ? "Saving…" : "Save"}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={cancelEdit}
-                              disabled={savingId === row.productId}
-                              className="px-3 py-1.5 rounded-lg text-xs font-semibold"
-                              style={{ border: "1px solid var(--border)", color: "var(--foreground)" }}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
+            className="inline-block h-10 w-10 rounded-full border-2 border-t-transparent animate-spin mx-auto"
+            style={{ borderColor: "var(--primary)" }}
+          />
+          <p className="mt-4 text-sm" style={{ color: "var(--muted)" }}>
+            Loading inventory…
+          </p>
+        </div>
+      ) : list.length === 0 ? (
+        <div
+          className="rounded-xl border p-12 text-center"
+          style={{ borderColor: "var(--border)", background: "var(--secondary)" }}
+        >
+          <p className="font-medium" style={{ color: "var(--foreground)" }}>
+            No products found.
+          </p>
+        </div>
+      ) : (
+        <div
+          className="rounded-xl border overflow-hidden shadow-sm"
+          style={{ borderColor: "var(--border)", background: "var(--background)" }}
+        >
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead style={{ background: "var(--muted)" }}>
+                <tr>
+                  <th className="px-4 py-3 text-left font-semibold" style={{ color: "var(--foreground)" }}>
+                    Product Name
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold" style={{ color: "var(--foreground)" }}>
+                    Size / Weight
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold" style={{ color: "var(--foreground)" }}>
+                    Current Stock
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold" style={{ color: "var(--foreground)" }}>
+                    Stock Status
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold" style={{ color: "var(--foreground)" }}>
+                    Update Stock
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {list.map((row) => (
+                  <tr key={row.rowId} className="border-t" style={{ borderColor: "var(--border)" }}>
+                    <td className="px-4 py-3 font-medium" style={{ color: "var(--foreground)" }}>
+                      {row.productName}
+                    </td>
+                    <td className="px-4 py-3" style={{ color: "var(--foreground)" }}>
+                      {row.variantType === "weight" && (
+                        <span className="font-medium">{row.variantLabel}</span>
+                      )}
+                      {row.variantType === "size" && (
+                        <span className="font-medium">{row.variantLabel}</span>
+                      )}
+                      {row.variantType === "single" && (
+                        <span style={{ color: "var(--muted)" }}>Single price</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3" style={{ color: "var(--foreground)" }}>
+                      {editingRowId === row.rowId ? (
+                        <input
+                          type="number"
+                          min={0}
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") saveStock(row);
+                            if (e.key === "Escape") cancelEdit();
+                          }}
+                          className="w-24 px-3 py-2 rounded-lg border text-sm"
+                          style={{ borderColor: "var(--border)", background: "var(--background)", color: "var(--foreground)" }}
+                          autoFocus
+                        />
+                      ) : (
+                        row.stock
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <StockStatusBadge status={row.status} />
+                    </td>
+                    <td className="px-4 py-3">
+                      {editingRowId === row.rowId ? (
+                        <div className="flex items-center gap-2">
                           <button
                             type="button"
-                            onClick={() => startEdit(row)}
-                            disabled={editingId != null}
-                            className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50"
+                            onClick={() => saveStock(row)}
+                            disabled={savingRowId === row.rowId}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold disabled:opacity-50"
+                            style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
+                          >
+                            {savingRowId === row.rowId ? "Saving…" : "Save"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={cancelEdit}
+                            disabled={savingRowId === row.rowId}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold"
                             style={{ border: "1px solid var(--border)", color: "var(--foreground)" }}
                           >
-                            Edit
+                            Cancel
                           </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => startEdit(row)}
+                          disabled={editingRowId != null}
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50"
+                          style={{ border: "1px solid var(--border)", color: "var(--foreground)" }}
+                        >
+                          Edit
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 }

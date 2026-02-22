@@ -25,6 +25,7 @@ export default function ProductDetail() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedWeight, setSelectedWeight] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [expanded, setExpanded] = useState(() => new Set(["details"]));
@@ -104,8 +105,21 @@ export default function ProductDetail() {
       .then((data) => {
         setProduct(data);
         if (data?.id) addViewed(data.id);
+        // Handle weight-based products (fruits)
+        if (data?.weightOptions) {
+          try {
+            const weightOpts = Array.isArray(data.weightOptions) ? data.weightOptions : JSON.parse(data.weightOptions);
+            if (weightOpts.length > 0) {
+              setSelectedWeight(weightOpts[0].weight);
+              setSelectedSize(null);
+            }
+          } catch {
+            setSelectedWeight(null);
+            setSelectedSize(null);
+          }
+        }
         // Handle single price products
-        if (data?.hasSinglePrice && data.singlePrice) {
+        else if (data?.hasSinglePrice && data.singlePrice) {
           setSelectedSize({
             id: 0,
             label: "Standard",
@@ -262,7 +276,23 @@ export default function ProductDetail() {
     }
   };
 
-  const stock = typeof product?.stock === "number" ? product.stock : 0;
+  // Variant-specific stock (weight, size, or product-level)
+  const stock = useMemo(() => {
+    if (!product) return 0;
+    if (selectedWeight && product.weightOptions) {
+      try {
+        const opts = Array.isArray(product.weightOptions) ? product.weightOptions : JSON.parse(product.weightOptions || "[]");
+        const w = opts.find((o) => String(o.weight).trim() === String(selectedWeight).trim());
+        if (w) return Math.max(0, Number(w.stock ?? product.stock ?? 0));
+      } catch { /* ignore parse error */ }
+      return 0;
+    }
+    if (selectedSize && selectedSize.id !== 0) {
+      const s = product.sizes?.find((sz) => sz.id === selectedSize.id);
+      if (s && typeof s.stock === "number") return Math.max(0, s.stock);
+    }
+    return Math.max(0, typeof product.stock === "number" ? product.stock : 0);
+  }, [product, selectedWeight, selectedSize]);
   const outOfStock = stock <= 0;
   const lowStock = stock > 0 && stock <= 5;
   const maxQty = Math.max(1, stock);
@@ -272,8 +302,15 @@ export default function ProductDetail() {
       toast.error("This product is out of stock");
       return;
     }
+    // Check for weight-based products first
+    if (selectedWeight) {
+      const qty = Math.min(quantity, maxQty);
+      addToCart(product, null, qty, selectedWeight);
+      return;
+    }
+    // Fallback to size-based or single-price products
     if (!selectedSize && !(product?.hasSinglePrice && product?.singlePrice)) {
-      toast.error("Please select a size");
+      toast.error("Please select a size or weight");
       return;
     }
     const qty = Math.min(quantity, maxQty);
@@ -555,7 +592,37 @@ export default function ProductDetail() {
                   </h1>
 
                   <div className="mt-3 flex flex-wrap items-baseline gap-2">
-                    {selectedSize ? (
+                    {selectedWeight ? (
+                      (() => {
+                        try {
+                          const weightOpts = Array.isArray(product.weightOptions) ? product.weightOptions : JSON.parse(product.weightOptions);
+                          const weightInfo = weightOpts.find(w => w.weight === selectedWeight);
+                          if (!weightInfo) return null;
+                          return (
+                            <>
+                              <div className="text-2xl font-extrabold" style={{ color: "oklch(20% .02 340)" }}>
+                                ₹{Number(weightInfo.price).toLocaleString("en-IN")}
+                              </div>
+                              {weightInfo.originalPrice != null && Number(weightInfo.originalPrice) > Number(weightInfo.price) && (
+                                <>
+                                  <span className="text-base line-through" style={{ color: "oklch(55% .02 340)" }}>
+                                    ₹{Number(weightInfo.originalPrice).toLocaleString("en-IN")}
+                                  </span>
+                                  <span className="text-sm font-semibold text-green-600">
+                                    {Math.round(((weightInfo.originalPrice - weightInfo.price) / weightInfo.originalPrice) * 100)}% OFF
+                                  </span>
+                                </>
+                              )}
+                              <div className="text-sm font-semibold" style={{ color: "oklch(55% .02 340)" }}>
+                                {selectedWeight}
+                              </div>
+                            </>
+                          );
+                        } catch {
+                          return null;
+                        }
+                      })()
+                    ) : selectedSize ? (
                       <>
                         <div className="text-2xl font-extrabold" style={{ color: "oklch(20% .02 340)" }}>
                           ₹{Number(selectedSize.price).toLocaleString("en-IN")}
@@ -602,8 +669,61 @@ export default function ProductDetail() {
                   </div>
 
 
-                  {/* Size selector - only show for products with multiple sizes */}
-                  {product.hasSinglePrice ? (
+                  {/* Weight selector - for weight-based products like fruits */}
+                  {product?.weightOptions ? (
+                    <div className="mt-6">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-bold" style={{ color: "oklch(20% .02 340)" }}>
+                          Select weight
+                        </div>
+                        {selectedWeight ? (
+                          <div className="text-xs font-semibold" style={{ color: "oklch(55% .02 340)" }}>
+                            Selected: {selectedWeight}
+                          </div>
+                        ) : null}
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-3">
+                        {(() => {
+                          try {
+                            const weightOpts = Array.isArray(product.weightOptions) ? product.weightOptions : JSON.parse(product.weightOptions);
+                            return weightOpts.map((weightOpt) => {
+                              const active = selectedWeight === weightOpt.weight;
+                              return (
+                                <button
+                                  key={weightOpt.weight}
+                                  type="button"
+                                  onClick={() => setSelectedWeight(weightOpt.weight)}
+                                  className={[
+                                    "rounded-2xl border px-4 py-3 text-left transition-transform duration-200",
+                                    active ? "ring-2 ring-offset-2" : "hover:shadow-sm active:scale-[0.99]",
+                                  ].join(" ")}
+                                  style={{
+                                    borderColor: active ? "oklch(88% .06 340)" : "oklch(92% .04 340)",
+                                  }}
+                                >
+                                  <div className="text-sm font-bold" style={{ color: "oklch(20% .02 340)" }}>
+                                    {weightOpt.weight}
+                                  </div>
+                                  <div className="flex flex-wrap items-baseline gap-1.5 mt-0.5">
+                                    <span className="text-sm font-extrabold" style={{ color: "oklch(40% .02 340)" }}>
+                                      ₹{Number(weightOpt.price).toLocaleString("en-IN")}
+                                    </span>
+                                    {weightOpt.originalPrice != null && Number(weightOpt.originalPrice) > Number(weightOpt.price) && (
+                                      <span className="text-xs line-through" style={{ color: "oklch(55% .02 340)" }}>
+                                        ₹{Number(weightOpt.originalPrice).toLocaleString("en-IN")}
+                                      </span>
+                                    )}
+                                  </div>
+                                </button>
+                              );
+                            });
+                          } catch {
+                            return <div className="text-sm text-red-600">Error loading weight options</div>;
+                          }
+                        })()}
+                      </div>
+                    </div>
+                  ) : product.hasSinglePrice ? (
                     <div className="mt-6 rounded-2xl border px-4 py-3" style={{ borderColor: "oklch(92% .04 340)" }}>
                       <div className="text-sm font-semibold" style={{ color: "oklch(55% .02 340)" }}>
                         Price
@@ -672,7 +792,7 @@ export default function ProductDetail() {
                     </div>
                   ) : (
                     <div className="mt-6 rounded-2xl border px-4 py-3 text-sm font-semibold" style={{ borderColor: "oklch(92% .04 340)", color: "oklch(55% .02 340)" }}>
-                      Sizes are not available for this product.
+                      Weights or sizes are not available for this product.
                     </div>
                   )}
 
@@ -719,14 +839,22 @@ export default function ProductDetail() {
                   </div>
 
                   {/* Total */}
-                  {selectedSize ? (
+                  {(selectedWeight || selectedSize) ? (
                     <div className="mt-6 rounded-2xl border px-4 py-4" style={{ borderColor: "oklch(92% .04 340)" }}>
                       <div className="flex items-center justify-between">
                         <div className="text-sm font-semibold" style={{ color: "oklch(55% .02 340)" }}>
                           Total
                         </div>
                         <div className="text-2xl font-extrabold" style={{ color: "oklch(20% .02 340)" }}>
-                          ₹{(Number(selectedSize.price) * quantity).toFixed(0)}
+                          ₹{selectedWeight
+                            ? (() => {
+                                try {
+                                  const weightOpts = Array.isArray(product.weightOptions) ? product.weightOptions : JSON.parse(product.weightOptions);
+                                  const w = weightOpts.find((o) => o.weight === selectedWeight);
+                                  return w ? (Number(w.price) * quantity).toFixed(0) : "0";
+                                } catch { return "0"; }
+                              })()
+                            : (Number(selectedSize.price) * quantity).toFixed(0)}
                         </div>
                       </div>
                     </div>
@@ -760,7 +888,7 @@ export default function ProductDetail() {
                   <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
                       onClick={handleAddToCart}
-                      disabled={outOfStock || (!selectedSize && !(product?.hasSinglePrice && product?.singlePrice))}
+                      disabled={outOfStock || (!selectedWeight && !selectedSize && !(product?.hasSinglePrice && product?.singlePrice))}
                       className="w-full py-3 rounded-2xl font-bold transition-transform duration-200 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ backgroundColor: "oklch(92% .04 340)", color: "oklch(20% .02 340)" }}
                     >
@@ -772,16 +900,29 @@ export default function ProductDetail() {
                           toast.error("This product is out of stock");
                           return;
                         }
-                        if (!selectedSize && !(product?.hasSinglePrice && product?.singlePrice)) {
-                          toast.error("Please select a size");
+                        if (!selectedWeight && !selectedSize && !(product?.hasSinglePrice && product?.singlePrice)) {
+                          toast.error("Please select a weight or size");
                           return;
                         }
-                        const sizeLabel = product.hasSinglePrice ? "Standard" : selectedSize.label;
-                        const price = product.hasSinglePrice ? product.singlePrice : selectedSize.price;
-                        const message = `Hi! I'm interested in:\n\nProduct: ${product.name}\n${product.hasSinglePrice ? '' : `Size: ${sizeLabel}\n`}Quantity: ${quantity}\nPrice: ₹${price}\nTotal: ₹${(Number(price) * quantity).toFixed(2)}`;
+                        let label = "Standard";
+                        let price = product.singlePrice;
+                        if (selectedWeight) {
+                          try {
+                            const weightOpts = Array.isArray(product.weightOptions) ? product.weightOptions : JSON.parse(product.weightOptions);
+                            const w = weightOpts.find((o) => o.weight === selectedWeight);
+                            if (w) {
+                              label = selectedWeight;
+                              price = w.price;
+                            }
+                          } catch { /* use defaults */ }
+                        } else if (selectedSize) {
+                          label = selectedSize.label;
+                          price = selectedSize.price;
+                        }
+                        const message = `Hi! I'm interested in:\n\nProduct: ${product.name}\n${selectedWeight ? `Weight: ${label}\n` : product.hasSinglePrice ? "" : `Size: ${label}\n`}Quantity: ${quantity}\nPrice: ₹${price}\nTotal: ₹${(Number(price) * quantity).toFixed(2)}`;
                         window.open(`https://wa.me/917976948872?text=${encodeURIComponent(message)}`);
                       }}
-                      disabled={outOfStock || (!selectedSize && !(product?.hasSinglePrice && product?.singlePrice))}
+                      disabled={outOfStock || (!selectedWeight && !selectedSize && !(product?.hasSinglePrice && product?.singlePrice))}
                       className="w-full py-3 rounded-2xl font-bold transition-transform duration-200 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ backgroundColor: "oklch(55% .18 145)", color: "white" }}
                     >

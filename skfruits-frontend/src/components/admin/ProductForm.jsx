@@ -25,6 +25,7 @@ export default function ProductForm({ product, categories, occasions = [], onSav
     keywords: "",
   });
   const [sizes, setSizes] = useState([]);
+  const [weights, setWeights] = useState([]); // For weight-based products (fruits)
   const [sizeOptions, setSizeOptions] = useState([]); // Reusable size options from API
   const [images, setImages] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
@@ -45,13 +46,14 @@ export default function ProductForm({ product, categories, occasions = [], onSav
     return JSON.stringify({
       formData,
       sizes,
+      weights,
       existingImages,
       selectedCategories,
       selectedOccasions,
       // For new images, treat any selection as "dirty"
       imagesSelectedCount: images.length,
     });
-  }, [formData, sizes, existingImages, selectedCategories, selectedOccasions, images.length]);
+  }, [formData, sizes, weights, existingImages, selectedCategories, selectedOccasions, images.length]);
 
   const isDirty = initialSnapshotRef.current !== "" && snapshot !== initialSnapshotRef.current;
 
@@ -76,9 +78,28 @@ export default function ProductForm({ product, categories, occasions = [], onSav
               label: s.label,
               price: String(s.price ?? ""),
               originalPrice: s.originalPrice != null ? String(s.originalPrice) : "",
+              stock: String(typeof s.stock === "number" ? s.stock : s.stock ?? "0"),
             }))
           : []
       );
+      // Initialize weights from weightOptions (include stock per weight)
+      if (product.weightOptions) {
+        try {
+          const weightOpts = Array.isArray(product.weightOptions) ? product.weightOptions : JSON.parse(product.weightOptions);
+          setWeights(
+            weightOpts.map((w) => ({
+              weight: w.weight,
+              price: String(w.price ?? ""),
+              originalPrice: w.originalPrice != null ? String(w.originalPrice) : "",
+              stock: String(typeof w.stock === "number" ? w.stock : w.stock ?? "0"),
+            }))
+          );
+        } catch {
+          setWeights([]);
+        }
+      } else {
+        setWeights([]);
+      }
       setExistingImages(product.images || []);
       setExistingVideos(product.videos && Array.isArray(product.videos) ? product.videos : []);
       setInstagramEmbeds(product.instagramEmbeds && Array.isArray(product.instagramEmbeds) ? product.instagramEmbeds : []);
@@ -111,6 +132,7 @@ export default function ProductForm({ product, categories, occasions = [], onSav
         keywords: "",
       });
       setSizes([]);
+      setWeights([]);
       setImages([]);
       setExistingImages([]);
       setInstagramEmbeds([]);
@@ -151,6 +173,17 @@ export default function ProductForm({ product, categories, occasions = [], onSav
         sizes:
           product?.sizes && product.sizes.length > 0
             ? product.sizes.map((s) => ({ label: s.label, price: s.price, originalPrice: s.originalPrice }))
+            : [],
+        weights:
+          product?.weightOptions
+            ? (() => {
+                try {
+                  const weightOpts = Array.isArray(product.weightOptions) ? product.weightOptions : JSON.parse(product.weightOptions);
+                  return weightOpts.map((w) => ({ weight: w.weight, price: w.price, originalPrice: w.originalPrice }));
+                } catch {
+                  return [];
+                }
+              })()
             : [],
         existingImages: product?.images || [],
         existingVideos: product?.videos && Array.isArray(product.videos) ? product.videos : [],
@@ -243,10 +276,25 @@ export default function ProductForm({ product, categories, occasions = [], onSav
               label: s.label,
               price: s.price,
               originalPrice: s.originalPrice != null && s.originalPrice !== "" ? s.originalPrice : null,
+              stock: Math.max(0, parseInt(s.stock, 10) || 0),
             }))
           )
         );
       }
+      
+      // Weight options for fruit/weight-based products (with stock per weight)
+      formDataToSend.append(
+        "weightOptions",
+        JSON.stringify(
+          weights.filter((w) => w.weight && w.price).map((w) => ({
+            weight: w.weight,
+            price: w.price,
+            originalPrice: w.originalPrice != null && w.originalPrice !== "" ? w.originalPrice : null,
+            stock: Math.max(0, parseInt(w.stock, 10) || 0),
+          }))
+        )
+      );
+      
       formDataToSend.append("occasionIds", JSON.stringify(selectedOccasions));
 
       if (product && existingImages.length > 0) {
@@ -295,6 +343,7 @@ export default function ProductForm({ product, categories, occasions = [], onSav
           keywords: "",
         });
         setSizes([]);
+        setWeights([]);
         setImages([]);
         setExistingImages([]);
         setSelectedCategories([]);
@@ -332,6 +381,7 @@ export default function ProductForm({ product, categories, occasions = [], onSav
       keywords: "",
     });
     setSizes([]);
+    setWeights([]);
     setImages([]);
     setExistingImages([]);
     setVideos([]);
@@ -359,7 +409,7 @@ export default function ProductForm({ product, categories, occasions = [], onSav
   };
 
   const addSize = () => {
-    setSizes([...sizes, { label: "", price: "" }]);
+    setSizes([...sizes, { label: "", price: "", originalPrice: "", stock: "0" }]);
   };
 
   const removeSize = (index) => {
@@ -373,13 +423,52 @@ export default function ProductForm({ product, categories, occasions = [], onSav
     setSizes(newSizes);
   };
 
+  // Weight management functions (for weight-based products like fruits)
+  const addWeight = () => {
+    setWeights([...weights, { weight: "", price: "", originalPrice: "", stock: "0" }]);
+  };
+
+  const removeWeight = (index) => {
+    setWeights(weights.filter((_, i) => i !== index));
+  };
+
+  const updateWeight = (index, field, value) => {
+    const newWeights = [...weights];
+    if (!newWeights[index]) return;
+    newWeights[index] = { ...newWeights[index], [field]: value };
+    setWeights(newWeights);
+  };
+
+  // Add custom weight and optionally save to reusable options
+  const addCustomWeight = async (weight, saveAsReusable = false) => {
+    const trimmed = (weight || "").trim();
+    if (!trimmed) return;
+    if (weights.some((w) => (w.weight || "").trim().toLowerCase() === trimmed.toLowerCase())) {
+      toast.error("This weight is already added");
+      return;
+    }
+    setWeights([...weights, { weight: trimmed, price: "", originalPrice: "", stock: "0" }]);
+    if (saveAsReusable) {
+      try {
+        const token = localStorage.getItem("adminToken");
+        await fetch(`${API}/weight-options`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ weight: trimmed }),
+        }).catch(() => {
+          // API endpoint may not exist, but still add to current product
+        });
+      } catch (_) {}
+    }
+  };
+
   // Toggle saved size option: add/remove from sizes with price/originalPrice
   const toggleSizeOption = (label) => {
     const existing = sizes.find((s) => (s.label || "").trim().toLowerCase() === (label || "").trim().toLowerCase());
     if (existing) {
       setSizes(sizes.filter((s) => (s.label || "").trim().toLowerCase() !== (label || "").trim().toLowerCase()));
     } else {
-      setSizes([...sizes, { label: label.trim(), price: "", originalPrice: "" }]);
+      setSizes([...sizes, { label: label.trim(), price: "", originalPrice: "", stock: "0" }]);
     }
   };
 
@@ -921,6 +1010,14 @@ export default function ProductForm({ product, categories, occasions = [], onSav
                         step="0.01"
                         min="0"
                       />
+                      <input
+                        type="number"
+                        placeholder="Stock"
+                        value={size.stock ?? ""}
+                        onChange={(e) => updateSize(index, "stock", e.target.value)}
+                        className="w-20 px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-pink-500 transition text-sm"
+                        min="0"
+                      />
                       <button
                         type="button"
                         onClick={() => removeSize(index)}
@@ -931,6 +1028,133 @@ export default function ProductForm({ product, categories, occasions = [], onSav
                     </div>
                   ))
                 )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Weight options section - for fruit/weight-based products */}
+        <div className="border-t border-gray-200 pt-6">
+          <div className="mb-4">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={weights.length > 0}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    // Add an empty weight row when enabling
+                    setWeights([{ weight: "", price: "" }]);
+                  } else {
+                    setWeights([]);
+                  }
+                }}
+                className="w-4 h-4 text-pink-600 rounded focus:ring-pink-500"
+              />
+              <span className="text-sm font-semibold text-gray-700">Weight Variants (e.g., fruits)</span>
+            </label>
+            <p className="text-xs text-gray-500 mt-1">Add different weight options with separate prices</p>
+          </div>
+
+          {weights.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex gap-2 mb-4 flex-wrap">
+                <input
+                  type="text"
+                  id="weight-input"
+                  placeholder="e.g., 100g, 250g, 500g"
+                  className="flex-1 min-w-30 px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-pink-500 transition"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      const input = e.target;
+                      if (input.value.trim()) {
+                        addCustomWeight(input.value, false);
+                        input.value = "";
+                        const lastIndex = weights.length;
+                        setTimeout(() => {
+                          const priceInput = document.querySelector(`input[data-weight-index="${lastIndex}"]`);
+                          priceInput?.focus();
+                        }, 0);
+                      }
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const input = document.getElementById("weight-input");
+                    if (input) {
+                      addCustomWeight(input.value, false);
+                      input.value = "";
+                    }
+                  }}
+                  className="px-4 py-2.5 bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-300 transition"
+                >
+                  + Add
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const input = document.getElementById("weight-input");
+                    if (input) {
+                      addCustomWeight(input.value, true);
+                      input.value = "";
+                      toast.success("Weight added and saved for future products");
+                    }
+                  }}
+                  className="px-4 py-2.5 border-2 border-pink-500 text-pink-600 rounded-lg text-sm font-semibold hover:bg-pink-50 transition"
+                >
+                  Add & save for future
+                </button>
+              </div>
+
+              {/* Weight rows: weight, selling price, MRP */}
+              <div className="space-y-3">
+                {weights.map((weight, index) => (
+                  <div key={index} className="flex flex-wrap gap-2 items-center p-3 rounded-lg border border-gray-200 bg-gray-50/50">
+                    <input
+                      type="text"
+                      placeholder="e.g., 100g"
+                      value={weight.weight}
+                      onChange={(e) => updateWeight(index, "weight", e.target.value)}
+                      className="w-24 px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-pink-500 transition text-sm"
+                      data-weight-index={index}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Selling price"
+                      value={weight.price}
+                      onChange={(e) => updateWeight(index, "price", e.target.value)}
+                      className="w-28 px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-pink-500 transition text-sm"
+                      step="0.01"
+                      min="0"
+                    />
+                    <input
+                      type="number"
+                      placeholder="MRP (optional)"
+                      value={weight.originalPrice ?? ""}
+                      onChange={(e) => updateWeight(index, "originalPrice", e.target.value)}
+                      className="w-28 px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-pink-500 transition text-sm"
+                      step="0.01"
+                      min="0"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Stock"
+                      value={weight.stock ?? ""}
+                      onChange={(e) => updateWeight(index, "stock", e.target.value)}
+                      className="w-20 px-3 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-pink-500 transition text-sm"
+                      min="0"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeWeight(index)}
+                      className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-semibold"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           )}

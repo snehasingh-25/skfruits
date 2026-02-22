@@ -78,6 +78,8 @@ model Product {
   hasSinglePrice Boolean       @default(false) // If true, use singlePrice instead of sizes
   singlePrice   Float?         // Selling price for products without size variants
   originalPrice Float?         // MRP / list price for single-price products (strikethrough on frontend)
+  // Weight-based options for fruits (e.g., [{weight: "100g", price: 100, stock?: number}, ...])
+  weightOptions String?        @db.Text // JSON array: [{weight: string, price: float, originalPrice?: float, stock?: number}]
   images        String         @db.Text // JSON array of image URLs
   videos        String?        @db.Text // JSON array of video URLs (optional)
   instagramEmbeds String?      @db.Text // JSON array of Instagram embed objects: [{url, enabled, createdAt}]
@@ -108,6 +110,7 @@ model ProductSize {
   label         String
   price         Float   // Selling price
   originalPrice Float?  // MRP / list price (strikethrough on frontend)
+  stock         Int     @default(0) // Inventory for this size variant
   productId    Int
 
   product    Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -310,7 +313,8 @@ model CartItem {
   id            Int     @id @default(autoincrement())
   cartId        String
   productId     Int
-  productSizeId Int?    // null = single-price product (use product.singlePrice)
+  productSizeId Int?    // null = single-price product (use product.singlePrice) OR weight-based
+  selectedWeight String? // Weight selected (e.g., "100g", "500g") for weight-based fruits
   quantity      Int     @default(1)
 
   cart    Cart         @relation(fields: [cartId], references: [id], onDelete: Cascade)

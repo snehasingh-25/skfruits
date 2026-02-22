@@ -51,9 +51,10 @@ export function CartProvider({ children }) {
     fetchCart().finally(() => setIsLoaded(true));
   }, [fetchCart]);
 
-  const addToCart = async (product, selectedSize, quantity = 1) => {
-    if (!selectedSize) {
-      toast.error("Please select a size");
+  const addToCart = async (product, selectedSize, quantity = 1, selectedWeight = null) => {
+    // Validate: must have either weight, size, or single price
+    if (!selectedWeight && !selectedSize && !(product.hasSinglePrice && product.singlePrice)) {
+      toast.error("Please select a weight or size");
       return false;
     }
 
@@ -63,10 +64,11 @@ export function CartProvider({ children }) {
     const auth = getAuthHeaders();
     if (auth.Authorization) headers.Authorization = auth.Authorization;
 
-    const productSizeId = selectedSize.id === 0 || selectedSize.id == null ? null : selectedSize.id;
+    const productSizeId = selectedSize && selectedSize.id !== 0 ? selectedSize.id : null;
     const body = JSON.stringify({
       productId: product.id,
       productSizeId,
+      selectedWeight: selectedWeight || null,
       quantity,
     });
 

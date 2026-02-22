@@ -33,6 +33,24 @@ function cloneProductForDuplicate(product) {
             originalPrice: s.originalPrice ?? null,
           }))
         : [],
+    weightOptions: product.weightOptions
+      ? (() => {
+          try {
+            const weights = Array.isArray(product.weightOptions)
+              ? product.weightOptions
+              : JSON.parse(product.weightOptions);
+            return JSON.stringify(
+              weights.map((w) => ({
+                weight: w.weight,
+                price: w.price,
+                originalPrice: w.originalPrice ?? null,
+              }))
+            );
+          } catch {
+            return null;
+          }
+        })()
+      : null,
     categories: product.categories || [],
     occasions: product.occasions || [],
   };
@@ -125,6 +143,37 @@ export default function ProductList({ products, onEdit, onDelete }) {
             {product.categories && product.categories.length > 0
               ? product.categories.map(c => c.name || c.category?.name).join(", ")
               : product.category?.name || "No category"}
+          </div>
+          {/* Weight and Size Info */}
+          <div className="text-xs mt-1 flex gap-2 flex-wrap">
+            {product.weightOptions ? (
+              (() => {
+                try {
+                  const weights = Array.isArray(product.weightOptions) 
+                    ? product.weightOptions 
+                    : JSON.parse(product.weightOptions);
+                  return (
+                    <span style={{ color: 'oklch(55% .02 340)' }}>
+                      <strong>Weights:</strong> {weights.map(w => w.weight).join(", ")}
+                    </span>
+                  );
+                } catch {
+                  return null;
+                }
+              })()
+            ) : product.sizes && product.sizes.length > 0 ? (
+              <span style={{ color: 'oklch(55% .02 340)' }}>
+                <strong>Sizes:</strong> {product.sizes.map(s => s.label).join(", ")}
+              </span>
+            ) : product.hasSinglePrice ? (
+              <span style={{ color: 'oklch(55% .02 340)' }}>
+                <strong>Type:</strong> Single Price
+              </span>
+            ) : null}
+            {/* Inventory / Stock */}
+            <span style={{ color: typeof product.stock === 'number' && product.stock <= 5 ? 'oklch(50% .2 25)' : 'oklch(55% .02 340)' }}>
+              <strong>Stock:</strong> {typeof product.stock === 'number' ? product.stock : 0}
+            </span>
           </div>
         </div>
 
