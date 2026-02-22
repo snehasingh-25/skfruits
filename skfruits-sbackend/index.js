@@ -58,6 +58,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://skfruits.com",
+      "https://skfruits.onrender.com",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Cart-Session-Id"],

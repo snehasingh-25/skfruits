@@ -13,7 +13,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-producti
 passport.use('google', new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: '/auth/login/federated/google/callback',
+  callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/auth/login/federated/google/callback',
   scope: ['profile', 'email']
 }, async (issuer, profile, done) => {
   try {
@@ -236,10 +236,7 @@ router.get("/verify", requireRole("admin"), async (req, res) => {
 });
 
 // Google OAuth routes
-router.get('/login/federated/google', (req, res, next) => {
-  console.log("Initiating Google OAuth flow");
-  next();
-}, passport.authenticate('google', {
+router.get('/login/federated/google', passport.authenticate('google', {
   scope: ['profile', 'email']
 }));
 

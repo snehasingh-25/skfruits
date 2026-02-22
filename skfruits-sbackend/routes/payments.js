@@ -13,7 +13,7 @@ const router = express.Router();
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
 const CART_SESSION_HEADER = "x-cart-session-id";
-const CURRENCY = "INR";
+const CURRENCY = "USD";
 
 function getSessionId(req) {
   return req.headers[CART_SESSION_HEADER]?.trim() || req.body?.sessionId?.trim() || null;
