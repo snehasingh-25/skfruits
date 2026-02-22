@@ -1,7 +1,0 @@
--- AlterTable
-ALTER TABLE "Address" ADD COLUMN "latitude" DOUBLE PRECISION,
-ADD COLUMN "longitude" DOUBLE PRECISION;
-
--- AlterTable
-ALTER TABLE "Order" ADD COLUMN "addressLatitude" DOUBLE PRECISION,
-ADD COLUMN "addressLongitude" DOUBLE PRECISION;

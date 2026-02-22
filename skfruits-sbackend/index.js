@@ -3,6 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import passport from "passport";
+import session from "express-session";
 
 import productRoutes from "./routes/products.js";
 import categoryRoutes from "./routes/categories.js";
@@ -74,6 +76,21 @@ app.set("headersTimeout", 66000); // 66 seconds (must be > keepAliveTimeout)
 // CORS configuration
 
 app.use(express.json());
+
+// Configure session middleware for OAuth
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'fallback-secret-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false, // Set to true in production with HTTPS
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Request logging middleware (for debugging)
 app.use((req, res, next) => {
@@ -264,16 +281,40 @@ server.keepAliveTimeout = 65000; // 65 seconds
 server.headersTimeout = 66000; // 66 seconds
 
 // Graceful shutdown
-process.on("SIGTERM", async () => {
-  console.log("SIGTERM signal received: closing HTTP server");
-  server.close(() => {
-    console.log("HTTP server closed");
-  });
-});
+const gracefulShutdown = async (signal) => {
+  console.log(`${signal} signal received: starting graceful shutdown...`);
+  
+  try {
+    // Close HTTP server first
+    if (server) {
+      await new Promise((resolve) => {
+        server.close((err) => {
+          if (err) {
+            console.error('Error closing HTTP server:', err);
+          } else {
+            console.log('✓ HTTP server closed');
+          }
+          resolve();
+        });
+      });
+    }
 
-process.on("SIGINT", async () => {
-  console.log("SIGINT signal received: closing HTTP server");
-  server.close(() => {
-    console.log("HTTP server closed");
-  });
-});
+    // Close Prisma connection
+    try {
+      const prisma = (await import("./prisma.js")).default;
+      await prisma.$disconnect();
+      console.log('✓ Database connection closed');
+    } catch (error) {
+      console.error('Error closing database connection:', error);
+    }
+
+    console.log('✓ Graceful shutdown completed');
+    process.exit(0);
+  } catch (error) {
+    console.error('Error during graceful shutdown:', error);
+    process.exit(1);
+  }
+};
+
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));

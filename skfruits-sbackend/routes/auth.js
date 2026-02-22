@@ -3,9 +3,78 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import prisma from "../prisma.js";
 import { requireRole } from "../utils/auth.js";
+import passport  from 'passport';
+import GoogleStrategy  from 'passport-google-oidc';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+
+// Configure Google OAuth strategy
+passport.use('google', new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: '/auth/login/federated/google/callback',
+  scope: ['profile', 'email']
+}, async (issuer, profile, done) => {
+  try {
+    console.log('Google OAuth profile:', profile);
+    
+    const email = profile.emails?.[0]?.value;
+    const name = profile.displayName;
+    const googleId = profile.id;
+    
+    if (!email) {
+      return done(new Error('No email found in Google profile'), null);
+    }
+    
+    // Check if user exists
+    let user = await prisma.user.findUnique({
+      where: { email: normalizeEmail(email) }
+    });
+    
+    if (user) {
+      // Update Google ID if not set
+      if (!user.googleId) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { googleId }
+        });
+      }
+    } else {
+      // Create new user
+      user = await prisma.user.create({
+        data: {
+          email: normalizeEmail(email),
+          name: name || email.split('@')[0],
+          googleId,
+          role: 'customer',
+          password: '' // No password for OAuth users
+        }
+      });
+    }
+    
+    return done(null, user);
+  } catch (error) {
+    console.error('Google OAuth error:', error);
+    return done(error, null);
+  }
+}));
+
+// Passport serialization for sessions
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(id) }
+    });
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
+});
 
 const normalizeEmail = (v) => (v || "").replace(/^["']|["']$/g, "").trim().toLowerCase();
 
@@ -38,7 +107,7 @@ router.post("/signup", async (req, res) => {
     const token = jwt.sign(
       { userId: user.id, role: user.role },
       JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "30d" }
     );
 
     res.status(201).json({
@@ -71,7 +140,7 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(
       { userId: user.id, role: user.role },
       JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "30d" }
     );
 
     if (user.role === "admin") {
@@ -165,5 +234,38 @@ router.get("/me", async (req, res) => {
 router.get("/verify", requireRole("admin"), async (req, res) => {
   res.json({ valid: true, user: { id: req.userId, email: req.userEmail } });
 });
+
+// Google OAuth routes
+router.get('/login/federated/google', (req, res, next) => {
+  console.log("Initiating Google OAuth flow");
+  next();
+}, passport.authenticate('google', {
+  scope: ['profile', 'email']
+}));
+
+// Google OAuth callback
+router.get('/login/federated/google/callback',
+  passport.authenticate('google', { session: false }),
+  async (req, res) => {
+    try {
+      const user = req.user;
+      
+      // Generate JWT token
+      const token = jwt.sign(
+        { userId: user.id, role: user.role },
+        JWT_SECRET,
+        { expiresIn: "30d" }
+      );
+      
+      // Redirect to frontend with only token (user data will be fetched from /auth/me)
+      const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
+      res.redirect(`${frontendURL}/auth/callback?token=${token}`);
+    } catch (error) {
+      console.error('OAuth callback error:', error);
+      const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
+      res.redirect(`${frontendURL}/auth/callback?message=${encodeURIComponent('Authentication failed')}`);
+    }
+  }
+);
 
 export default router;

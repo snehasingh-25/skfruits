@@ -1,0 +1,85 @@
+import { useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useUserAuth } from '../context/UserAuthContext';
+import { useCart } from '../context/CartContext';
+import { API } from '../api';
+
+export default function OAuthCallback() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { loginWithToken } = useUserAuth();
+  const { mergeCart } = useCart();
+
+  useEffect(() => {
+    const handleCallback = async () => {
+      try {
+        const token = searchParams.get('token');
+        const error = searchParams.get('message');
+
+        if (error) {
+          console.error('OAuth error:', error);
+          navigate('/', { replace: true });
+          return;
+        }
+
+        if (!token) {
+          console.error('No token received');
+          navigate('/', { replace: true });
+          return;
+        }
+
+        // Fetch user data using the token (more reliable than URL params)
+        const response = await fetch(`${API}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) {
+          console.error('Failed to fetch user data');
+          navigate('/', { replace: true });
+          return;
+        }
+
+        const data = await response.json();
+        const user = data.user;
+
+        // Set the token and user in auth context
+        const success = await loginWithToken(token, user);
+        
+        if (success) {
+          // Merge cart for regular customers
+          if (user.role === 'customer') {
+            await mergeCart();
+          }
+          
+          // Redirect based on user role
+          if (user.role === 'admin') {
+            window.location.href = '/admin/dashboard';
+          } else if (user.role === 'driver') {
+            navigate('/driver', { replace: true });
+          } else {
+            navigate('/', { replace: true });
+          }
+        } else {
+          navigate('/', { replace: true });
+        }
+      } catch (error) {
+        console.error('OAuth callback error:', error);
+        navigate('/', { replace: true });
+      }
+    };
+
+    handleCallback();
+  }, [searchParams, navigate, loginWithToken, mergeCart]);
+
+  return (
+    <div 
+      className="min-h-screen flex items-center justify-center"
+      style={{ background: "var(--page-auth-bg)" }}
+    >
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+        <p style={{ color: "var(--foreground)" }}>Completing authentication...</p>
+      </div>
+    </div>
+  );
+}

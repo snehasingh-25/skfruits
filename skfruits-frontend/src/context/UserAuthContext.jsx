@@ -126,6 +126,32 @@ export function UserAuthProvider({ children }) {
     setStoredToken(null);
   }, []);
 
+  const loginWithToken = useCallback(async (authToken, userData) => {
+    try {
+      // If userData is provided (e.g., from OAuth), use it directly
+      if (userData && userData.id) {
+        setToken(authToken);
+        setUser(userData);
+        setStoredToken(authToken);
+        return true;
+      }
+
+      // Otherwise, validate the token by fetching user data
+      const fetchedUser = await fetchUser(authToken);
+      if (!fetchedUser) {
+        return false;
+      }
+
+      setToken(authToken);
+      setUser(fetchedUser);
+      setStoredToken(authToken);
+      return true;
+    } catch (error) {
+      console.error("Login with token error:", error);
+      return false;
+    }
+  }, [fetchUser]);
+
   const getAuthHeaders = useCallback(() => {
     const t = getStoredToken();
     if (!t) return {};
@@ -140,6 +166,7 @@ export function UserAuthProvider({ children }) {
         loading,
         isAuthenticated: !!user,
         login,
+        loginWithToken,
         logout,
         signup,
         getAuthHeaders,
