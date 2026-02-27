@@ -158,7 +158,7 @@ export default function Navbar() {
 
     if (typedElementRef.current) {
       typedInstanceRef.current = new Typed(typedElementRef.current, {
-        strings: [" Find the perfect gift", " A gift for your loved ones"],
+        strings: [" Fresh fruits, delivered to you", " Farm-fresh quality, every time"],
         typeSpeed: 50,
         backSpeed: 30,
         backDelay: 2000,
@@ -541,6 +541,26 @@ export default function Navbar() {
               </span>
             </Link>
 
+            {/* Mobile: Login/Signup in header when not authenticated */}
+            {!isAuthenticated && (
+              <div className="md:hidden flex items-center gap-2">
+                <Link
+                  to="/login"
+                  className="px-2.5 py-1.5 rounded-full text-xs font-medium transition-all"
+                  style={{ color: "var(--foreground)", backgroundColor: "var(--secondary)" }}
+                >
+                  Log in
+                </Link>
+                <Link
+                  to="/signup"
+                  className="px-2.5 py-1.5 rounded-full text-xs font-semibold transition-all btn-primary-brand"
+                  style={{ borderRadius: "var(--radius-lg)" }}
+                >
+                  Sign up
+                </Link>
+              </div>
+            )}
+
             {/* Mobile User Menu - visible only on mobile when authenticated */}
             {isAuthenticated && user && (
               <div className="md:hidden relative" ref={mobileUserMenuRef}>
@@ -723,7 +743,6 @@ export default function Navbar() {
               <div
                 ref={suggestionsRef}
                 className="absolute top-full left-0 mt-2 w-full rounded-lg shadow-xl border z-50 max-h-80 overflow-y-auto"
-                style={{ backgroundColor: 'var(--card-white)', borderColor: 'var(--border)' }}
                 style={{ borderColor: "var(--border)", backgroundColor: "var(--background)" }}
               >
                 <div className="p-2">
@@ -814,8 +833,8 @@ export default function Navbar() {
 
         {/* Mobile Menu — slide-down, large tap targets (visible < md) */}
         <div
-          className="md:hidden overflow-hidden transition-[max-height] duration-300 ease-in-out"
-          style={{ maxHeight: isMobileMenuOpen ? "400px" : "0" }}
+          className="md:hidden overflow-y-auto overflow-x-hidden transition-[max-height] duration-300 ease-in-out"
+          style={{ maxHeight: isMobileMenuOpen ? "85vh" : "0" }}
         >
           <div
             className="flex flex-col border-t border-[var(--border)]"

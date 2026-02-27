@@ -1,20 +1,18 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import GiftBoxLoader from "./GiftBoxLoader";
-import { useProductLoader } from "../hooks/useProductLoader";
 
 export default function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
-  const { showLoader: showAuthLoader } = useProductLoader(loading);
 
   if (loading) {
     return (
-      <>
-        <GiftBoxLoader 
-          isLoading={loading} 
-          showLoader={showAuthLoader}
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--background)" }}>
+        <div
+          className="animate-spin rounded-full w-10 h-10 border-2 border-t-transparent"
+          style={{ borderColor: "var(--primary)" }}
+          aria-hidden="true"
         />
-      </>
+      </div>
     );
   }
 

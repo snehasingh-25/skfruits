@@ -1,7 +1,5 @@
 import { Navigate } from "react-router-dom";
 import { useUserAuth } from "../context/UserAuthContext";
-import GiftBoxLoader from "./GiftBoxLoader";
-import { useProductLoader } from "../hooks/useProductLoader";
 
 /**
  * Protects driver-only routes. Requires user to be logged in with role "driver".
@@ -9,14 +7,16 @@ import { useProductLoader } from "../hooks/useProductLoader";
  */
 export default function DriverProtectedRoute({ children }) {
   const { user, loading } = useUserAuth();
-  const { showLoader: showAuthLoader } = useProductLoader(loading);
 
   if (loading) {
     return (
-      <GiftBoxLoader
-        isLoading={loading}
-        showLoader={showAuthLoader}
-      />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--background)" }}>
+        <div
+          className="animate-spin rounded-full w-10 h-10 border-2 border-t-transparent"
+          style={{ borderColor: "var(--primary)" }}
+          aria-hidden="true"
+        />
+      </div>
     );
   }
 

@@ -3,8 +3,6 @@ import { useParams, Link, useSearchParams } from "react-router-dom";
 import { API } from "../api";
 import { shuffleArray } from "../utils/shuffle";
 import ProductCard from "../components/ProductCard";
-import GiftBoxLoader from "../components/GiftBoxLoader";
-import { useProductLoader } from "../hooks/useProductLoader";
 
 export default function Occasion() {
   const { slug } = useParams();
@@ -16,8 +14,6 @@ export default function Occasion() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // Time-based loader (only shows if loading >= 1 second)
-  const { showLoader: showOccasionLoader } = useProductLoader(loading);
   const occasionScrollRef = useRef(null);
 
   const fetchAllProducts = async (category = "") => {
@@ -146,12 +142,13 @@ export default function Occasion() {
 
   if (loading) {
     return (
-      <>
-        <GiftBoxLoader 
-          isLoading={loading} 
-          showLoader={showOccasionLoader}
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--background)" }}>
+        <div
+          className="animate-spin rounded-full w-10 h-10 border-2 border-t-transparent"
+          style={{ borderColor: "var(--primary)" }}
+          aria-hidden="true"
         />
-      </>
+      </div>
     );
   }
 

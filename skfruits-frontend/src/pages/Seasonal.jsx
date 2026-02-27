@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { API } from "../api";
-import GiftBoxLoader from "../components/GiftBoxLoader";
-import { useProductLoader } from "../hooks/useProductLoader";
 
 export default function Seasonal() {
   const { slug } = useParams();
   const [seasonals, setSeasonals] = useState([]);
   const [selectedSeasonal, setSelectedSeasonal] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { showLoader } = useProductLoader(loading);
 
   useEffect(() => {
     let isMounted = true;
@@ -43,7 +40,13 @@ export default function Seasonal() {
 
   if (loading) {
     return (
-      <GiftBoxLoader isLoading={loading} showLoader={showLoader} />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--background)" }}>
+        <div
+          className="animate-spin rounded-full w-10 h-10 border-2 border-t-transparent"
+          style={{ borderColor: "var(--primary)" }}
+          aria-hidden="true"
+        />
+      </div>
     );
   }
 

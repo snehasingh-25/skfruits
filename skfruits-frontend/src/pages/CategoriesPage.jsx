@@ -4,8 +4,6 @@ import { API } from "../api";
 import { shuffleArray } from "../utils/shuffle";
 import { Link } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
-import GiftBoxLoader from "../components/GiftBoxLoader";
-import { useProductLoader } from "../hooks/useProductLoader";
 
 export default function CategoriesPage() {
   const { slug } = useParams();
@@ -19,9 +17,6 @@ export default function CategoriesPage() {
   const [loading, setLoading] = useState(true);
   const categoryScrollRef = useRef(null);
   
-  // Time-based loader for products (only shows if loading >= 1 second)
-  const { showLoader: showProductLoader } = useProductLoader(loading);
-
   useEffect(() => {
     Promise.all([
       fetch(`${API}/categories`).then(res => res.json()),
@@ -150,27 +145,20 @@ export default function CategoriesPage() {
     });
   };
 
-  // Time-based loader for initial categories load
-  const { showLoader: showInitialLoader } = useProductLoader(loading && !selectedCategory);
-  
   if (loading && !selectedCategory) {
     return (
-      <>
-        <GiftBoxLoader 
-          isLoading={loading && !selectedCategory} 
-          showLoader={showInitialLoader}
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--background)" }}>
+        <div
+          className="animate-spin rounded-full w-10 h-10 border-2 border-t-transparent"
+          style={{ borderColor: "var(--primary)" }}
+          aria-hidden="true"
         />
-      </>
+      </div>
     );
   }
 
   return (
     <div className="min-h-screen py-16 bg-page-products">
-      {/* Gift Box Loading Animation - Only shows if product loading takes >= 1 second */}
-      <GiftBoxLoader 
-        isLoading={loading && selectedCategory !== null} 
-        showLoader={showProductLoader}
-      />
       <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="font-display text-4xl font-bold mb-4" style={{ color: "var(--foreground)" }}>

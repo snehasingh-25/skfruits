@@ -6,9 +6,7 @@ import { useWishlist } from "../context/WishlistContext";
 import { useToast } from "../context/ToastContext";
 import ProductCard from "../components/ProductCard";
 import RecommendationCarousel from "../components/RecommendationCarousel";
-import GiftBoxLoader from "../components/GiftBoxLoader";
 import StarRating from "../components/StarRating";
-import { useProductLoader } from "../hooks/useProductLoader";
 import { initializeInstagramEmbeds } from "../utils/instagramEmbed";
 import { useUserAuth } from "../context/UserAuthContext";
 import { useRecentlyViewed } from "../context/RecentlyViewedContext";
@@ -30,7 +28,6 @@ export default function ProductDetail() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [expanded, setExpanded] = useState(() => new Set(["details"]));
   const [similarProducts, setSimilarProducts] = useState([]);
-  const [loadingSimilar, setLoadingSimilar] = useState(false);
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [reviewsData, setReviewsData] = useState({ averageRating: 0, totalReviews: 0, reviews: [] });
@@ -43,10 +40,6 @@ export default function ProductDetail() {
   const isWishlisted = product ? isInWishlist(product.id) : false;
   const isWishlistToggling = product && togglingId === product.id;
   
-  // Time-based loader (only shows if loading >= 1 second)
-  const { showLoader: showProductLoader } = useProductLoader(loading);
-  const { showLoader: showSimilarLoader } = useProductLoader(loadingSimilar);
-
   const images = useMemo(() => {
     if (!product?.images) return [];
     if (Array.isArray(product.images)) return product.images;
@@ -157,7 +150,6 @@ export default function ProductDetail() {
         // Fetch similar products from the same category (use first category if multiple)
         const firstCategory = data?.categories && data.categories.length > 0 ? data.categories[0] : data?.category;
         if (firstCategory?.slug) {
-          setLoadingSimilar(true);
           fetch(`${API}/products?category=${firstCategory.slug}&limit=10`, { signal: ac.signal })
             .then((res) => res.json())
             .then((products) => {
@@ -166,15 +158,11 @@ export default function ProductDetail() {
                 ? products.filter((p) => p.id !== Number(id))
                 : [];
               setSimilarProducts(similar);
-              setLoadingSimilar(false);
             })
             .catch((error) => {
               if (error?.name === "AbortError") return;
               console.error("Error fetching similar products:", error);
-              setLoadingSimilar(false);
             });
-        } else {
-          setLoadingSimilar(false);
         }
       })
       .catch((error) => {
@@ -319,22 +307,13 @@ export default function ProductDetail() {
 
   if (loading) {
     return (
-      <>
-        {showProductLoader ? (
-          <GiftBoxLoader 
-            isLoading={loading} 
-            showLoader={showProductLoader}
-          />
-        ) : (
-          <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--background)" }}>
-            <div 
-              className="animate-spin rounded-full w-10 h-10 border-2 border-t-transparent" 
-              style={{ borderColor: "var(--primary)" }} 
-              aria-hidden="true"
-            />
-          </div>
-        )}
-      </>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--background)" }}>
+        <div
+          className="animate-spin rounded-full w-10 h-10 border-2 border-t-transparent"
+          style={{ borderColor: "var(--primary)" }}
+          aria-hidden="true"
+        />
+      </div>
     );
   }
 
@@ -353,11 +332,6 @@ export default function ProductDetail() {
 
   return (
     <>
-      {/* Gift Box Loading Animation for similar products */}
-      <GiftBoxLoader 
-        isLoading={loadingSimilar} 
-        showLoader={showSimilarLoader}
-      />
       <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
       <div className="max-w-7xl mx-auto">
         {/* Top bar */}

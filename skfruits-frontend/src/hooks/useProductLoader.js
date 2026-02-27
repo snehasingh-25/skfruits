@@ -43,7 +43,6 @@ export function useProductLoader(isLoading) {
         if (!minLoadTimeReached.current) {
           setShowLoader(false);
         }
-        // Otherwise loader was shown; GiftBoxLoader will handle fade-out
 
         // Reset for next load
         loadingStartTime.current = null;

@@ -4,9 +4,7 @@ import ProductCard from "../components/ProductCard";
 import { Link } from "react-router-dom";
 import BannerSlider from "../components/BannerSlider";
 import { MemoReelCarousel as ReelCarousel } from "../components/ReelCarousel";
-import GiftBoxLoader from "../components/GiftBoxLoader";
 import ProductCarouselSection from "../components/ProductCarouselSection";
-import { useProductLoader } from "../hooks/useProductLoader";
 import { useRecentlyViewed } from "../context/RecentlyViewedContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useUserAuth } from "../context/UserAuthContext";
@@ -37,10 +35,6 @@ export default function Home() {
   const scrollEndTimerRef = useRef(null);
   const occasionScrollEndTimerRef = useRef(null);
   
-  // Time-based loader for products (used by useProductLoader internally; main content uses showAnyLoader)
-  const isProductsLoading = loading.products;
-  useProductLoader(isProductsLoading);
-
   // Single request for homepage data (faster: 1 round-trip instead of 5)
   useEffect(() => {
     const ac = new AbortController();
@@ -208,61 +202,9 @@ export default function Home() {
   // Check if any data is still loading
   const isInitialLoad = loading.categories || loading.occasions || loading.products || loading.reels || loading.banners;
 
-  // Time-based loader for all data (similar to useProductLoader)
-  const [showAnyLoader, setShowAnyLoader] = useState(isInitialLoad);
-  const loadingStartTime = useRef(null);
-  const minLoadTimeReached = useRef(false);
-  const timeoutRef = useRef(null);
-
-  useEffect(() => {
-    if (isInitialLoad) {
-      if (loadingStartTime.current === null) {
-        loadingStartTime.current = Date.now();
-        minLoadTimeReached.current = false;
-        const id = setTimeout(() => setShowAnyLoader(true), 0);
-        timeoutRef.current = setTimeout(() => {
-          minLoadTimeReached.current = true;
-        }, 100);
-        return () => {
-          clearTimeout(id);
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-            timeoutRef.current = null;
-          }
-        };
-      } else {
-        const id = setTimeout(() => setShowAnyLoader(true), 0);
-        return () => clearTimeout(id);
-      }
-    } else {
-      if (loadingStartTime.current !== null) {
-        const loadDuration = Date.now() - loadingStartTime.current;
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-          timeoutRef.current = null;
-        }
-        if (loadDuration < 100 && !minLoadTimeReached.current) {
-          setTimeout(() => setShowAnyLoader(false), 0);
-        } else {
-          setTimeout(() => setShowAnyLoader(false), Math.max(0, 100 - loadDuration));
-        }
-        loadingStartTime.current = null;
-      }
-    }
-  }, [isInitialLoad]);
-
-  const isAnyLoading = isInitialLoad;
-
   return (
     <div className="min-h-screen fade-in" style={{ backgroundColor: 'var(--background)' }}>
-      {/* Gift Box Loading Animation - Only shows if loading takes >= 0.1 seconds */}
-      <GiftBoxLoader 
-        isLoading={isAnyLoading} 
-        showLoader={showAnyLoader}
-      />
-      {/* Hide content while loader is showing */}
-      {!showAnyLoader && (
-        <>
+      <>
           {/* Hero Section - desktop: text left, image right; phone: photo as bg with text overlay */}
           <section className="w-full overflow-hidden bg-[#f3ece1] relative min-h-[70vh] lg:min-h-0">
             {/* Phone: photo as full-bleed background (low opacity + blur) */}
@@ -518,9 +460,8 @@ export default function Home() {
         </div>
       ) : null}
 
-      {/* Trending Gifts Section - Hide while loader is showing */}
-      {!showAnyLoader && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
+      {/* Trending Gifts Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
           <div className="flex items-center justify-between mb-10">
             <h2 className="font-display text-3xl font-bold text-design-foreground">Our Products</h2>
             {products.length > 0 && (
@@ -551,7 +492,6 @@ export default function Home() {
             )}
           </div>
         </div>
-      )}
 
       {/* Secondary Banner Section - Between Gifts and Reels */}
       {!isInitialLoad && <BannerSlider bannerType="secondary" />}
@@ -583,8 +523,7 @@ export default function Home() {
             <ReelCarousel reels={reels} />
           </div>
       )}
-        </>
-      )}
+      </>
     </div>
   );
 }

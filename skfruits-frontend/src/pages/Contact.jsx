@@ -249,7 +249,7 @@ export default function Contact() {
             Visit our office for direct consultations and to see our product samples
           </p>
         </div>
-        <div className="rounded-xl overflow-hidden" style={{ backgroundColor: "var(--muted)" }} style={{ height: '400px' }}>
+        <div className="rounded-xl overflow-hidden" style={{ backgroundColor: "var(--muted)", height: '400px' }}>
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3609.1234567890!2d74.6375!3d25.3444!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjXCsDIwJzM5LjgiTiA3NMKwMzgnMTUuMCJF!5e0!3m2!1sen!2sin!4v1234567890123!5m2!1sen!2sin"
             width="100%"
