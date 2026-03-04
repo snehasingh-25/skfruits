@@ -13,7 +13,7 @@ const router = express.Router();
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
 const CART_SESSION_HEADER = "x-cart-session-id";
-const CURRENCY = "USD";
+const CURRENCY = "INR";
 
 function getSessionId(req) {
   return req.headers[CART_SESSION_HEADER]?.trim() || req.body?.sessionId?.trim() || null;
@@ -24,6 +24,8 @@ router.get("/config", (req, res) => {
   res.json({ razorpayKeyId: RAZORPAY_KEY_ID || "" });
 });
 
+
+//creating a new razor pay instance 
 function getRazorpayInstance() {
   if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
     throw new Error("Razorpay keys not configured");
@@ -93,7 +95,7 @@ router.post("/create-order", async (req, res) => {
       currency: CURRENCY,
       receipt: `skfruits_${Date.now()}_${sessionId.slice(0, 8)}`,
     });
-
+    //if order was created , send order id amount currency to the frontend 
     res.json({
       razorpayOrderId: order.id,
       amount: amountInPaise,

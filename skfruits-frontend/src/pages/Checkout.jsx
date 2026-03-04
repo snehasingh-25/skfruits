@@ -261,6 +261,8 @@ export default function Checkout() {
 
     if (paymentMethod === PAYMENT_METHOD_COD) {
       setSubmitting(true);
+
+      //hitting the razor pay endpoint from here 
       try {
         const res = await fetch(`${API}/orders/create`, {
           method: "POST",
