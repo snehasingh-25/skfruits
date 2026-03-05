@@ -338,13 +338,23 @@ export default function Checkout() {
       await loadRazorpayScript();
       const details = getCustomerDetails();
 
+      //options for razor pay 
+      
       const options = {
         key: keyId,
         amount: String(amount),
-        currency: currency || "INR",
+        currency: "INR",
         name: "SK Fruits",
         description: "Order payment",
         order_id: razorpayOrderId,
+        method: {
+          upi: true,
+          card: true,
+          netbanking: true,
+          wallet: true,
+          emi: false,
+          paylater: true,
+        },
         prefill: {
           name: details.name || "",
           email: details.email || "",
