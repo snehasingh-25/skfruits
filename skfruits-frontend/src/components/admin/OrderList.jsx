@@ -77,13 +77,13 @@ export default function OrderList({ orders, onUpdate }) {
       header: "Status",
       render: (order) => (
         <select
-          value={order.status || "pending"}
+          value={order.status === "shipped" ? "out_for_delivery" : (order.status || "pending")}
           onChange={(e) => updateStatus(order.id, e.target.value)}
           className="px-3 py-2 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-pink-500 transition bg-white"
         >
           <option value="pending">Pending</option>
           <option value="confirmed">Confirmed</option>
-          <option value="shipped">Shipped</option>
+          <option value="out_for_delivery">Out for Delivery</option>
           <option value="delivered">Delivered</option>
           <option value="cancelled">Cancelled</option>
         </select>

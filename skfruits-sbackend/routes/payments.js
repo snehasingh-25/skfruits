@@ -186,9 +186,11 @@ router.post("/verify", optionalCustomerAuth, async (req, res) => {
       });
       if (slot) {
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        // IMPORTANT: deliverySlot.date is a date-only field (@db.Date).
+        // Normalize using UTC midnight to avoid +/-1 day shifts.
+        today.setUTCHours(0, 0, 0, 0);
         const slotDate = typeof slot.date === "string" ? new Date(slot.date) : new Date(slot.date);
-        slotDate.setHours(0, 0, 0, 0);
+        slotDate.setUTCHours(0, 0, 0, 0);
         if (slotDate >= today && (slot.maxOrders == null || slot.bookedCount < slot.maxOrders)) {
           deliverySlotId = slotId;
           estimatedDeliveryDate = slotDate.toISOString().slice(0, 10);

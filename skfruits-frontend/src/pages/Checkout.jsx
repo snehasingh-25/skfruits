@@ -5,7 +5,7 @@ import { useToast } from "../context/ToastContext";
 import { useUserAuth } from "../context/UserAuthContext";
 import { API } from "../api";
 import AddressForm from "../components/AddressForm";
-import GoogleAddressInput from "../components/GoogleAddressInput";
+import LocationPicker from "../components/LocationPicker";
 import { CART_SESSION_KEY } from "../context/CartContext";
 
 const RAZORPAY_SCRIPT_URL = "https://checkout.razorpay.com/v1/checkout.js";
@@ -587,8 +587,7 @@ export default function Checkout() {
                     <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--foreground)" }}>
                       Search address (optional)
                     </label>
-                    <GoogleAddressInput
-                      value={form.address}
+                    <LocationPicker
                       onChange={(data) => {
                         setForm((prev) => ({
                           ...prev,
@@ -601,6 +600,8 @@ export default function Checkout() {
                         }));
                         setErrors((prev) => ({ ...prev, address: "", city: "", state: "", pincode: "" }));
                       }}
+                      initialLat={form.latitude}
+                      initialLng={form.longitude}
                       placeholder="Search address to fill below"
                       className="w-full px-4 py-2.5 rounded-lg border text-[var(--foreground)] placeholder-[var(--muted)] focus:outline-none focus:ring-2 transition-all"
                       style={{ background: "var(--background)", borderColor: "var(--border)" }}

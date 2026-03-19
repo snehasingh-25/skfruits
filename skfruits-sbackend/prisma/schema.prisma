@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -170,9 +170,13 @@ model Order {
   razorpayPaymentId      String?       @unique // Set after verification; prevents duplicate orders
   userId                 Int?          // Set when order is placed by logged-in user
   deliveryFee            Float         @default(0)
-  estimatedDeliveryDate DateTime?     @db.Date
-  estimatedDeliveryTime DateTime?     // Time window or exact ETA (nullable)
-  deliverySlotId        Int?
+  estimatedDeliveryDate    DateTime?     @db.Date
+  estimatedDeliveryTime    DateTime?     // Time window or exact ETA (nullable)
+  estimatedDeliveryMinutes Int?          // "Delivery in X mins" — calculated at order creation
+  nearestShopName          String?       // Which shop was closest at order time
+  distanceKm               Float?        // Distance from nearest shop to customer (km)
+  driverAvailable          Boolean?      // Was a driver available when order was placed?
+  deliverySlotId           Int?
   driverId              Int?          // Legacy: optional assigned driver (Driver table)
   driverUserId          Int?          // Assigned driver (User with role = driver)
   createdAt              DateTime      @default(now())
@@ -386,4 +390,27 @@ model Driver {
   currentLng Float?
   createdAt  DateTime     @default(now())
   orders     Order[]
+}
+
+// Two physical shop locations — system picks nearest one for delivery time calc
+model ShopLocation {
+  id                    Int      @id @default(autoincrement())
+  name                  String                       // e.g. "SK Fruits - Malviya Nagar"
+  latitude              Float
+  longitude             Float
+  isActive              Boolean  @default(true)
+  processingTimeMinutes Int      @default(10)         // order packing time at this shop
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+// Single-row config — admin-tunable constants for delivery time calculation
+model DeliveryTimeConfig {
+  id                    Int      @id @default(autoincrement())
+  averageSpeedKmph      Float    @default(25)         // avg bike/scooter speed in city
+  baseProcessingMinutes Int      @default(10)         // base order prep time
+  bufferMinutes         Int      @default(5)          // safety padding
+  maxDeliverableKm      Float    @default(15)         // beyond this → "Not serviceable"
+  noDriverExtraMinutes  Int      @default(15)         // extra wait when no driver available
+  updatedAt             DateTime @updatedAt
 }

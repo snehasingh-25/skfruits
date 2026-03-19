@@ -3,7 +3,7 @@ import { requireRole, requireCustomerAuth, optionalCustomerAuth } from "../utils
 import prisma from "../prisma.js";
 import { getCartItemsForOrder } from "./cart.js";
 import { validateStockForItems, deductStockForOrder } from "../utils/stock.js";
-import { calculateDeliveryCharges, getEstimatedDeliveryForOrder } from "./delivery.js";
+import { calculateDeliveryCharges, getEstimatedDeliveryForOrder, estimateDeliveryTime } from "./delivery.js";
 import { tryAssignDriverToOrder, releaseDriverIfAssigned } from "../utils/driverAssignment.js";
 
 const router = express.Router();
@@ -30,7 +30,8 @@ function orderStatusDisplay(status) {
     pending: "Processing",
     processing: "Processing",
     confirmed: "Confirmed",
-    shipped: "Shipped",
+    // UI should not show "Shipped"; treat it as the "Out for Delivery" stage.
+    shipped: "Out for Delivery",
     out_for_delivery: "Out for Delivery",
     delivered: "Delivered",
     cancelled: "Cancelled",
@@ -84,9 +85,12 @@ router.post("/create", optionalCustomerAuth, async (req, res) => {
         return res.status(400).json({ error: "Invalid or inactive delivery slot. Please choose another slot." });
       }
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      // IMPORTANT: deliverySlot.date is a date-only field (@db.Date).
+      // Normalizing using local midnight can shift the UTC date by +/-1 day.
+      // Use UTC midnight to keep the calendar day stable.
+      today.setUTCHours(0, 0, 0, 0);
       const slotDate = typeof slot.date === "string" ? new Date(slot.date) : new Date(slot.date);
-      slotDate.setHours(0, 0, 0, 0);
+      slotDate.setUTCHours(0, 0, 0, 0);
       if (slotDate < today) {
         return res.status(400).json({ error: "Selected delivery slot date has passed. Please choose another slot." });
       }
@@ -140,10 +144,42 @@ router.post("/create", optionalCustomerAuth, async (req, res) => {
         },
       });
       await tryAssignDriverToOrder(tx, newOrder.id);
-      return newOrder;
+
+      // ── Compute delivery-time estimate if we have customer coordinates ──
+      let estimateData = {};
+      if (addressLat != null && addressLng != null) {
+        try {
+          const est = await estimateDeliveryTime(addressLat, addressLng);
+          if (est.serviceable) {
+            // Check if a driver was actually assigned to THIS order
+            const refreshed = await tx.order.findUnique({ where: { id: newOrder.id }, select: { driverUserId: true } });
+            const wasDriverAssigned = refreshed?.driverUserId != null;
+            estimateData = {
+              estimatedDeliveryMinutes: est.estimatedMinutes,
+              nearestShopName: est.nearestShop,
+              distanceKm: est.distanceKm,
+              driverAvailable: wasDriverAssigned,
+            };
+            await tx.order.update({
+              where: { id: newOrder.id },
+              data: estimateData,
+            });
+          }
+        } catch (e) {
+          console.error("Non-fatal: delivery estimate failed for order", newOrder.id, e.message);
+        }
+      }
+
+      return { ...newOrder, ...estimateData };
     });
 
-    res.json({ orderId: order.id, success: true });
+    res.json({
+      orderId: order.id,
+      success: true,
+      estimatedDeliveryMinutes: order.estimatedDeliveryMinutes ?? null,
+      driverAvailable: order.driverAvailable ?? null,
+      nearestShopName: order.nearestShopName ?? null,
+    });
   } catch (error) {
     console.error("Order create error:", error);
     res.status(400).json({ error: error.message || "Failed to create order" });
@@ -213,6 +249,10 @@ router.get("/my-orders", requireCustomerAuth, async (req, res) => {
       totalAmount: order.total,
       deliveryFee: order.deliveryFee,
       estimatedDeliveryDate: order.estimatedDeliveryDate,
+      estimatedDeliveryMinutes: order.estimatedDeliveryMinutes,
+      nearestShopName: order.nearestShopName,
+      distanceKm: order.distanceKm,
+      driverAvailable: order.driverAvailable,
       paymentStatus: paymentStatus(order),
       orderStatus: orderStatusDisplay(order.status),
       driver: order.driverUser ? { name: order.driverUser.name, phone: order.driverUser.phone ?? null } : (order.driver ? { name: order.driver.name, phone: order.driver.phone } : null),
@@ -258,6 +298,10 @@ router.get("/:id", requireCustomerAuth, async (req, res) => {
       total: order.total,
       deliveryFee: order.deliveryFee,
       estimatedDeliveryDate: order.estimatedDeliveryDate,
+      estimatedDeliveryMinutes: order.estimatedDeliveryMinutes,
+      nearestShopName: order.nearestShopName,
+      distanceKm: order.distanceKm,
+      driverAvailable: order.driverAvailable,
       status: order.status,
       orderStatus: orderStatusDisplay(order.status),
       paymentMethod: order.paymentMethod,

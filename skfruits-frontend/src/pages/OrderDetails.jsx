@@ -6,7 +6,7 @@ import { useCart } from "../context/CartContext";
 import { API } from "../api";
 import DriverInfo from "../components/DriverInfo";
 
-const STEPS = ["Processing", "Confirmed", "Shipped", "Delivered"];
+const STEPS = ["Processing", "Confirmed", "Out for Delivery", "Delivered"];
 
 function stepIndex(status) {
   const s = String(status || "").toLowerCase();
@@ -22,7 +22,6 @@ function StatusBadge({ status }) {
   const config = {
     Processing: { bg: "var(--muted)", color: "var(--foreground)" },
     Confirmed: { bg: "var(--primary)", color: "var(--primary-foreground)" },
-    Shipped: { bg: "var(--chart-4)", color: "white" },
     "Out for Delivery": { bg: "var(--accent)", color: "var(--foreground)" },
     Delivered: { bg: "var(--success)", color: "white" },
     Cancelled: { bg: "var(--destructive)", color: "white" },
@@ -214,7 +213,7 @@ export default function OrderDetails() {
                         color: done ? "var(--primary-foreground)" : active ? "var(--primary)" : "var(--muted)",
                       }}
                     >
-                      {done ? "✓" : idx + 1}
+                      {(done || active) ? "✓" : idx + 1}
                     </div>
                     <span className="text-xs font-medium mt-2 text-center" style={{ color: active || done ? "var(--foreground)" : "var(--muted)" }}>
                       {label}
@@ -229,6 +228,34 @@ export default function OrderDetails() {
         {isCancelled && (
           <div className="rounded-xl border p-4 mb-8" style={{ borderColor: "var(--destructive)", background: "var(--secondary)" }}>
             <p className="font-medium" style={{ color: "var(--destructive)" }}>This order has been cancelled.</p>
+          </div>
+        )}
+
+        {/* Delivery ETA */}
+        {order.estimatedDeliveryMinutes != null && (
+          <div className="rounded-xl p-5 mb-8" style={{ background: "linear-gradient(135deg, #16a34a 0%, #059669 100%)" }}>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-white">
+                  Estimated delivery: ~{order.estimatedDeliveryMinutes} mins
+                </p>
+                {order.driverAvailable === false && (
+                  <p className="text-sm text-white/80 mt-0.5">
+                    Driver assignment pending — time includes wait
+                  </p>
+                )}
+                {order.nearestShopName && (
+                  <p className="text-xs text-white/70 mt-1">
+                    Shipping from {order.nearestShopName}{order.distanceKm != null ? ` (${order.distanceKm.toFixed(1)} km away)` : ""}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         )}
 

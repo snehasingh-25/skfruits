@@ -7,13 +7,12 @@ import { API } from "../../api";
 const STATUS_OPTIONS = [
   { value: "processing", label: "Processing" },
   { value: "confirmed", label: "Confirmed" },
-  { value: "shipped", label: "Shipped" },
   { value: "out_for_delivery", label: "Out for Delivery" },
   { value: "delivered", label: "Delivered" },
   { value: "cancelled", label: "Cancelled" },
 ];
 
-const STEPS = ["Processing", "Confirmed", "Shipped", "Delivered"];
+const STEPS = ["Processing", "Confirmed", "Out for Delivery", "Delivered"];
 
 function stepIndex(status) {
   const s = String(status || "").toLowerCase().replace(/\s+/g, "_");
@@ -29,7 +28,6 @@ function StatusBadge({ status }) {
   const config = {
     Processing: { bg: "var(--muted)", color: "var(--foreground)" },
     Confirmed: { bg: "var(--accent)", color: "var(--foreground)" },
-    Shipped: { bg: "var(--chart-4)", color: "white" },
     "Out for Delivery": { bg: "var(--accent)", color: "var(--foreground)" },
     Delivered: { bg: "var(--success)", color: "white" },
     Cancelled: { bg: "var(--destructive)", color: "white" },
@@ -187,7 +185,10 @@ export default function AdminOrderDetailPage() {
 
   const currentStep = stepIndex(order.status);
   const isCancelled = String(order.status).toLowerCase() === "cancelled";
-  const rawStatus = order.status === "pending" ? "processing" : (order.status || "processing");
+  const rawStatus =
+    order.status === "pending"
+      ? "processing"
+      : (order.status === "shipped" ? "out_for_delivery" : (order.status || "processing"));
 
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
@@ -234,7 +235,7 @@ export default function AdminOrderDetailPage() {
                         color: done ? "var(--primary-foreground)" : active ? "var(--primary)" : "var(--muted)",
                       }}
                     >
-                      {done ? "✓" : idx + 1}
+                      {(done || active) ? "✓" : idx + 1}
                     </div>
                     <span className="text-xs font-medium mt-2" style={{ color: active || done ? "var(--foreground)" : "var(--muted)" }}>{label}</span>
                   </div>

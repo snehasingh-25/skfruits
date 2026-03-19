@@ -29,7 +29,6 @@ function StatusBadge({ status, type = "order" }) {
   const statusConfig = {
     Processing: { bg: "var(--muted)", color: "var(--foreground)" },
     Confirmed: { bg: "var(--primary)", color: "var(--primary-foreground)" },
-    Shipped: { bg: "var(--chart-4)", color: "white" },
     "Out for Delivery": { bg: "var(--accent)", color: "var(--foreground)" },
     Delivered: { bg: "var(--success)", color: "white" },
     Cancelled: { bg: "var(--destructive)", color: "white" },

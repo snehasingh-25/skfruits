@@ -16,7 +16,8 @@ function orderStatusDisplay(status) {
     pending: "Processing",
     processing: "Processing",
     confirmed: "Confirmed",
-    shipped: "Shipped",
+    // UI should not show "Shipped"; treat it as the "Out for Delivery" stage.
+    shipped: "Out for Delivery",
     out_for_delivery: "Out for Delivery",
     delivered: "Delivered",
     cancelled: "Cancelled",

@@ -21,7 +21,8 @@ const STATUS_LABELS = {
   pending: "Pending",
   processing: "Processing",
   confirmed: "Confirmed",
-  shipped: "Shipped",
+  // UI: treat internal "shipped" as part of the "Out for Delivery" stage
+  shipped: "Out for Delivery",
   out_for_delivery: "Out for Delivery",
   delivered: "Delivered",
   cancelled: "Cancelled",

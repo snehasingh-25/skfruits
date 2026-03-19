@@ -14,8 +14,7 @@ function haversineKm(lat1, lon1, lat2, lon2) {
 }
 
 /**
- * Shows a small map with delivery pin and optional distance from driver's current location.
- * address: display string; addressLatitude, addressLongitude: for map pin and "Open in Maps" link.
+ * Shows a small Google Map with delivery pin and optional distance from driver's current location.
  */
 export default function DeliveryMapCard({
   address,
@@ -63,7 +62,7 @@ export default function DeliveryMapCard({
     return () => { cancelled = true; };
   }, [hasCoords, addressLatitude, addressLongitude]);
 
-  // Init map when we have coords and script is loaded
+  // Init Google Map when coords and script are loaded
   useEffect(() => {
     if (!isLoaded || !hasCoords || !mapRef.current || !window.google?.maps) return;
     const map = new window.google.maps.Map(mapRef.current, {

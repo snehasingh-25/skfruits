@@ -345,7 +345,7 @@ export default function DriverDashboard() {
                   </p>
                 )}
 
-                {/* Status actions: Shipped -> Start delivery; Out for delivery -> Mark delivered */}
+                {/* Status actions: shipped -> out_for_delivery; out_for_delivery -> delivered */}
                 <div className="mt-4 flex flex-wrap gap-2">
                   {order.status === "shipped" && (
                     <button
@@ -362,7 +362,7 @@ export default function DriverDashboard() {
                     >
                       {updatingOrderId === order.id
                         ? "Updating…"
-                        : "Start delivery"}
+                        : "Out for Delivery"}
                     </button>
                   )}
                   {order.status === "out_for_delivery" && (

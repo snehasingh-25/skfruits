@@ -1,6 +1,7 @@
 import express from "express";
 import prisma from "../prisma.js";
 import { getCartItemsForOrder } from "./cart.js";
+import { haversineKm } from "../utils/distance.js";
 
 const router = express.Router();
 const CART_SESSION_HEADER = "x-cart-session-id";
@@ -300,15 +301,111 @@ export async function getEstimatedDeliveryForOrder(deliverySlotId, orderTime = n
     });
     if (slot) {
       const d = typeof slot.date === "string" ? new Date(slot.date) : slot.date;
+      // Normalize to UTC midnight for stable date-only handling.
+      d.setUTCHours(0, 0, 0, 0);
       return d.toISOString().slice(0, 10);
     }
   }
   const cutoff = new Date(orderTime);
-  cutoff.setHours(SAME_DAY_CUTOFF_HOUR, 0, 0, 0);
+  // Keep cutoff logic consistent with the server's date boundaries.
+  // We still format the resulting date as UTC date-only to avoid +/-1 day issues.
+  cutoff.setUTCHours(SAME_DAY_CUTOFF_HOUR, 0, 0, 0);
   const estimatedDate = orderTime <= cutoff ? new Date(orderTime) : addDays(orderTime, 1);
-  estimatedDate.setHours(0, 0, 0, 0);
+  estimatedDate.setUTCHours(0, 0, 0, 0);
   return estimatedDate.toISOString().slice(0, 10);
 }
+
+// ─── Delivery-time estimation ("Delivery in X mins") ────────────────────────
+
+/** Default config if no DeliveryTimeConfig row exists */
+const DEFAULT_CONFIG = {
+  averageSpeedKmph: 25,
+  baseProcessingMinutes: 10,
+  bufferMinutes: 5,
+  maxDeliverableKm: 15,
+  noDriverExtraMinutes: 15,
+};
+
+/**
+ * Core estimation logic — reused by the API endpoint and by order creation.
+ * @param {number} lat - customer latitude
+ * @param {number} lng - customer longitude
+ * @returns {Promise<object>} estimation result
+ */
+export async function estimateDeliveryTime(lat, lng) {
+  // 1. Fetch active shop locations
+  const shops = await prisma.shopLocation.findMany({ where: { isActive: true } });
+  if (!shops.length) {
+    return { serviceable: false, reason: "No active shop locations configured" };
+  }
+
+  // 2. Find nearest shop
+  let nearest = null;
+  let minDist = Infinity;
+  for (const shop of shops) {
+    const d = haversineKm(lat, lng, shop.latitude, shop.longitude);
+    if (d < minDist) {
+      minDist = d;
+      nearest = shop;
+    }
+  }
+  const distanceKm = Math.round(minDist * 100) / 100; // 2 decimal places
+
+  // 3. Fetch config (single row) or fall back to defaults
+  const configRow = await prisma.deliveryTimeConfig.findFirst();
+  const config = { ...DEFAULT_CONFIG, ...configRow };
+
+  // 4. Check serviceability
+  if (distanceKm > config.maxDeliverableKm) {
+    return {
+      serviceable: false,
+      reason: "Address is outside our delivery range",
+      distanceKm,
+      maxDeliverableKm: config.maxDeliverableKm,
+    };
+  }
+
+  // 5. Check driver availability
+  const availableDrivers = await prisma.user.count({
+    where: { role: "driver", driverStatus: "available" },
+  });
+  const driverAvailable = availableDrivers > 0;
+
+  // 6. Calculate time
+  const processingMins = nearest.processingTimeMinutes ?? config.baseProcessingMinutes;
+  const travelMins = (distanceKm / config.averageSpeedKmph) * 60;
+  const driverWait = driverAvailable ? 0 : config.noDriverExtraMinutes;
+  const totalMins = Math.ceil(processingMins + travelMins + config.bufferMinutes + driverWait);
+
+  return {
+    serviceable: true,
+    estimatedMinutes: totalMins,
+    nearestShop: nearest.name,
+    distanceKm,
+    driverAvailable,
+  };
+}
+
+/**
+ * GET /delivery/estimate-time
+ * Query: latitude, longitude
+ * Returns estimated delivery time in minutes based on nearest shop + driver availability.
+ */
+router.get("/estimate-time", async (req, res) => {
+  try {
+    const lat = parseFloat(req.query.latitude);
+    const lng = parseFloat(req.query.longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      return res.status(400).json({ error: "Valid latitude and longitude are required" });
+    }
+
+    const result = await estimateDeliveryTime(lat, lng);
+    res.json(result);
+  } catch (error) {
+    console.error("Delivery estimate-time error:", error);
+    res.status(500).json({ error: error.message || "Failed to estimate delivery time" });
+  }
+});
 
 export default router;
 export { calculateDeliveryCharges, getDeliveryRuleForTotal };

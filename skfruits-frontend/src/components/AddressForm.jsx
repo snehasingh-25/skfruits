@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import GoogleAddressInput from "./GoogleAddressInput";
+import LocationPicker from "./LocationPicker";
 
 const initialForm = {
   fullName: "",
@@ -144,9 +144,10 @@ export default function AddressForm({
         <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--foreground)" }}>
           Search address (optional)
         </label>
-        <GoogleAddressInput
-          value={form.addressLine}
+        <LocationPicker
           onChange={handlePlaceSelect}
+          initialLat={form.latitude}
+          initialLng={form.longitude}
           placeholder="Search address on map to fill below"
           className={inputClass("addressLine")}
           style={inputStyle("addressLine")}

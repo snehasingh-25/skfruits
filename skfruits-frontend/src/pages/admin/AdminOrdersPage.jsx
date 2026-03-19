@@ -7,7 +7,6 @@ import { API } from "../../api";
 const STATUS_OPTIONS = [
   { value: "processing", label: "Processing" },
   { value: "confirmed", label: "Confirmed" },
-  { value: "shipped", label: "Shipped" },
   { value: "out_for_delivery", label: "Out for Delivery" },
   { value: "delivered", label: "Delivered" },
   { value: "cancelled", label: "Cancelled" },
@@ -17,7 +16,6 @@ function StatusBadge({ status, type = "order" }) {
   const config = {
     Processing: { bg: "var(--muted)", color: "var(--foreground)" },
     Confirmed: { bg: "var(--accent)", color: "var(--foreground)" },
-    Shipped: { bg: "var(--chart-4)", color: "white" },
     "Out for Delivery": { bg: "var(--accent)", color: "var(--foreground)" },
     Delivered: { bg: "var(--success)", color: "white" },
     Cancelled: { bg: "var(--destructive)", color: "white" },
@@ -214,7 +212,11 @@ export default function AdminOrdersPage() {
                       <td className="px-4 py-3"><StatusBadge status={order.paymentStatus} type="payment" /></td>
                       <td className="px-4 py-3">
                         <select
-                          value={order.status === "pending" ? "processing" : (order.status || "processing")}
+                          value={
+                            order.status === "pending"
+                              ? "processing"
+                              : (order.status === "shipped" ? "out_for_delivery" : (order.status || "processing"))
+                          }
                           onChange={(e) => updateStatus(order.id, e.target.value)}
                           disabled={updatingId === order.id}
                           className="px-2 py-1.5 rounded-lg border text-xs font-medium"

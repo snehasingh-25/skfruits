@@ -370,16 +370,38 @@ export default function Home() {
         </div>
       )}
 
-      {/* Mins banner image */}
+      {/* Delivery in 30 mins banner */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <img
+        {/* <img
           src="/mins.png"
           alt=""
           width={752}
           height={332}
           className="w-full max-w-[752px] h-auto mx-auto object-contain rounded-xl"
           style={{ aspectRatio: "752 / 332" }}
-        />
+        /> */}
+        <div
+          className="relative overflow-hidden rounded-2xl p-6 sm:p-8 flex items-center gap-5 shadow-lg"
+          style={{ background: "linear-gradient(135deg, #16a34a 0%, #059669 100%)" }}
+        >
+          {/* Decorative circles */}
+          <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-10" style={{ background: "#fff" }} />
+          <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full opacity-10" style={{ background: "#fff" }} />
+
+          <div className="relative z-10 flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/20 flex items-center justify-center">
+            <svg className="w-8 h-8 sm:w-9 sm:h-9 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <div className="relative z-10">
+            <h3 className="text-xl sm:text-2xl font-bold text-white leading-snug">
+              Delivery in less than <span className="text-yellow-300">60 mins</span>
+            </h3>
+            <p className="text-sm sm:text-base text-white/80 mt-1">
+              Fresh fruits &amp; groceries at your doorstep — lightning fast
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Personalized: Buy Again */}

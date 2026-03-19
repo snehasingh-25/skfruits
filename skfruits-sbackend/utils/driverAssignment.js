@@ -7,27 +7,39 @@
  * @param {number} orderId - Order id to assign a driver to
  */
 export async function tryAssignDriverToOrder(tx, orderId) {
-  const result = await tx.$queryRaw`
-    WITH selected AS (
-      SELECT id FROM "User"
-      WHERE role = 'driver' AND "driverStatus" = 'available'
-      ORDER BY id ASC
-      LIMIT 1
-      FOR UPDATE SKIP LOCKED
-    ),
-    updated AS (
-      UPDATE "User" SET "driverStatus" = 'busy'
-      WHERE id IN (SELECT id FROM selected)
-      RETURNING id
-    )
-    SELECT id FROM updated
-  `;
-  const driverUserId = result?.[0]?.id ?? null;
-  if (driverUserId != null) {
-    await tx.order.update({
-      where: { id: orderId },
-      data: { driverUserId: Number(driverUserId) },
+  /**
+   * MySQL/MariaDB-safe driver assignment:
+   * - Pick the smallest available driver id.
+   * - Atomically flip that driver's status from `available` -> `busy` using updateMany.
+   *   Only one concurrent transaction will successfully flip the same row.
+   * - If flip succeeded, assign the driver to the order.
+   *
+   * This replaces Postgres-only raw SQL (FOR UPDATE SKIP LOCKED / RETURNING).
+   */
+  const maxAttempts = 3;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const candidate = await tx.user.findFirst({
+      where: { role: "driver", driverStatus: "available" },
+      orderBy: { id: "asc" },
+      select: { id: true },
     });
+
+    if (!candidate) return;
+
+    const updated = await tx.user.updateMany({
+      where: { id: candidate.id, driverStatus: "available" },
+      data: { driverStatus: "busy" },
+    });
+
+    if (updated.count === 1) {
+      await tx.order.update({
+        where: { id: orderId },
+        data: { driverUserId: Number(candidate.id) },
+      });
+      return;
+    }
+    // Someone else took this driver between our findFirst and updateMany.
+    // Retry to find the next available driver.
   }
 }
 
