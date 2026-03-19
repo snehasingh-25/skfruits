@@ -141,7 +141,7 @@ router.post("/", async (req, res) => {
     const contextText = buildContextMessage(rest);
     let resolvedImageUrl = imageUrl && typeof imageUrl === "string" ? imageUrl.trim() : "";
     if (resolvedImageUrl && resolvedImageUrl.startsWith("/")) {
-      const base = process.env.API_BASE_URL || process.env.FRONTEND_URL || "http://localhost:3000";
+      const base = process.env.API_BASE_URL || process.env.FRONTEND_URL || "http://localhost:3003";
       resolvedImageUrl = base.replace(/\/$/, "") + resolvedImageUrl;
     }
     const instructionText = resolvedImageUrl

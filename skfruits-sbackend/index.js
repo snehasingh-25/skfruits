@@ -44,7 +44,7 @@ console.log("Current directory:", process.cwd());
 dotenv.config();
 
 console.log("Environment variables loaded");
-console.log("PORT:", process.env.PORT || "3000 (default)");
+console.log("PORT:", process.env.PORT || "3003 (default)");
 console.log("HOST:", process.env.HOST || "0.0.0.0 (default)");
 console.log("DATABASE_URL:", process.env.DATABASE_URL ? "Set ✓" : "NOT SET ✗");
 console.log("NODE_ENV:", process.env.NODE_ENV || "development");
@@ -124,7 +124,7 @@ app.get("/test", (req, res) => {
     timestamp: new Date().toISOString(),
     env: {
       nodeEnv: process.env.NODE_ENV,
-      port: process.env.PORT || 3000,
+      port: process.env.PORT || 3003,
       host: process.env.HOST || "0.0.0.0",
       hasDatabaseUrl: !!process.env.DATABASE_URL
     },
@@ -226,7 +226,7 @@ app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3003;
 const HOST = process.env.HOST || "0.0.0.0"; // Listen on all interfaces for production
 
 // Handle unhandled promise rejections
