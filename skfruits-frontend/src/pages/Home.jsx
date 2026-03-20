@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { API } from "../api";
-import ProductCard from "../components/ProductCard";
+import ProductCard, { ProductCardSkeleton } from "../components/ProductCard";
 import { Link } from "react-router-dom";
 import BannerSlider from "../components/BannerSlider";
 import { MemoReelCarousel as ReelCarousel } from "../components/ReelCarousel";
@@ -34,6 +34,16 @@ export default function Home() {
   const occasionScrollRef = useRef(null);
   const scrollEndTimerRef = useRef(null);
   const occasionScrollEndTimerRef = useRef(null);
+  const [heroSlide, setHeroSlide] = useState(0);
+
+  useEffect(() => {
+    // Auto-advance the hero visuals (respect reduced motion where possible).
+    if (typeof window === "undefined") return;
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    if (reduceMotion) return;
+    const t = setInterval(() => setHeroSlide((s) => (s + 1) % 3), 4800);
+    return () => clearInterval(t);
+  }, []);
   
   // Single request for homepage data (faster: 1 round-trip instead of 5)
   useEffect(() => {
@@ -202,51 +212,259 @@ export default function Home() {
   // Check if any data is still loading
   const isInitialLoad = loading.categories || loading.occasions || loading.products || loading.reels || loading.banners;
 
+  // Production-safe store photos.
+  // Expect real images to be placed into `public/` as:
+  //  - /store-1.png ... /store-6.png
+  // If they aren't present, we gracefully fall back to existing public assets.
+  const storeImages = useMemo(
+    () => [
+      { src: "/store-1.png", fallbackSrc: "/hero1.png", alt: "Store entrance" },
+      { src: "/store-2.png", fallbackSrc: "/hero2.png", alt: "Wood shelf display" },
+      { src: "/store-3.png", fallbackSrc: "/hero.png", alt: "Fresh baskets" },
+      { src: "/store-4.png", fallbackSrc: "/model.png", alt: "Fruit counter" },
+      { src: "/store-5.png", fallbackSrc: "/mins.png", alt: "Shelf details" },
+      { src: "/store-6.png", fallbackSrc: "/logo.jpeg", alt: "Visit the store" },
+    ],
+    []
+  );
+
+  const heroFruitStages = useMemo(
+    () => [
+      {
+        blueberries: { objectPosition: "80% 86%", left: "-160px", top: "-120px", scale: 1.16, rotate: "-3deg" },
+        cherries: { objectPosition: "58% 78%", left: "-90px", top: "-70px", scale: 1.12, rotate: "4deg" },
+        frame1: { left: "-120px", top: "30px", scale: 0.34 },
+        frame2: { right: "-140px", bottom: "-10px", scale: 0.36 },
+      },
+      {
+        blueberries: { objectPosition: "78% 82%", left: "-150px", top: "-105px", scale: 1.18, rotate: "1deg" },
+        cherries: { objectPosition: "55% 80%", left: "-70px", top: "-60px", scale: 1.10, rotate: "-6deg" },
+        frame1: { left: "-105px", top: "20px", scale: 0.32 },
+        frame2: { right: "-150px", bottom: "-20px", scale: 0.38 },
+      },
+      {
+        blueberries: { objectPosition: "82% 88%", left: "-170px", top: "-130px", scale: 1.14, rotate: "-1deg" },
+        cherries: { objectPosition: "62% 76%", left: "-105px", top: "-55px", scale: 1.11, rotate: "6deg" },
+        frame1: { left: "-130px", top: "38px", scale: 0.35 },
+        frame2: { right: "-135px", bottom: "-5px", scale: 0.35 },
+      },
+    ],
+    []
+  );
+
   return (
     <div className="min-h-screen fade-in" style={{ backgroundColor: 'var(--background)' }}>
       <>
-          {/* Hero Section - desktop: text left, image right; phone: photo as bg with text overlay */}
-          <section className="w-full overflow-hidden bg-[#f3ece1] relative min-h-[70vh] lg:min-h-0">
-            {/* Phone: photo as full-bleed background (low opacity + blur) */}
-            <div className="absolute inset-0 z-0 lg:hidden">
-              <img
-                src="/hero2.png"
-                alt=""
-                aria-hidden
-                className="absolute inset-0 w-full h-full object-cover object-center opacity-40 blur-sm"
-                loading="eager"
-                fetchPriority="high"
-              />
-            </div>
-            <div className="relative z-10 flex flex-col lg:flex-row lg:items-stretch">
-              {/* Text - overlay on phone, left column on desktop */}
-              <div className="flex flex-col justify-center lg:w-1/2 px-6 sm:px-8 md:px-10 lg:px-12 xl:px-16 py-12 sm:py-16 lg:py-12 min-h-[70vh] lg:min-h-0">
-                <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-design-foreground">
-                  SK Fruits
-                </h1>
-                <div className="mt-4 sm:mt-5 font-bold text-xl sm:text-2xl md:text-3xl lg:text-3xl uppercase tracking-wide leading-tight" style={{ color: "#8B6914" }}>
-                  <div>Fresh</div>
-                  <div>Grocery</div>
-                  <div>Delivery</div>
+          {/* Premium split hero banner */}
+          <section className="w-full" aria-label="Homepage hero banner">
+            <div
+              className="relative w-full overflow-hidden shadow-lg h-[240px] md:h-[410px]"
+              style={{ backgroundColor: "var(--secondary)" }}
+            >
+              <div className="relative w-full h-full">
+                <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 10% 10%, rgba(255,213,128,0.22), transparent 55%)" }} />
+
+                {/* Split layout: left 60% / right 40% */}
+                <div className="relative z-10 flex h-full flex-col md:flex-row">
+                  {/* Left: fruit images */}
+                  <div className="relative overflow-hidden flex-[0.6] bg-[#F5E6D3]">
+                    {/* Slight neutral wash */}
+                    <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(245,230,211,0.85) 0%, rgba(245,230,211,0.55) 100%)" }} />
+
+                    {/* Floating fruit framing (edge pieces) */}
+                    <div className="absolute -top-10 -left-20 w-[260px] h-[260px] hero-edge-float-1">
+                      <img
+                        src="/hero.jpeg"
+                        alt=""
+                        aria-hidden
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                        fetchPriority="low"
+                        style={{
+                          objectPosition: heroFruitStages[heroSlide].blueberries.objectPosition,
+                          transform: `scale(${heroFruitStages[heroSlide].blueberries.scale}) rotate(${heroFruitStages[heroSlide].blueberries.rotate})`,
+                          filter: "saturate(1.05) contrast(1.02)",
+                          transition: "transform var(--motion-medium) var(--ease-out)",
+                        }}
+                      />
+                    </div>
+                    <div className="absolute -right-24 bottom-[-40px] w-[320px] h-[320px] hero-edge-float-2">
+                      <img
+                        src="/hero.jpeg"
+                        alt=""
+                        aria-hidden
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                        fetchPriority="low"
+                        style={{
+                          objectPosition: heroFruitStages[heroSlide].cherries.objectPosition,
+                          transform: `scale(${heroFruitStages[heroSlide].cherries.scale}) rotate(${heroFruitStages[heroSlide].cherries.rotate})`,
+                          filter: "saturate(1.05) contrast(1.02)",
+                          transition: "transform var(--motion-medium) var(--ease-out)",
+                        }}
+                      />
+                    </div>
+
+                    {/* Main blueberries + cherries layers */}
+                    <img
+                      src="/hero.jpeg"
+                      alt=""
+                      aria-hidden
+                      className="absolute left-[-180px] top-[-150px] w-[540px] h-[540px] object-cover"
+                      loading="lazy"
+                      decoding="async"
+                      fetchPriority="low"
+                      style={{
+                        objectPosition: heroFruitStages[heroSlide].blueberries.objectPosition,
+                        transform: `scale(${heroFruitStages[heroSlide].blueberries.scale}) rotate(${heroFruitStages[heroSlide].blueberries.rotate})`,
+                        transition: "transform var(--motion-medium) var(--ease-out)",
+                      }}
+                    />
+                    <img
+                      src="/hero.jpeg"
+                      alt=""
+                      aria-hidden
+                      className="absolute left-[-110px] top-[-90px] w-[480px] h-[480px] object-cover"
+                      loading="lazy"
+                      decoding="async"
+                      fetchPriority="low"
+                      style={{
+                        objectPosition: heroFruitStages[heroSlide].cherries.objectPosition,
+                        transform: `scale(${heroFruitStages[heroSlide].cherries.scale}) rotate(${heroFruitStages[heroSlide].cherries.rotate})`,
+                        transition: "transform var(--motion-medium) var(--ease-out)",
+                      }}
+                    />
+                  </div>
+
+                  {/* Right: gradient + text */}
+                  <div
+                    className="relative flex-[0.4] flex flex-col justify-between"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, rgba(252,230,240,1) 0%, rgba(247,197,167,1) 55%, rgba(243,165,110,1) 100%)",
+                    }}
+                  >
+                    <div className="px-5 sm:px-10 pt-6 sm:pt-8 text-center">
+                      {/* Brand badge (top center) */}
+                      <div className="flex justify-center mb-4">
+                        <div
+                          className="w-11 h-11 rounded-full flex items-center justify-center font-bold"
+                          style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)", boxShadow: "var(--shadow-soft)" }}
+                        >
+                          SK
+                        </div>
+                      </div>
+
+                      {/* Main heading */}
+                      <h1
+                        className="font-display font-extrabold uppercase leading-none"
+                        style={{
+                          letterSpacing: "0.06em",
+                          fontSize: "clamp(26px, 4.1vw, 52px)",
+                          color: "var(--primary)",
+                        }}
+                      >
+                        FRESH FRUITS WITH{" "}
+                        <span
+                          className="italic"
+                          style={{
+                            fontFamily: '"Brush Script MT", "Segoe Script", cursive',
+                            fontWeight: 700,
+                            color: "var(--primary)",
+                            letterSpacing: "0.02em",
+                          }}
+                        >
+                          Cherries
+                        </span>
+                      </h1>
+                    </div>
+
+                    <div className="px-5 sm:px-10 pb-7 sm:pb-8">
+                      {/* Subheading pill */}
+                      <div
+                        className="w-fit mx-auto sm:mx-0 rounded-full px-4 py-2 text-sm sm:text-base font-semibold"
+                        style={{
+                          backgroundColor: "rgba(0,0,0,0.55)",
+                          color: "rgba(255,255,255,0.92)",
+                          boxShadow: "0 10px 24px rgba(0,0,0,0.10)",
+                          backdropFilter: "blur(6px)",
+                        }}
+                      >
+                        Premium Quality • Freshly Selected
+                      </div>
+
+                      {/* CTA */}
+                      <div className="mt-7 flex justify-center sm:justify-start">
+                        <Link
+                          to="/shop"
+                          className="inline-flex items-center justify-center rounded-full px-6 py-3 font-semibold transition-all"
+                          style={{
+                            backgroundColor: "#FF3B5C",
+                            color: "white",
+                            boxShadow: "0 16px 30px rgba(255,59,92,0.25)",
+                            border: "1px solid rgba(0,0,0,0.05)",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = "#FF5A78";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = "#FF3B5C";
+                          }}
+                        >
+                          Shop Now
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <p className="mt-4 sm:mt-5 text-sm sm:text-base md:text-lg text-design-muted max-w-xl leading-relaxed">
-                  Discover everyday essentials, fresh produce, and quality brands all under one roof at your favorite grocery store.
-                </p>
-              </div>
-              {/* Image - right on desktop only; hidden on phone (bg layer used instead) */}
-              <div
-                className="relative hidden lg:block lg:shrink-0 lg:w-auto"
-                style={{ width: 1000, height: 500, maxWidth: "100%" }}
-              >
-                <img
-                  src="/hero2.png"
-                  alt="SK Fruits - Fresh premium fruits"
-                  width={1000}
-                  height={500}
-                  className="w-full h-full object-cover object-center"
-                  loading="eager"
-                  fetchPriority="high"
-                />
+
+                {/* Curved wave separator */}
+                {/* Desktop: vertical wave at the 60% boundary */}
+                <div className="hidden md:block absolute top-0 bottom-0" style={{ left: "60%", width: 96, transform: "translateX(-48px)" }} aria-hidden>
+                  <svg width="96" height="100%" viewBox="0 0 96 1000" preserveAspectRatio="none">
+                    <path
+                      d="M0 0 H96 V430 C70 470 45 470 24 452 C10 441 7 438 0 430 Z
+                         M0 570 C7 562 10 559 24 548 C45 530 70 530 96 570 V1000 H0 Z"
+                      fill="white"
+                      opacity="0.96"
+                    />
+                  </svg>
+                </div>
+
+                {/* Mobile: horizontal wave at the 60% boundary */}
+                <div className="md:hidden absolute left-0 right-0" style={{ top: "60%", height: 92 }} aria-hidden>
+                  <svg width="100%" height="100%" viewBox="0 0 1000 92" preserveAspectRatio="none">
+                    <path
+                      d="M0 0 C160 35 300 60 500 46 C690 33 820 10 1000 0 L1000 92 L0 92 Z"
+                      fill="white"
+                      opacity="0.96"
+                    />
+                  </svg>
+                </div>
+
+                {/* Carousel dots */}
+                <div
+                  className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20"
+                  aria-label="Hero carousel dots"
+                >
+                  {[0, 1, 2].map((i) => (
+                    <button
+                      key={`dot-${i}`}
+                      type="button"
+                      aria-label={`Go to slide ${i + 1}`}
+                      onClick={() => setHeroSlide(i)}
+                      className="rounded-full transition-all duration-300"
+                      style={{
+                        width: 10 + (heroSlide === i ? 6 : 0),
+                        height: heroSlide === i ? 10 : 8,
+                        backgroundColor: heroSlide === i ? "var(--accent)" : "rgba(107,62,38,0.28)",
+                        boxShadow: heroSlide === i ? "0 10px 22px rgba(76,175,80,0.22)" : "none",
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </section>
@@ -254,79 +472,263 @@ export default function Home() {
           {/* Shop By Category Section */}
       {categories.length > 0 ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="font-display text-3xl font-bold text-design-foreground">Shop By Category</h2>
-            <Link 
-              to="/categories" 
-              className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group text-design-foreground hover:opacity-80"
-            >
-              View All
-              <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
-          <div className="relative">
-            <button
-              onClick={() => scrollCategories("left")}
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border border-design active:scale-95 bg-[var(--background)] hover:bg-design-secondary"
-            >
-              <svg className="w-5 h-5 text-design-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <div
-              ref={scrollRef}
-              className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide pb-4 px-1 sm:px-2"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-              onScroll={() => {
-                if (scrollEndTimerRef.current) clearTimeout(scrollEndTimerRef.current);
-                scrollEndTimerRef.current = setTimeout(handleCategoryScrollEnd, 150);
-              }}
-            >
-              {categoriesTriple.map((category, i) => (
+          <div
+            className="relative overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--border)]"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(107,62,38,0.10) 0%, rgba(245,230,211,0.70) 100%), " +
+                "repeating-linear-gradient(90deg, rgba(107,62,38,0.22) 0 2px, rgba(0,0,0,0) 2px 14px)",
+              boxShadow: "var(--shadow-soft)",
+            }}
+          >
+            {/* Shelf rails */}
+            <div className="absolute left-0 right-0 top-0 h-3" style={{ background: "rgba(107,62,38,0.35)" }} />
+            <div className="absolute left-0 right-0 bottom-0 h-3" style={{ background: "rgba(107,62,38,0.25)" }} />
+
+            <div className="relative px-5 sm:px-8 pt-6 sm:pt-8 pb-6 sm:pb-8">
+              <div className="flex items-center justify-between mb-6 sm:mb-8">
+                <h2 className="font-display text-3xl font-bold text-design-foreground">Shop By Category</h2>
                 <Link
-                  key={`cat-${i}-${category.id}`}
-                  to={`/category/${category.slug}`}
-                  className="flex-shrink-0 flex flex-col items-center min-w-[100px] sm:min-w-[120px] group"
+                  to="/categories"
+                  className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group text-design-foreground hover:opacity-80"
                 >
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full flex items-center justify-center text-4xl sm:text-5xl border-2 border-design group-hover:shadow-lg group-hover:scale-110 transition-all duration-300 overflow-hidden cursor-pointer bg-design-secondary group-hover:border-[var(--border)]"
-                  >
-                    {category.imageUrl ? (
-                      <img
-                        src={category.imageUrl}
-                        alt={category.name}
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    ) : (
-                      <div className="w-full h-full rounded-full flex items-center justify-center overflow-hidden bg-design-secondary">
-                        <img src="/logo.png" alt="SK Fruits" className="w-3/4 h-3/4 object-contain" />
-                      </div>
-                    )}
-                  </div>
-                  <span className="text-sm font-semibold text-center transition-colors mt-2 text-design-muted group-hover:text-design-foreground">
-                    {category.name}
-                  </span>
+                  View All
+                  <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </Link>
-              ))}
+              </div>
+
+              <div className="relative">
+                <button
+                  onClick={() => scrollCategories("left")}
+                  className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-10 rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
+                  style={{
+                    backgroundColor: "rgba(245,230,211,0.78)",
+                    borderColor: "rgba(107,62,38,0.25)",
+                  }}
+                >
+                  <svg className="w-5 h-5 text-design-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                <div
+                  ref={scrollRef}
+                  className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide pb-4 px-8 sm:px-10"
+                  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                  onScroll={() => {
+                    if (scrollEndTimerRef.current) clearTimeout(scrollEndTimerRef.current);
+                    scrollEndTimerRef.current = setTimeout(handleCategoryScrollEnd, 150);
+                  }}
+                >
+                  {categoriesTriple.map((category, i) => (
+                    <Link
+                      key={`cat-${i}-${category.id}`}
+                      to={`/category/${category.slug}`}
+                      className="flex-shrink-0 flex flex-col items-center min-w-[100px] sm:min-w-[120px] group"
+                    >
+                      {/* Icon + label tile on wooden shelf */}
+                      <div
+                        className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-[var(--radius-xl)] flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 group-hover:-translate-y-0.5"
+                        style={{
+                          background:
+                            "linear-gradient(145deg, rgba(107,62,38,0.92) 0%, rgba(107,62,38,0.72) 45%, rgba(244,196,48,0.10) 100%)",
+                          boxShadow: "inset 0 0 0 1px rgba(245,230,211,0.18)",
+                        }}
+                      >
+                        <div
+                          className="w-[calc(100%-12px)] h-[calc(100%-12px)] rounded-[var(--radius-lg)] flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-[1.02]"
+                          style={{
+                            backgroundColor: "var(--secondary)",
+                            boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.06)",
+                          }}
+                        >
+                          {category.imageUrl ? (
+                            <img
+                              src={category.imageUrl}
+                              alt={category.name}
+                              className="w-full h-full object-contain"
+                              loading="lazy"
+                              decoding="async"
+                              fetchPriority="low"
+                            />
+                          ) : (
+                            <img
+                              src="/logo.png"
+                              alt="SK Fruits"
+                              className="w-3/4 h-3/4 object-contain"
+                              loading="lazy"
+                              decoding="async"
+                              fetchPriority="low"
+                            />
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-sm font-semibold text-center transition-colors mt-2 text-design-muted group-hover:text-design-foreground">
+                        {category.name}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => scrollCategories("right")}
+                  className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-10 rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
+                  style={{
+                    backgroundColor: "rgba(245,230,211,0.78)",
+                    borderColor: "rgba(107,62,38,0.25)",
+                  }}
+                >
+                  <svg className="w-5 h-5 text-design-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => scrollCategories("right")}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border border-design active:scale-95 bg-[var(--background)] hover:bg-design-secondary"
-            >
-              <svg className="w-5 h-5 text-design-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
           </div>
         </div>
       ) : null}
+
+          {/* Store Experience Section */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: "transparent" }}>
+            <section
+              className="relative overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--border)]"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(107,62,38,0.10) 0%, rgba(245,230,211,0.75) 100%), repeating-linear-gradient(90deg, rgba(107,62,38,0.18) 0 2px, rgba(0,0,0,0) 2px 14px)",
+                boxShadow: "var(--shadow-soft)",
+              }}
+              aria-label="Visit Our Store"
+            >
+              <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 20% 0%, rgba(255,213,128,0.20), transparent 55%)" }} />
+
+              <div className="relative px-5 sm:px-8 pt-6 pb-5">
+                <div className="flex items-center justify-between gap-4 mb-5">
+                  <div>
+                    <h2 className="font-display text-3xl font-bold text-design-foreground">Visit Our Store</h2>
+                    <p className="mt-2 text-sm sm:text-base text-design-muted">
+                      Step inside our premium fruit shop & explore fresh baskets.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                  {storeImages.map((img, idx) => (
+                    <div
+                      key={`store-img-${idx}`}
+                      className="group rounded-[var(--radius-lg)] overflow-hidden border"
+                      style={{ borderColor: "rgba(107,62,38,0.22)", backgroundColor: "rgba(255,255,255,0.35)" }}
+                    >
+                      <img
+                        src={img.src}
+                        alt={img.alt}
+                        loading="lazy"
+                        decoding="async"
+                        fetchPriority="low"
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          if (img.fallbackSrc && target.src !== img.fallbackSrc) {
+                            target.onerror = null; // avoid infinite error loops
+                            target.src = img.fallbackSrc;
+                          }
+                        }}
+                        className="h-40 sm:h-44 w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          </div>
+
+          {/* Why Choose Us (trust section) */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <section
+              className="relative overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--border)]"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(245,230,211,0.85) 0%, rgba(245,230,211,0.55) 100%), repeating-linear-gradient(90deg, rgba(107,62,38,0.14) 0 2px, rgba(0,0,0,0) 2px 14px)",
+                boxShadow: "var(--shadow-soft)",
+              }}
+              aria-label="Why Choose Us"
+            >
+              <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 70% 10%, rgba(76,175,80,0.18), transparent 50%)" }} />
+
+              <div className="relative px-5 sm:px-8 py-6 sm:py-8">
+                <div className="flex items-end justify-between gap-6 mb-6">
+                  <div>
+                    <h2 className="font-display text-3xl font-bold text-design-foreground">Why Choose Us</h2>
+                    <p className="mt-2 text-sm sm:text-base text-design-muted">
+                      Premium quality, fresh selection, and fast delivery—made simple.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { title: "Fresh Today", desc: "Carefully selected fruits every day.", icon: "spark" },
+                    { title: "Premium Quality", desc: "Handpicked for taste and texture.", icon: "leaf" },
+                    { title: "Fast Delivery", desc: "Quick packing and on-time delivery.", icon: "truck" },
+                    { title: "Trusted Service", desc: "Friendly support for every order.", icon: "heart" },
+                  ].map((item) => (
+                    <div
+                      key={item.title}
+                      className="rounded-[var(--radius-lg)] border"
+                      style={{ borderColor: "rgba(107,62,38,0.16)", backgroundColor: "rgba(255,255,255,0.35)" }}
+                    >
+                      <div className="p-5">
+                        <div
+                          className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
+                          style={{ backgroundColor: "rgba(255,213,128,0.55)", color: "var(--primary)", boxShadow: "var(--shadow-card)" }}
+                        >
+                          {item.icon === "spark" ? (
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 2l1.5 6L20 9.5l-6.5 1.5L12 18l-1.5-6.5L4 9.5l6.5-1.5L12 2z" />
+                            </svg>
+                          ) : item.icon === "leaf" ? (
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M21 3s-6 1-10 5-5 10-5 10 6-1 10-5 5-10 5-10z" />
+                            </svg>
+                          ) : item.icon === "truck" ? (
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 17h2l2-7h12l2 7h2" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M7 20a1 1 0 100-2 1 1 0 000 2zM17 20a1 1 0 100-2 1 1 0 000 2z" />
+                            </svg>
+                          ) : (
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="font-bold" style={{ color: "var(--foreground)" }}>{item.title}</div>
+                        <div className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>{item.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          </div>
 
           {/* Primary Banner Slider (admin-managed banners) */}
           {!isInitialLoad && <BannerSlider bannerType="primary" />}
 
       {/* Popular Fruits (Trending) */}
-      {trendingProducts.length > 0 ? (
+      {isInitialLoad ? (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: "var(--background)" }}>
+          <div className="flex items-center justify-between mb-10">
+            <h2 className="font-display text-3xl font-bold text-design-foreground">Popular Fruits</h2>
+          </div>
+          <div className="flex gap-5 overflow-x-auto pb-4 px-1 snap-x snap-mandatory scrollbar-thin">
+            {[...Array(6)].map((_, i) => (
+              <div key={`pop-skel-${i}`} className="shrink-0 snap-start w-[48%] lg:w-[20%]">
+                <ProductCardSkeleton />
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : trendingProducts.length > 0 ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
           <div className="flex items-center justify-between mb-10">
             <h2 className="font-display text-3xl font-bold text-design-foreground">Popular Fruits</h2>
@@ -501,6 +903,10 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-6">
             {visibleProducts.length > 0 ? (
               visibleProducts.map((p) => <ProductCard key={p.id} product={p} />)
+            ) : isInitialLoad ? (
+              Array.from({ length: 10 }).map((_, i) => (
+                <ProductCardSkeleton key={`our-skel-${i}`} />
+              ))
             ) : (
               <div className="col-span-full text-center py-16">
                 <div className="inline-block p-6 rounded-full mb-4 bg-design-secondary">

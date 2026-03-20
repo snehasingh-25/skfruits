@@ -10,6 +10,7 @@ import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DriverProtectedRoute from "./components/DriverProtectedRoute";
 import ChatBot from "./components/ChatBot";
+import WhatsAppFloatingButton from "./components/WhatsAppFloatingButton";
 import ScrollToTop from "./components/ScrollToTop";
 import ToastViewport from "./components/ToastViewport";
 
@@ -101,6 +102,7 @@ export default function App() {
           <BrowserRouter>
             <ScrollToTop />
             <ToastViewport />
+            <WhatsAppFloatingButton />
             <Routes>
               {/* Admin: login has no layout; all other admin routes share sidebar + header via AdminLayout */}
               <Route path="/admin/login" element={<AdminLogin />} />

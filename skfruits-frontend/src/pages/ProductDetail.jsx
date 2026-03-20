@@ -305,6 +305,39 @@ export default function ProductDetail() {
     addToCart(product, selectedSize, qty);
   };
 
+  const stickyCanAdd = useMemo(() => {
+    if (!product) return false;
+    const hasSelection = Boolean(selectedWeight || selectedSize || (product?.hasSinglePrice && product?.singlePrice));
+    return !outOfStock && hasSelection;
+  }, [product, selectedWeight, selectedSize, outOfStock]);
+
+  const stickyPriceText = useMemo(() => {
+    if (!product) return "Select size/weight";
+    try {
+      if (selectedWeight && product?.weightOptions) {
+        const opts = Array.isArray(product.weightOptions) ? product.weightOptions : JSON.parse(product.weightOptions || "[]");
+        const w = opts.find((o) => String(o.weight).trim() === String(selectedWeight).trim());
+        if (w) return `₹${Number(w.price).toLocaleString("en-IN")}`;
+      }
+
+      if (selectedSize && selectedSize.id !== 0) {
+        return `₹${Number(selectedSize.price).toLocaleString("en-IN")}`;
+      }
+
+      if (product?.hasSinglePrice && product?.singlePrice != null) {
+        return `₹${Number(product.singlePrice).toLocaleString("en-IN")}`;
+      }
+
+      if (product?.sizes?.length) {
+        const minSize = product.sizes.reduce((a, b) => (Number(a.price) <= Number(b.price) ? a : b));
+        if (minSize?.price != null) return `₹${Number(minSize.price).toLocaleString("en-IN")}`;
+      }
+    } catch {
+      // ignore parse errors
+    }
+    return "Select size/weight";
+  }, [product, selectedWeight, selectedSize]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--background)" }}>
@@ -376,7 +409,7 @@ export default function ProductDetail() {
           </nav>
         </div>
 
-        <div className="px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="px-4 sm:px-6 lg:px-8 pb-28 lg:pb-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
             {/* Left: Media gallery */}
             <section className="lg:col-span-7">
@@ -1033,6 +1066,40 @@ export default function ProductDetail() {
             isLoading={loadingRecommendations}
             title="Recommended for You"
           />
+        </div>
+
+        {/* Mobile sticky add-to-cart */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50" aria-label="Sticky add to cart">
+          <div
+            className="border-t"
+            style={{
+              backgroundColor: "var(--background)",
+              borderColor: "var(--border)",
+              boxShadow: "0 -8px 24px rgba(0,0,0,0.06)",
+            }}
+          >
+            <div className="px-4 py-3 flex items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="text-[11px] font-semibold" style={{ color: "var(--foreground-muted)" }}>
+                  {outOfStock ? "Out of stock" : stickyCanAdd ? "Ready to add" : "Select options"}
+                </div>
+                <div
+                  className="text-base font-extrabold truncate"
+                  style={{ color: "var(--foreground)" }}
+                >
+                  {outOfStock ? "—" : stickyPriceText}
+                </div>
+              </div>
+              <button
+                onClick={handleAddToCart}
+                disabled={!stickyCanAdd}
+                className="min-w-[150px] px-5 py-3 rounded-2xl font-bold transition-transform duration-200 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ backgroundColor: "oklch(55% .18 145)", color: "white" }}
+              >
+                {outOfStock ? "Out of stock" : "Add to cart"}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

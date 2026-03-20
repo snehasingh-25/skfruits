@@ -9,38 +9,38 @@
 
 :root {
   /* ---- Color palette ---- */
-  /* Primary Yellow — CTA buttons */
-  --cta-yellow: #F4C430;
-  --cta-yellow-hover: #e5b82a;
+  /* Highlight Yellow — CTA buttons */
+  --cta-yellow: #FFD580;
+  --cta-yellow-hover: #F4BF5A;
   --cta-yellow-foreground: #1a1a1a;
 
-  /* Fresh green — background accents */
+  /* Fresh green — accent (eco / fresh) */
   --green-bg-subtle: #f0f7f0;
   --green-bg-soft: #e8f5e9;
-  --green-accent: #2e7d32;
-  --green-muted: #a5d6a7;
+  --green-accent: #4CAF50;
+  --green-muted: #A6DFA8;
 
-  /* Soft peach/orange — gift section & warmth */
-  --peach-bg: #fff8f0;
-  --peach-accent: #ffcc80;
-  --peach-soft: #ffe0b2;
+  /* Warm peach/orange — gift section & wood warmth */
+  --peach-bg: #FFF2E3;
+  --peach-accent: #FFD580;
+  --peach-soft: #FFE2AE;
 
   /* Neutrals — cards, separators */
   --card-white: #ffffff;
-  --separator: #e8e8e8;
-  --separator-subtle: #0000000;
-  --background: #fafafa;
+  --separator: #E3CDB6;
+  --separator-subtle: rgba(0, 0, 0, 0);
+  --background: #F5E6D3;
   --foreground: #2d2d2d;
-  --foreground-muted: #4f4f4f;
+  --foreground-muted: #6B3E26;
   /* Use --foreground-muted (or .text-muted) for secondary text. Do NOT use --muted for text (it's for backgrounds only). */
   --text-muted: var(--foreground-muted);
 
   /* Semantic (map to design tokens) */
-  --primary: var(--green-accent);
+  --primary: #6B3E26;
   --primary-foreground: #ffffff;
-  --secondary: var(--separator-subtle);
-  --muted: var(--separator-subtle);
-  --accent: var(--peach-accent);
+  --secondary: #F5E6D3;
+  --muted: var(--separator);
+  --accent: var(--green-accent);
   --destructive: oklch(0.577 0.245 27.325);
   --border: var(--separator);
   --input: var(--separator);
@@ -53,6 +53,13 @@
   --hover-accent: var(--cta-yellow-hover);
   --hover-accent-muted: var(--cta-yellow-hover);
   --success: var(--green-accent);
+
+  /* Motion system (smooth + consistent) */
+  --motion-fast: 160ms;
+  --motion-medium: 260ms;
+  --motion-slow: 420ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Chart colors */
   --chart-1: var(--green-accent);
@@ -84,32 +91,33 @@
   /* Legacy compatibility */
   --primary-old: var(--background);
   --secondary-old: var(--secondary);
-  --secondary-dark: #d8e8d8;
+  --secondary-dark: #D2A87E;
   --secondary-light: var(--muted);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.96 0 0);
-  --foreground-muted: oklch(0.9 0.01 0);
+  /* Dark premium wood */
+  --background: #1B120C;
+  --foreground: #F5E6D3;
+  --foreground-muted: #D2A87E;
   --text-muted: var(--foreground-muted);
-  --card-white: oklch(0.2 0.01 260);
-  --separator: oklch(0.28 0 0);
-  --separator-subtle: oklch(0.24 0 0);
-  --primary: oklch(0.75 0.15 145);
-  --secondary: oklch(0.22 0.01 260);
-  --secondary-dark: oklch(0.32 0 0);
-  --muted: oklch(0.9 0.01 0);
-  --accent: oklch(0.75 0.12 75);
-  --border: oklch(0.28 0 0);
-  --input: oklch(0.28 0 0);
+  --card-white: #2A1B12;
+  --separator: #3B2A1F;
+  --separator-subtle: rgba(213, 168, 126, 0.18);
+  --primary: #8A5A3A;
+  --secondary: #2A1B12;
+  --secondary-dark: #D2A87E;
+  --muted: rgba(245, 230, 211, 0.10);
+  --accent: #4CAF50;
+  --border: #3B2A1F;
+  --input: #2A1B12;
   --page-products-bg: var(--background);
-  --page-auth-bg: oklch(0.18 0.01 260);
+  --page-auth-bg: linear-gradient(135deg, #2B1A12 0%, var(--background) 100%);
   --btn-primary-bg: var(--cta-yellow);
   --btn-primary-fg: var(--cta-yellow-foreground);
   --hover-accent: var(--cta-yellow-hover);
-  --peach-bg: oklch(0.22 0.02 55);
-  --green-bg-subtle: oklch(0.18 0.02 145);
+  --peach-bg: rgba(255, 213, 128, 0.14);
+  --green-bg-subtle: rgba(76, 175, 80, 0.12);
 }
 
 * {
@@ -122,10 +130,12 @@ body {
   letter-spacing: 0.02em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01" 1, "ss02" 1;
   background: var(--background);
   color: var(--foreground);
   font-size: 1rem;
-  line-height: 1.6;
+  line-height: 1.55;
 }
 
 /* Headings — medium weight, clean sans-serif, high readability */
@@ -144,7 +154,27 @@ html {
 
 /* Smooth hover interactions — premium feel */
 a, button, input, textarea, select {
-  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition:
+    color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out),
+    transform var(--motion-fast) var(--ease-out);
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Checkout delivery slot — focus ring uses primary (no hardcoded colors) */
@@ -360,4 +390,53 @@ a, button, input, textarea, select {
 }
 .card-soft:hover {
   box-shadow: var(--shadow-soft);
+}
+
+/* Hero floating edge fruits */
+@keyframes heroFloat1 {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes heroFloat2 {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+}
+
+.hero-edge-float-1 {
+  animation: heroFloat1 5.2s var(--ease-in-out) infinite;
+}
+
+.hero-edge-float-2 {
+  animation: heroFloat2 6.1s var(--ease-in-out) infinite;
+}
+
+/* Add to cart success micro animation */
+@keyframes addSuccessPop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.12);
+  }
+  70% {
+    transform: scale(0.98);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.add-success-pop {
+  animation: addSuccessPop 520ms var(--ease-out) both;
 }
