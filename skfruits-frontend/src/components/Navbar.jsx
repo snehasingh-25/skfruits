@@ -181,13 +181,13 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           <div className="flex items-center gap-3 lg:gap-3 min-w-0 flex-1">
-            {/* Logo: circular SK badge + brand text */}
+            {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group shrink-0">
               <div
-                className="w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm md:text-base transition-transform duration-300 group-hover:scale-105"
-                style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
+                className="w-12 h-12 md:w-13 md:h-13 rounded-full overflow-hidden flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-107"
+                style={{ backgroundColor: "var(--secondary)" }}
               >
-                SK
+                <img src="/logo.png" alt="SK Fruits" className="w-full h-full object-cover" />
               </div>
             </Link>
 

@@ -220,7 +220,7 @@ export default function Home() {
       { src: "/shop3.jpeg", fallbackSrc: "/hero.png", alt: "Fresh baskets" },
       { src: "/shop4.jpeg", fallbackSrc: "/model.png", alt: "Fruit counter" },
       { src: "/shop5.jpeg", fallbackSrc: "/mins.png", alt: "Shelf details" },
-      { src: "/shop6.jpeg", fallbackSrc: "/logo.jpeg", alt: "Visit the store" },
+      { src: "/shop6.jpeg", fallbackSrc: "/logo.png", alt: "Visit the store" },
     ],
     []
   );
