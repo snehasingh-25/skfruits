@@ -160,10 +160,6 @@ export default function Login() {
                 )}
               </button>
             </div>
-            <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-              <Link to="/login" className="underline hover:no-underline" style={{ color: "var(--primary)" }}>Forgot password?</Link>
-              <span className="ml-1">(Coming soon)</span>
-            </p>
           </div>
 
           <button
