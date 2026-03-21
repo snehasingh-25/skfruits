@@ -34,22 +34,22 @@ export default function About() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="text-center p-4 rounded-lg" style={{ backgroundColor: "var(--muted)" }}>
-              <div className="text-3xl font-bold mb-2" style={{ color: "var(--foreground)" }}>20+</div>
+              <div className="text-xl font-bold mb-2" style={{ color: "var(--foreground)" }}>20+</div>
               <div className="text-sm" style={{ color: "var(--foreground-muted)" }}>years in gift distribution</div>
             </div>
             <div className="text-center p-4 rounded-lg" style={{ backgroundColor: "var(--muted)" }}>
-              <div className="text-3xl font-bold mb-2" style={{ color: "var(--foreground)" }}>150+</div>
+              <div className="text-xl font-bold mb-2" style={{ color: "var(--foreground)" }}>150+</div>
               <div className="text-sm" style={{ color: "var(--foreground-muted)" }}>Direct partnerships with factories</div>
             </div>
             <div className="text-center p-4 rounded-lg" style={{ backgroundColor: "var(--muted)" }}>
-              <div className="text-3xl font-bold mb-2" style={{ color: "var(--foreground)" }}>100%</div>
+              <div className="text-xl font-bold mb-2" style={{ color: "var(--foreground)" }}>100%</div>
               <div className="text-sm" style={{ color: "var(--foreground-muted)" }}>Committed to quality</div>
             </div>
           </div>
 
           <div className="text-center p-8 rounded-xl" style={{ backgroundColor: "var(--muted)" }}>
             <div className="text-6xl mb-4">👤</div>
-            <h3 className="text-2xl font-bold mb-2" style={{ color: "var(--foreground)" }}>FOUNDER & MANAGING DIRECTOR</h3>
+            <h3 className="text-xl font-bold mb-2" style={{ color: "var(--foreground)" }}>FOUNDER & MANAGING DIRECTOR</h3>
             <p className="text-lg italic mb-4" style={{ color: "var(--foreground-muted)" }}>
               "Our mission is to bridge the gap between manufacturers and customers, providing authentic products 
               at unbeatable prices for every special moment."
@@ -63,7 +63,7 @@ export default function About() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="rounded-xl shadow-lg p-8" style={{ backgroundColor: "var(--card-white)" }}>
-              <h3 className="text-3xl font-bold mb-4" style={{ color: "var(--foreground)" }}>Our Mission</h3>
+              <h3 className="text-xl font-bold mb-4" style={{ color: "var(--foreground)" }}>Our Mission</h3>
               <p className="text-lg leading-relaxed" style={{ color: "var(--foreground-muted)" }}>
                 To provide customers with direct access to premium branded products at competitive prices, 
                 eliminating middlemen and ensuring maximum value. We strive to build long-term relationships 
@@ -71,7 +71,7 @@ export default function About() {
               </p>
             </div>
             <div className="rounded-xl shadow-lg p-8" style={{ backgroundColor: "var(--card-white)" }}>
-              <h3 className="text-3xl font-bold mb-4" style={{ color: "var(--foreground)" }}>Our Vision</h3>
+              <h3 className="text-xl font-bold mb-4" style={{ color: "var(--foreground)" }}>Our Vision</h3>
               <p className="text-lg leading-relaxed" style={{ color: "var(--foreground-muted)" }}>
                 To become the leading gift distribution platform, connecting thousands of customers with 
                 authentic branded products. We envision a future where every customer, regardless of occasion, 
@@ -177,19 +177,19 @@ export default function About() {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="rounded-xl shadow-lg p-8" style={{ backgroundColor: "var(--card-white)" }}>
-            <h3 className="text-2xl font-bold mb-4" style={{ color: "var(--foreground)" }}>Direct Factory Connections</h3>
+            <h3 className="text-xl font-bold mb-4" style={{ color: "var(--foreground)" }}>Direct Factory Connections</h3>
             <p className="leading-relaxed" style={{ color: "var(--foreground-muted)" }}>
               We work directly with manufacturers, eliminating middlemen and ensuring authentic products at the best prices.
             </p>
           </div>
           <div className="rounded-xl shadow-lg p-8" style={{ backgroundColor: "var(--card-white)" }}>
-            <h3 className="text-2xl font-bold mb-4" style={{ color: "var(--foreground)" }}>Quality Guarantee</h3>
+            <h3 className="text-xl font-bold mb-4" style={{ color: "var(--foreground)" }}>Quality Guarantee</h3>
             <p className="leading-relaxed" style={{ color: "var(--foreground-muted)" }}>
               Every product undergoes strict quality checks and comes with authenticity guarantee from our trusted partners.
             </p>
           </div>
           <div className="rounded-xl shadow-lg p-8" style={{ backgroundColor: "var(--card-white)" }}>
-            <h3 className="text-2xl font-bold mb-4" style={{ color: "var(--foreground)" }}>Dedicated Support</h3>
+            <h3 className="text-xl font-bold mb-4" style={{ color: "var(--foreground)" }}>Dedicated Support</h3>
             <p className="leading-relaxed" style={{ color: "var(--foreground-muted)" }}>
               Our experienced team provides personalized support to help you find the right products for every occasion.
             </p>

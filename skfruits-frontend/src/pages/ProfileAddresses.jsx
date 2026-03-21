@@ -138,7 +138,7 @@ export default function ProfileAddresses() {
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8" style={{ background: "var(--background)" }}>
       <div className="max-w-3xl mx-auto">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-          <h1 className="text-3xl font-bold font-display" style={{ color: "var(--foreground)" }}>
+          <h1 className="text-xl font-bold font-display" style={{ color: "var(--foreground)" }}>
             Saved Addresses
           </h1>
           <Link

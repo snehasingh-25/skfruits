@@ -5,10 +5,12 @@ import prisma from "../prisma.js";
 import { cacheMiddleware, invalidateCache } from "../utils/cache.js";
 import { validateInstagramEmbeds } from "../utils/instagram.js";
 import { getPriceRange, getRecommendationsForProduct } from "../utils/recommendationEngine.js";
+import { PACKAGING_PRODUCT_NAME } from "../utils/fruitBasketPackagingProduct.js";
 
 const router = express.Router();
 
 // Get all products (public) - Cached 5 min. Supports ?ids=1,2,3 for bulk fetch (preserves order).
+// Excludes the fruit-basket packaging system product from public listings.
 router.get("/", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
   try {
     const { category, occasion, isNew, isFestival, isTrending, search, ids: idsParam } = req.query;
@@ -21,8 +23,10 @@ router.get("/", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
       ? idsParam.split(",").map((id) => parseInt(id.trim(), 10)).filter((n) => !Number.isNaN(n))
       : [];
 
-    // Build where clause
-    const where = {};
+    // Build where clause (exclude fruit-basket packaging system product from public)
+    const where = {
+      name: { not: PACKAGING_PRODUCT_NAME },
+    };
     if (requestedIds.length > 0) {
       where.id = { in: requestedIds };
     }
@@ -167,11 +171,11 @@ router.get("/top-rated", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
       return res.json([]);
     }
     const products = await prisma.product.findMany({
-      where: { id: { in: sorted } },
+      where: { id: { in: sorted }, name: { not: PACKAGING_PRODUCT_NAME } },
       include: { sizes: true, categories: { include: { category: true } }, occasions: { include: { occasion: true } } },
     });
     const byId = new Map(products.map((p) => [p.id, p]));
-    const ordered = sorted.map((id) => byId.get(id)).filter(Boolean);
+    const ordered = sorted.map((id) => byId.get(id)).filter((p) => p && p.name !== PACKAGING_PRODUCT_NAME);
     const parsed = ordered.map((p) => ({
       ...p,
       images: p.images ? JSON.parse(p.images) : [],
@@ -295,6 +299,9 @@ router.get("/:id", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
     });
 
     if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    if (product.name === PACKAGING_PRODUCT_NAME) {
       return res.status(404).json({ message: "Product not found" });
     }
 

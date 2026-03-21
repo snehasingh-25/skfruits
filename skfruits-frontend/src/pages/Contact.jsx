@@ -63,7 +63,7 @@ export default function Contact() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Contact Form */}
           <div>
-            <h2 className="text-3xl font-bold mb-6" style={{ color: "var(--foreground)" }}>
+            <h2 className="text-xl font-bold mb-6" style={{ color: "var(--foreground)" }}>
               Send us a Message
             </h2>
             <form onSubmit={submit} className="space-y-6">
@@ -196,7 +196,7 @@ export default function Contact() {
           {/* Contact Information */}
           <div className="space-y-8">
             <div>
-              <h3 className="text-2xl font-bold mb-4" style={{ color: "var(--foreground)" }}>
+              <h3 className="text-xl font-bold mb-4" style={{ color: "var(--foreground)" }}>
                 Our Address
               </h3>
               <p className="text-lg leading-relaxed" style={{ color: "var(--foreground-muted)" }}>
@@ -207,7 +207,7 @@ export default function Contact() {
             </div>
 
             <div>
-              <h3 className="text-2xl font-bold mb-4" style={{ color: "var(--foreground)" }}>
+              <h3 className="text-xl font-bold mb-4" style={{ color: "var(--foreground)" }}>
                 Phone Numbers
               </h3>
               <div className="space-y-2">
@@ -218,7 +218,7 @@ export default function Contact() {
             </div>
 
             <div>
-              <h3 className="text-2xl font-bold mb-4" style={{ color: "var(--foreground)" }}>
+              <h3 className="text-xl font-bold mb-4" style={{ color: "var(--foreground)" }}>
                 Email Address
               </h3>
               <p className="text-lg" style={{ color: "var(--foreground-muted)" }}>
@@ -227,7 +227,7 @@ export default function Contact() {
             </div>
 
             <div>
-              <h3 className="text-2xl font-bold mb-4" style={{ color: "var(--foreground)" }}>
+              <h3 className="text-xl font-bold mb-4" style={{ color: "var(--foreground)" }}>
                 Business Hours
               </h3>
               <div className="space-y-1" style={{ color: "var(--foreground-muted)" }}>
@@ -242,7 +242,7 @@ export default function Contact() {
       {/* Map Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold mb-4" style={{ color: "var(--foreground)" }}>
+          <h2 className="text-xl font-bold mb-4" style={{ color: "var(--foreground)" }}>
             Find Us on Map
           </h2>
           <p className="text-lg" style={{ color: "var(--foreground-muted)" }}>
@@ -258,7 +258,7 @@ export default function Contact() {
             allowFullScreen=""
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-            title="GiftChoice Location"
+            title="SK Fruits Location"
           ></iframe>
         </div>
       </div>
@@ -267,7 +267,7 @@ export default function Contact() {
       <div className="py-16" style={{ backgroundColor: "var(--background)" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4" style={{ color: "var(--foreground)" }}>
+            <h2 className="text-xl font-bold mb-4" style={{ color: "var(--foreground)" }}>
               Quick Contact Options
             </h2>
             <p className="text-lg" style={{ color: "var(--foreground-muted)" }}>

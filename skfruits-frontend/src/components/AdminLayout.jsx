@@ -133,7 +133,7 @@ export default function AdminLayout() {
                   SK
                 </div>
                 <div className="min-w-0">
-                  <h1 className="font-display text-xl md:text-2xl font-bold" style={{ color: "var(--foreground)" }}>
+                  <h1 className="font-display text-xl md:text-xl font-bold" style={{ color: "var(--foreground)" }}>
                     Admin <span style={{ color: "var(--primary)" }}>Dashboard</span>
                   </h1>
                   <p className="text-sm mt-0.5 truncate text-muted">Welcome, {user?.email}</p>

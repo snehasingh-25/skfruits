@@ -1,6 +1,9 @@
 import prisma from "../prisma.js";
 
-const PACKAGING_NAME = "Fruit Basket (Packaging)";
+/** Name of the system product used for cart packaging lines. Exported for filtering in public product APIs. */
+export const PACKAGING_PRODUCT_NAME = "Fruit Basket (Packaging)";
+
+const PACKAGING_NAME = PACKAGING_PRODUCT_NAME;
 
 let cachedId = null;
 

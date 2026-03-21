@@ -136,7 +136,7 @@ export default function DriverDashboard() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div>
           <h1
-            className="text-2xl font-display font-bold"
+            className="text-xl font-display font-bold"
             style={{ color: "var(--foreground)" }}
           >
             Driver dashboard

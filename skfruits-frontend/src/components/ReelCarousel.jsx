@@ -616,7 +616,7 @@ export default function ReelCarousel({ reels }) {
                         <div className="text-white/70 text-sm line-through">{formatINR(original)}</div>
                       ) : null}
                       {high && low && high !== low ? (
-                        <div className="text-white/70 text-xs">onwards</div>
+                        <div className="text-white/70 text-xs"></div>
                       ) : null}
                     </div>
                   )}

@@ -1,6 +1,7 @@
 import express from "express";
 import prisma from "../prisma.js";
 import { cacheMiddleware } from "../utils/cache.js";
+import { PACKAGING_PRODUCT_NAME } from "../utils/fruitBasketPackagingProduct.js";
 
 const router = express.Router();
 
@@ -22,6 +23,7 @@ router.get("/", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
         orderBy: [{ order: "asc" }, { createdAt: "desc" }],
       }),
       prisma.product.findMany({
+        where: { name: { not: PACKAGING_PRODUCT_NAME } },
         include: {
           sizes: true,
           categories: { include: { category: true } },

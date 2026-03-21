@@ -276,14 +276,14 @@ export default function Home() {
                     New Arrivals
                   </div>
 
-                  <h1
-                    className="font-display font-bold text-3xl md:text-5xl lg:text-6xl leading-[0.95] tracking-tight"
+                  <h3
+                    className="font-display font-bold text-xl md:text-5xl lg:text-6xl leading-[0.95] tracking-tight"
                     style={{ color: "var(--primary)" }}
                   >
                     Nurtured by Nature,
                     <br />
                     Delivered to You
-                  </h1>
+                  </h3>
 
                   <div className="relative mt-1 w-fit">
                     <div
@@ -351,36 +351,10 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Phase 5: Fruit basket discovery strip */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2" aria-label="Personalized fruit baskets">
-            <Link
-              to="/fruit-basket"
-              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[var(--radius-2xl)] border px-5 py-4 sm:px-8 sm:py-5 transition-all hover:shadow-md"
-              style={{
-                borderColor: "var(--border)",
-                background: "linear-gradient(135deg, rgba(252,230,240,0.9) 0%, rgba(245,230,211,0.95) 100%)",
-                boxShadow: "var(--shadow-soft)",
-              }}
-            >
-              <div className="text-left">
-                <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--primary)" }}>
-                  New
-                </p>
-                <h2 className="font-display text-xl sm:text-2xl font-bold" style={{ color: "var(--foreground)" }}>
-                  Personalized fruit baskets
-                </h2>
-                <p className="text-sm mt-1 max-w-xl" style={{ color: "var(--foreground-muted)" }}>
-                  Pick a basket, choose your fruits, and checkout — save your favourite combos when you&apos;re logged in.
-                </p>
-              </div>
-              <span
-                className="inline-flex items-center justify-center rounded-full px-6 py-3 font-semibold text-sm sm:text-base flex-shrink-0 self-start sm:self-center"
-                style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
-              >
-                Start building →
-              </span>
-            </Link>
-          </section>
+          {/* Primary Banner Slider (admin-managed banners) */}
+          {!isInitialLoad && <BannerSlider bannerType="primary" />}
+
+
 
           {/* Shop By Category Section */}
       {categories.length > 0 ? (
@@ -431,7 +405,7 @@ export default function Home() {
 
             <div className="relative px-5 sm:px-8 pt-6 sm:pt-8 pb-6 sm:pb-8">
               <div className="flex items-center justify-between mb-6 sm:mb-8">
-                <h2 className="font-display text-3xl font-bold text-design-foreground">Shop By Category</h2>
+                <h2 className="font-display text-xl font-extrabold text-design-foreground">Shop By Category</h2>
                 <Link
                   to="/categories"
                   className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group text-design-foreground hover:opacity-80"
@@ -446,13 +420,13 @@ export default function Home() {
               <div className="relative">
                 <button
                   onClick={() => scrollCategories("left")}
-                  className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-10 rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
+                  className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-10 rounded-full p-1 sm:p-2 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
                   style={{
                     backgroundColor: "rgba(245,230,211,0.78)",
                     borderColor: "rgba(107,62,38,0.25)",
                   }}
                 >
-                  <svg className="w-5 h-5 text-design-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-design-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
@@ -476,9 +450,8 @@ export default function Home() {
                       <div
                         className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-[var(--radius-xl)] flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 group-hover:-translate-y-0.5"
                         style={{
-                          backgroundColor: "#ffffff",
-                          border: "1px solid rgba(133,92,61,0.14)",
-                          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.12)",
+                          // backgroundColor: "#ffffff",
+                          // border: "none",
                         }}
                       >
                         <div
@@ -518,13 +491,13 @@ export default function Home() {
 
                 <button
                   onClick={() => scrollCategories("right")}
-                  className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-10 rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
+                  className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-10 rounded-full p-2 sm:p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
                   style={{
                     backgroundColor: "rgba(245,230,211,0.78)",
                     borderColor: "rgba(107,62,38,0.25)",
                   }}
                 >
-                  <svg className="w-5 h-5 text-design-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-design-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
@@ -534,14 +507,40 @@ export default function Home() {
         </div>
       ) : null}
 
-          {/* Primary Banner Slider (admin-managed banners) */}
-          {!isInitialLoad && <BannerSlider bannerType="primary" />}
+          {/* Phase 5: Fruit basket discovery strip */}
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2" aria-label="Personalized fruit baskets">
+            <Link
+              to="/fruit-basket"
+              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[var(--radius-2xl)] border px-5 py-4 sm:px-8 sm:py-5 transition-all hover:shadow-md"
+              style={{
+                borderColor: "var(--border)",
+                background: "linear-gradient(135deg, rgb(167 137 87 / 82%) 0%, rgba(245,230,211,0.95) 100%)",
+                boxShadow: "var(--shadow-soft)",
+              }}
+            >
+              <div className="text-left">
+                <h4 className="font-display text-sm sm:text-sm font-bold" style={{ color: "var(--foreground)" }}>
+                  Personalized fruit baskets
+                </h4>
+                <p className="text-sm mt-1 max-w-xl" style={{ color: "var(--foreground-muted)" }}>
+                  Pick a basket, choose your fruits
+                </p>
+              </div>
+              <span
+                className="inline-flex items-center justify-center rounded-full px-6 py-3 font-semibold text-sm sm:text-base flex-shrink-0 self-start sm:self-center"
+                style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
+              >
+                Start building →
+              </span>
+            </Link>
+          </section>
+          
 
       {/* Popular Fruits (Trending) */}
       {isInitialLoad ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: "var(--background)" }}>
           <div className="flex items-center justify-between mb-10">
-            <h2 className="font-display text-3xl font-bold text-design-foreground">Popular Fruits</h2>
+            <h2 className="font-display text-xl font-bold text-design-foreground">Popular Fruits</h2>
           </div>
           <div className="flex gap-5 overflow-x-auto pb-4 px-1 snap-x snap-mandatory scrollbar-thin">
             {[...Array(6)].map((_, i) => (
@@ -554,7 +553,7 @@ export default function Home() {
       ) : trendingProducts.length > 0 ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
           <div className="flex items-center justify-between mb-10">
-            <h2 className="font-display text-3xl font-bold text-design-foreground">Popular Fruits</h2>
+            <h2 className="font-display text-xl font-bold text-design-foreground">Popular Fruits</h2>
             <Link
               to="/categories?trending=true"
               className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group text-design-foreground hover:opacity-80"
@@ -619,7 +618,7 @@ export default function Home() {
             </svg>
           </div>
           <div className="relative z-10">
-            <h3 className="text-xl sm:text-2xl font-bold text-white leading-snug">
+            <h3 className="text-xl sm:text-xl font-bold text-white leading-snug">
               Delivery in less than <span className="text-yellow-300">60 mins</span>
             </h3>
             <p className="text-sm sm:text-base text-white/80 mt-1">
@@ -640,7 +639,7 @@ export default function Home() {
       {occasions.length > 0 ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="font-display text-3xl font-bold text-design-foreground">Shop By Occasion</h2>
+            <h2 className="font-display text-xl font-bold text-design-foreground">Shop By Occasion</h2>
             <Link 
               to="/exotic" 
               className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group text-design-foreground hover:opacity-80"
@@ -710,7 +709,7 @@ export default function Home() {
       {/* Trending Gifts Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
           <div className="flex items-center justify-between mb-10">
-            <h2 className="font-display text-3xl font-bold text-design-foreground">Our Products</h2>
+            <h2 className="font-display text-xl font-bold text-design-foreground">Our Products</h2>
             {products.length > 0 && (
               <Link
                 to="/shop"
@@ -735,7 +734,7 @@ export default function Home() {
                 <div className="inline-block p-6 rounded-full mb-4 bg-design-secondary">
                   <img src="/logo.png" alt="SK Fruits" className="w-16 h-16 object-contain" />
                 </div>
-                <h3 className="font-display text-2xl font-bold mb-2 text-design-foreground">SK Fruits</h3>
+                <h3 className="font-display text-xl font-bold mb-2 text-design-foreground">SK Fruits</h3>
                 <p className="font-medium text-design-muted">
                   More amazing gifts coming soon!
                 </p>
@@ -797,7 +796,7 @@ export default function Home() {
             <div className="relative px-5 sm:px-8 pt-6 pb-5">
               <div className="flex items-center justify-between gap-4 mb-5">
                 <div>
-                  <h2 className="font-display text-3xl font-bold text-design-foreground">Visit Our Store</h2>
+                  <h2 className="font-display text-xl font-bold text-design-foreground">Visit Our Store</h2>
                   <p className="mt-2 text-sm sm:text-base text-design-muted">
                     Step inside our premium fruit shop & explore fresh baskets.
                   </p>
@@ -882,7 +881,7 @@ export default function Home() {
           <div className="relative px-5 sm:px-8 py-6 sm:py-8">
             <div className="flex items-end justify-between gap-6 mb-6">
               <div>
-                <h2 className="font-display text-3xl font-bold text-design-foreground">Why Choose Us</h2>
+                <h2 className="font-display text-xl font-bold text-design-foreground">Why Choose Us</h2>
                 <p className="mt-2 text-sm sm:text-base text-design-muted">
                   Premium quality, fresh selection, and fast delivery—made simple.
                 </p>
@@ -955,15 +954,15 @@ export default function Home() {
       {/* Reels Section */}
       {reels.length > 0 && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
-            <h2 className="font-display text-3xl font-bold mb-8 text-center text-design-foreground">
+            <h2 className="font-display text-xl font-bold mb-8 text-center text-design-foreground">
               Follow Us{" "}
               <a
-                href="https://www.instagram.com/giftchoicebhl"
+                href=""
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:underline transition-all text-[var(--primary)]"
               >
-                @giftchoicebhl
+                
               </a>
             </h2>
             <ReelCarousel reels={reels} />

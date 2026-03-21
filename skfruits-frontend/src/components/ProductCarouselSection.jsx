@@ -55,7 +55,7 @@ export default function ProductCarouselSection({
 
   return (
     <section className={`mt-10 px-4 sm:px-6 lg:px-8 ${className}`}>
-      <h2 className="text-2xl font-bold font-display mb-6" style={{ color: "var(--foreground)" }}>
+      <h2 className="text-xl font-bold font-display mb-6" style={{ color: "var(--foreground)" }}>
         {title}
       </h2>
       {loading ? (

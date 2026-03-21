@@ -61,7 +61,7 @@ export default function Login() {
           <div className="flex justify-center mb-4">
             <img src="/logo.png" alt="SK Fruits" className="h-14 w-auto" />
           </div>
-          <h1 className="font-display text-2xl md:text-3xl font-bold mb-2" style={{ color: "var(--foreground)" }}>
+          <h1 className="font-display text-xl md:text-xl font-bold mb-2" style={{ color: "var(--foreground)" }}>
             Welcome back
           </h1>
           <p style={{ color: "var(--text-muted)" }}>Sign in to your account</p>

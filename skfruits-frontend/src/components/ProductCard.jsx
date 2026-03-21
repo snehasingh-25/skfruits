@@ -475,7 +475,7 @@ function ProductCard({ product, compact = false }) {
               ₹{Number(displayPrice).toLocaleString('en-IN')}
               {((!product.hasSinglePrice && product.sizes && product.sizes.length > 1) ||
                 (product.weightOptions && (Array.isArray(product.weightOptions) ? product.weightOptions : []).length > 1)) && (
-                <span className="text-sm font-normal ml-1 text-design-muted">onwards</span>
+                <span className="text-sm font-normal ml-1 text-design-muted"></span>
               )}
             </span>
             {displayMrp != null && displayMrp > displayPrice && (

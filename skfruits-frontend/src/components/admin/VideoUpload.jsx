@@ -92,7 +92,7 @@ export default function VideoUpload({ videos, existingVideos, onVideosChange, on
           onChange={handleChange}
           className="hidden"
         />
-        <div className="text-3xl mb-2">🎬</div>
+        <div className="text-xl mb-2">🎬</div>
         <p className="text-gray-600 mb-2 text-sm">
           Drag and drop videos here, or{" "}
           <button

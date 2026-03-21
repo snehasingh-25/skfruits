@@ -61,7 +61,7 @@ export default function BannerSlider({ bannerType = "primary" }) {
   const currentBanner = banners[currentIndex];
 
   // Banner dimensions: 1920×720 — aspect ratio 720/1920 = 37.5%
-  const bannerAspectRatio = (720 / 1920) * 100;
+  const bannerAspectRatio = (150 / 800) * 100;
 
   return (
     <div 
@@ -85,14 +85,14 @@ export default function BannerSlider({ bannerType = "primary" }) {
         />
         
         {/* Overlay Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent"></div>
+        <div className="absolute inset-0"></div>
         
         {/* Content */}
         <div className="absolute inset-0 flex items-center">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div className="max-w-2xl">
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 drop-shadow-lg">
-                {currentBanner.title}
+                {/* {currentBanner.title} */}
               </h2>
               {currentBanner.subtitle && (
                 <p className="text-lg md:text-xl text-white mb-6 drop-shadow-md">
@@ -101,19 +101,26 @@ export default function BannerSlider({ bannerType = "primary" }) {
               )}
               <Link
                 to={currentBanner.ctaLink || "/categories"}
-                className="inline-block p-3 rounded-lg font-semibold text-sm transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+                className="inline-flex items-center gap-4 px-8 py-2.5 rounded-full font-bold text-sm text-black transition-all duration-300 hover:scale-105 active:scale-95 mt-35"
                 style={{ 
-                  backgroundColor: 'oklch(92% .04 340)',
-                  color: 'oklch(20% .02 340)'
+                  backgroundColor: 'oklch(0.86 0.14 83.33)'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = 'oklch(88% .06 340)';
+                  e.currentTarget.style.backgroundColor = 'oklch(0.86 0.14 83.33)';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'oklch(92% .04 340)';
+                  e.currentTarget.style.backgroundColor = 'oklch(0.86 0.14 83.33)';
                 }}
               >
-                {currentBanner.ctaText || "Shop Now"}
+                <span>{currentBanner.ctaText || "Shop Now"}</span>
+                <span 
+                  className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full"
+                  style={{ backgroundColor: 'oklch(35% .12 145)' }}
+                >
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
               </Link>
             </div>
           </div>

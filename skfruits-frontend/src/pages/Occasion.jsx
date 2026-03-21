@@ -228,7 +228,7 @@ export default function Occasion() {
         {selectedOccasion && slug && (
           <div className="mt-12">
             <div className="mb-8">
-              <h3 className="text-3xl font-bold mb-2" style={{ color: "var(--foreground)" }}>
+              <h3 className="text-xl font-bold mb-2" style={{ color: "var(--foreground)" }}>
                 {selectedOccasion.name}
               </h3>
               {selectedOccasion.description && (
@@ -309,7 +309,7 @@ export default function Occasion() {
         {!slug && (
           <div className="mt-12">
             <div className="mb-8">
-              <h3 className="text-3xl font-bold mb-2" style={{ color: "var(--foreground)" }}>
+              <h3 className="text-xl font-bold mb-2" style={{ color: "var(--foreground)" }}>
                 All Products
               </h3>
 

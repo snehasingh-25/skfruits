@@ -37,7 +37,7 @@ export default function OrderSuccess() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-bold font-display mb-2" style={{ color: "var(--foreground)" }}>
+        <h1 className="text-xl sm:text-xl font-bold font-display mb-2" style={{ color: "var(--foreground)" }}>
           Order confirmed
         </h1>
         <p className="mb-4" style={{ color: "var(--text-muted)" }}>

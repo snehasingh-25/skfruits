@@ -98,7 +98,7 @@ function RecommendationCarousel({ products = [], isLoading = false, title: title
   if (isLoading) {
     return (
       <section className="mt-12 px-4 sm:px-6 lg:px-8">
-        <h2 className="text-2xl sm:text-3xl font-extrabold mb-6" style={{ color: "oklch(20% .02 340)" }}>
+        <h2 className="text-xl sm:text-xl font-extrabold mb-6" style={{ color: "oklch(20% .02 340)" }}>
           {title}
         </h2>
         <div className="grid grid-cols-2 gap-4 sm:hidden">
@@ -131,7 +131,7 @@ function RecommendationCarousel({ products = [], isLoading = false, title: title
     <section className="mt-12 px-4 sm:px-6 lg:px-8">
       {/* Title with counter */}
       <div className="mb-6">
-        <h2 className="text-2xl sm:text-3xl font-extrabold" style={{ color: "oklch(20% .02 340)" }}>
+        <h2 className="text-xl sm:text-xl font-extrabold" style={{ color: "oklch(20% .02 340)" }}>
           {title}
         </h2>
         <p className="text-sm mt-1" style={{ color: "oklch(55% .02 340)" }}>

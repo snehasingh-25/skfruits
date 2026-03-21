@@ -70,7 +70,7 @@ export default function Footer() {
               <p className="text-xs text-design-muted mb-1">FreshFruit</p>
               {/* Instagram Link */}
               <a
-                href="https://www.instagram.com/giftchoicebhl"
+                href=""
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-sm transition-all duration-300 hover:translate-x-1 text-design-foreground hover:opacity-80"

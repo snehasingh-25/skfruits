@@ -166,7 +166,7 @@ export default function FruitBasketCreate() {
     <div className="min-h-screen py-12 px-4" style={{ backgroundColor: "var(--background)" }}>
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10">
-          <h1 className="font-display text-3xl sm:text-4xl font-bold mb-3" style={{ color: "var(--foreground)" }}>
+          <h1 className="font-display text-xl sm:text-4xl font-bold mb-3" style={{ color: "var(--foreground)" }}>
             Choose Your Basket
           </h1>
           <p className="text-lg" style={{ color: "var(--foreground-muted)" }}>

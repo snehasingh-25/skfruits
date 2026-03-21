@@ -230,7 +230,7 @@ export default function CategoriesPage() {
         {selectedCategory && slug && (
           <div className="mt-12">
             <div className="mb-8">
-              <h3 className="font-display text-3xl font-bold mb-2" style={{ color: "var(--foreground)" }}>
+              <h3 className="font-display text-xl font-bold mb-2" style={{ color: "var(--foreground)" }}>
                 {selectedCategory.name}
               </h3>
               {selectedCategory.description && (
@@ -298,7 +298,7 @@ export default function CategoriesPage() {
         {!slug && (
           <div className="mt-12">
             <div className="mb-8">
-              <h3 className="font-display text-3xl font-bold mb-2" style={{ color: "var(--foreground)" }}>
+              <h3 className="font-display text-xl font-bold mb-2" style={{ color: "var(--foreground)" }}>
                 {trendingFilter ? "Trending Products" : "All Products"}
               </h3>
 

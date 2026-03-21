@@ -354,7 +354,7 @@ export default function ProductDetail() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4" style={{ color: "var(--foreground)" }}>Product not found</h2>
+          <h2 className="text-xl font-bold mb-4" style={{ color: "var(--foreground)" }}>Product not found</h2>
           <Link to="/" className="text-pink-600 hover:underline">
             Go back to home
           </Link>
@@ -594,7 +594,7 @@ export default function ProductDetail() {
             <aside className="lg:col-span-5">
               <div className="lg:sticky lg:top-6">
                 <div className="rounded-3xl border p-6 shadow-sm" style={{ backgroundColor: "var(--card-white)", borderColor: "var(--border)" }}>
-                  <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight" style={{ color: "oklch(20% .02 340)" }}>
+                  <h1 className="text-xl sm:text-4xl font-extrabold tracking-tight" style={{ color: "oklch(20% .02 340)" }}>
                     {product.name}
                   </h1>
 
@@ -628,7 +628,7 @@ export default function ProductDetail() {
                       const discountPct = mrp != null && mrp > selling ? Math.round(((mrp - selling) / mrp) * 100) : 0;
                       return (
                         <>
-                          <span className="text-2xl font-bold tracking-tight" style={{ color: "var(--foreground)" }}>
+                          <span className="text-xl font-bold tracking-tight" style={{ color: "var(--foreground)" }}>
                             {showFrom ? "From " : ""}₹{selling.toLocaleString("en-IN")}
                           </span>
                           {mrp != null && mrp > selling && (
@@ -787,7 +787,7 @@ export default function ProductDetail() {
                         <div className="text-sm font-semibold" style={{ color: "oklch(55% .02 340)" }}>
                           Total
                         </div>
-                        <div className="text-2xl font-extrabold" style={{ color: "oklch(20% .02 340)" }}>
+                        <div className="text-xl font-extrabold" style={{ color: "oklch(20% .02 340)" }}>
                           ₹{selectedWeight
                             ? (() => {
                                 try {
@@ -897,7 +897,7 @@ export default function ProductDetail() {
 
           {/* Reviews Section */}
           <section className="mt-12 px-4 sm:px-6 lg:px-8" aria-labelledby="reviews-heading">
-            <h2 id="reviews-heading" className="text-2xl font-bold font-display mb-6" style={{ color: "var(--foreground)" }}>
+            <h2 id="reviews-heading" className="text-xl font-bold font-display mb-6" style={{ color: "var(--foreground)" }}>
               Reviews
             </h2>
 
@@ -934,7 +934,7 @@ export default function ProductDetail() {
 
                 {reviewsData.reviews.length === 0 ? (
                   <div
-                    className="rounded-2xl border-2 border-dashed p-8 text-center"
+                    className="rounded-2xl border-2 border-dashed p-8 m-4 text-center"
                     style={{ borderColor: "var(--border)", background: "var(--secondary)" }}
                   >
                     <p className="text-sm text-muted">
@@ -1038,7 +1038,7 @@ export default function ProductDetail() {
           {/* Similar Products Section */}
           {similarProducts.length > 0 && (
             <section className="mt-16 px-4 sm:px-6 lg:px-8">
-              <h2 className="text-2xl sm:text-3xl font-extrabold mb-6" style={{ color: "oklch(20% .02 340)" }}>
+              <h2 className="text-xl sm:text-xl font-extrabold mb-6" style={{ color: "oklch(20% .02 340)" }}>
                 Similar Products
               </h2>
               {similarProducts.length > 0 && (

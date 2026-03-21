@@ -142,7 +142,7 @@ export default function AdminDriversPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-display font-bold" style={{ color: "var(--foreground)" }}>
+        <h1 className="text-xl font-display font-bold" style={{ color: "var(--foreground)" }}>
           Drivers
         </h1>
         <button

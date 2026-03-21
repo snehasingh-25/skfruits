@@ -26,7 +26,11 @@ export default function Cart() {
   };
 
   const handleOpenProduct = (item) => {
-    if (!item?.productId || item.isPackagingLine) return;
+    if (!item?.productId) return;
+    if (item.isPackagingLine) {
+      navigate("/fruit-basket/create/review");
+      return;
+    }
     navigate(`/product/${item.productId}`);
   };
 
@@ -67,7 +71,7 @@ export default function Cart() {
         <div className="max-w-4xl mx-auto">
           <div className="rounded-2xl shadow-lg p-12 text-center" style={{ background: "var(--background)", border: "1px solid var(--border)" }}>
             <img src="/logo.png" alt="SK Fruits" className="w-20 h-20 mx-auto mb-6 object-contain opacity-50" />
-            <h2 className="text-3xl font-bold mb-4 font-display" style={{ color: "var(--foreground)" }}>
+            <h2 className="text-xl font-bold mb-4 font-display" style={{ color: "var(--foreground)" }}>
               Your cart is empty
             </h2>
             <p className="mb-8" style={{ color: "var(--muted)" }}>
@@ -113,6 +117,7 @@ export default function Cart() {
                       {isPackaging ? (
                         <span className="font-medium" style={{ color: "var(--foreground)" }}>
                           Custom fruit basket packaging
+                          <span className="block mt-1 text-xs" style={{ color: "var(--primary)" }}>Tap to view your basket →</span>
                         </span>
                       ) : item.selectedWeight ? (
                         <>
@@ -148,24 +153,20 @@ export default function Cart() {
                   style={{ background: "var(--background)" }}
                 >
                   <div className="flex gap-4">
-                    {isPackaging ? (
-                      <div className="flex-1 min-w-0 text-left">{RowInner}</div>
-                    ) : (
-                      <button
-                        onClick={() => handleOpenProduct(item)}
-                        className="flex-1 min-w-0 text-left"
-                        title="Open product"
-                        type="button"
-                      >
-                        {RowInner}
-                      </button>
-                    )}
+                    <button
+                      onClick={() => handleOpenProduct(item)}
+                      className="flex-1 min-w-0 text-left"
+                      title={isPackaging ? "View fruit basket" : "Open product"}
+                      type="button"
+                    >
+                      {RowInner}
+                    </button>
 
                     <div className="flex flex-col items-end justify-between">
                       <button
                         type="button"
                         onClick={() => removeFromCart(item.id)}
-                        className="text-3xl leading-none px-1"
+                        className="text-xl leading-none px-1"
                         style={{ color: "var(--foreground)" }}
                         title="Remove item"
                       >
@@ -173,7 +174,7 @@ export default function Cart() {
                       </button>
 
                       {isPackaging ? (
-                        <span className="text-2xl font-medium mt-auto" style={{ color: "var(--foreground-muted)" }}>
+                        <span className="text-xl font-medium mt-auto" style={{ color: "var(--foreground-muted)" }}>
                           ×{item.quantity}
                         </span>
                       ) : (
@@ -181,19 +182,19 @@ export default function Cart() {
                           <button
                             type="button"
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="w-10 h-10 rounded-2xl border flex items-center justify-center text-2xl disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-10 h-10 rounded-2xl border flex items-center justify-center text-xl disabled:opacity-50 disabled:cursor-not-allowed"
                             style={{ borderColor: "var(--border)", color: "var(--foreground)", background: "var(--background)" }}
                           >
                             −
                           </button>
-                          <span className="text-2xl font-medium w-6 text-center" style={{ color: "var(--foreground)" }}>
+                          <span className="text-xl font-medium w-6 text-center" style={{ color: "var(--foreground)" }}>
                             {item.quantity}
                           </span>
                           <button
                             type="button"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                             disabled={typeof item.stock === "number" && item.quantity >= item.stock}
-                            className="w-10 h-10 rounded-2xl flex items-center justify-center text-2xl disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl disabled:opacity-50 disabled:cursor-not-allowed"
                             style={{ background: "var(--foreground)", color: "var(--background)" }}
                           >
                             +
@@ -210,7 +211,7 @@ export default function Cart() {
           {/* Order Summary */}
           <div className="lg:col-span-1">
             <div className="rounded-xl shadow-lg p-6 sticky top-8 border" style={{ background: "var(--background)", borderColor: "var(--border)" }}>
-              <h2 className="text-2xl font-bold mb-6 font-display" style={{ color: "var(--foreground)" }}>Order Summary</h2>
+              <h2 className="text-xl font-bold mb-6 font-display" style={{ color: "var(--foreground)" }}>Order Summary</h2>
 
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between" style={{ color: "var(--foreground)" }}>
@@ -220,7 +221,7 @@ export default function Cart() {
                 <div className="border-t pt-4" style={{ borderColor: "var(--border)" }}>
                   <div className="flex justify-between items-center">
                     <span className="text-xl font-bold" style={{ color: "var(--foreground)" }}>Total</span>
-                    <span className="text-2xl font-bold" style={{ color: "var(--primary)" }}>₹{getCartTotal().toFixed(2)}</span>
+                    <span className="text-xl font-bold" style={{ color: "var(--primary)" }}>₹{getCartTotal().toFixed(2)}</span>
                   </div>
                 </div>
               </div>

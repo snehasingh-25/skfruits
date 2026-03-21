@@ -89,7 +89,7 @@ export default function Wishlist() {
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8" style={{ background: "var(--background)" }}>
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold font-display mb-8" style={{ color: "var(--foreground)" }}>
+        <h1 className="text-xl font-bold font-display mb-8" style={{ color: "var(--foreground)" }}>
           Wishlist
         </h1>
 

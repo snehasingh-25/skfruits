@@ -62,7 +62,7 @@ export default function Seasonal() {
               </div>
             )}
             <div className="p-8">
-              <h1 className="font-display text-3xl md:text-4xl font-bold mb-4 text-design-foreground">
+              <h1 className="font-display text-xl md:text-4xl font-bold mb-4 text-design-foreground">
                 {selectedSeasonal.name}
               </h1>
               {selectedSeasonal.description && (

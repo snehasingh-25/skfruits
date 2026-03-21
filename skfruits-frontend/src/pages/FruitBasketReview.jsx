@@ -174,7 +174,7 @@ export default function FruitBasketReview() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
-          <h1 className="font-display text-2xl font-bold" style={{ color: "var(--foreground)" }}>
+          <h1 className="font-display text-xl font-bold" style={{ color: "var(--foreground)" }}>
             Your Fruit Basket
           </h1>
         </div>
@@ -364,7 +364,7 @@ export default function FruitBasketReview() {
         </div>
 
         <div
-          className="rounded-2xl p-6 mb-8 sticky bottom-4 sm:static"
+          className="rounded-2xl p-6 mb-8 bottom-4 sm:static"
           style={{ backgroundColor: "var(--card-white)", border: "1px solid var(--border)", boxShadow: "var(--shadow-soft)" }}
         >
           <div className="flex items-center justify-between text-xl font-bold mb-6" style={{ color: "var(--foreground)" }}>

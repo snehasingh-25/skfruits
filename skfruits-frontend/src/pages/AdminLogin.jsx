@@ -33,7 +33,7 @@ export default function AdminLogin() {
           <div className="flex items-center justify-center mb-4">
             <img src="/logo.png" alt="SK Fruits" className="h-14 w-auto" />
           </div>
-          <h1 className="font-display text-3xl font-bold text-design-foreground mb-2">
+          <h1 className="font-display text-xl font-bold text-design-foreground mb-2">
             Admin <span className="text-[var(--hover-accent)]">Login</span>
           </h1>
           <p className="text-design-muted">Access your admin dashboard</p>

@@ -139,7 +139,7 @@ export default function FruitBasketProductCard({ product }) {
               ₹{Number(displayPrice).toLocaleString("en-IN")}
             </span>
             {hasMultipleOptions && (
-              <span className="text-sm text-muted">onwards</span>
+              <span className="text-sm text-muted"></span>
             )}
           </div>
         )}

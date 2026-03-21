@@ -169,14 +169,19 @@ async function getOrCreateCart(sessionId) {
 
 /** Get or create cart by userId (logged-in customer) */
 async function getOrCreateCartByUserId(userId) {
+  const uid = Number(userId);
   let cart = await prisma.cart.findFirst({
-    where: { userId: Number(userId) },
+    where: { userId: uid },
     include: { items: { orderBy: { id: "asc" } } },
   });
   if (cart) return cart;
-  const sessionId = `user-${userId}-${randomUUID()}`;
+  // Verify user exists before creating cart (avoids FK violation from stale/deleted users)
+  const user = await prisma.user.findUnique({ where: { id: uid }, select: { id: true } });
+  if (!user) {
+    throw Object.assign(new Error("User not found. Please log in again."), { statusCode: 401 });
+  }
   cart = await prisma.cart.create({
-    data: { sessionId, userId: Number(userId) },
+    data: { sessionId: `user-${uid}-${randomUUID()}`, userId: uid },
     include: { items: { orderBy: { id: "asc" } } },
   });
   return cart;
@@ -197,7 +202,8 @@ router.get("/", optionalCustomerAuth, async (req, res) => {
     res.setHeader(CART_SESSION_HEADER, cart.sessionId);
     res.json({ sessionId: cart.sessionId, items });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    const status = error.statusCode ?? 500;
+    res.status(status).json({ error: error.message });
   }
 });
 
@@ -302,7 +308,8 @@ router.post("/items", optionalCustomerAuth, async (req, res) => {
     res.setHeader(CART_SESSION_HEADER, cart.sessionId);
     res.status(201).json({ sessionId: cart.sessionId, item: hydrated[0] });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    const status = error.statusCode ?? 500;
+    res.status(status).json({ error: error.message });
   }
 });
 
@@ -457,7 +464,8 @@ router.post("/fruit-basket", optionalCustomerAuth, async (req, res) => {
     res.status(201).json({ sessionId: fullCart.sessionId, items });
   } catch (error) {
     console.error("POST /cart/fruit-basket error:", error);
-    res.status(500).json({ error: error.message });
+    const status = error.statusCode ?? 500;
+    res.status(status).json({ error: error.message });
   }
 });
 
@@ -518,7 +526,8 @@ router.patch("/items/:id", optionalCustomerAuth, async (req, res) => {
     res.setHeader(CART_SESSION_HEADER, cart.sessionId);
     res.json({ sessionId: cart.sessionId, item: hydrated[0] });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    const status = error.statusCode ?? 500;
+    res.status(status).json({ error: error.message });
   }
 });
 
@@ -539,7 +548,8 @@ router.delete("/items/:id", optionalCustomerAuth, async (req, res) => {
     res.setHeader(CART_SESSION_HEADER, cart.sessionId);
     res.json({ sessionId: cart.sessionId, removed: true });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    const status = error.statusCode ?? 500;
+    res.status(status).json({ error: error.message });
   }
 });
 
@@ -563,7 +573,8 @@ router.delete("/", optionalCustomerAuth, async (req, res) => {
     res.setHeader(CART_SESSION_HEADER, sessionId);
     res.json({ sessionId, items: [] });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    const status = error.statusCode ?? 500;
+    res.status(status).json({ error: error.message });
   }
 });
 
@@ -641,7 +652,8 @@ router.post("/merge", optionalCustomerAuth, async (req, res) => {
     res.json({ sessionId: updated.sessionId, items });
   } catch (error) {
     console.error("Cart merge error:", error);
-    res.status(500).json({ error: error.message });
+    const status = error.statusCode ?? 500;
+    res.status(status).json({ error: error.message });
   }
 });
 
@@ -691,7 +703,8 @@ router.post("/sync", async (req, res) => {
 
     res.json({ items: syncedItems });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    const status = error.statusCode ?? 500;
+    res.status(status).json({ error: error.message });
   }
 });
 

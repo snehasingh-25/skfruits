@@ -181,7 +181,7 @@ export default function OrderDetails() {
 
         <div className="flex flex-wrap justify-between items-start gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold font-display" style={{ color: "var(--foreground)" }}>
+            <h1 className="text-xl font-bold font-display" style={{ color: "var(--foreground)" }}>
               Order #{order.id}
             </h1>
             <p className="text-sm mt-1" style={{ color: "var(--muted)" }}>{formatDate(order.createdAt)}</p>
