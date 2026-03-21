@@ -511,27 +511,32 @@ export default function Home() {
           <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2" aria-label="Personalized fruit baskets">
             <Link
               to="/fruit-basket"
-              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[var(--radius-2xl)] border px-5 py-4 sm:px-8 sm:py-5 transition-all hover:shadow-md"
+              className="flex flex-row items-center justify-between gap-3 sm:gap-4 rounded-[var(--radius-xl)] border px-5 py-4 sm:px-8 sm:py-2 transition-all hover:shadow-md"
               style={{
                 borderColor: "var(--border)",
                 background: "linear-gradient(135deg, rgb(167 137 87 / 82%) 0%, rgba(245,230,211,0.95) 100%)",
                 boxShadow: "var(--shadow-soft)",
               }}
             >
-              <div className="text-left">
+              <div className="text-left min-w-0 flex-1 pr-2">
                 <h4 className="font-display text-sm sm:text-sm font-bold" style={{ color: "var(--foreground)" }}>
                   Personalized fruit baskets
                 </h4>
                 <p className="text-sm mt-1 max-w-xl" style={{ color: "var(--foreground-muted)" }}>
                   Pick a basket, choose your fruits
                 </p>
-              </div>
-              <span
-                className="inline-flex items-center justify-center rounded-full px-6 py-3 font-semibold text-sm sm:text-base flex-shrink-0 self-start sm:self-center"
+                <span
+                className="inline-flex items-center justify-center rounded-full px-6 py-2 mt-3 font-semibold text-sm sm:text-base flex-shrink-0"
                 style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
               >
-                Start building →
+                Create →
               </span>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <img src="/basket2filled.webp" alt="Basket" className="w-30 h-30 sm:w-44 sm:h-44 object-contain rounded-lg" />
+                <img src="/basket1filled.png" alt="" className="w-30 h-30 sm:w-44 sm:h-44 object-contain rounded-lg hidden sm:block" aria-hidden />
+                <img src="/basket3filled.jpg" alt="" className="w-30 h-30 sm:w-44 sm:h-44 object-contain rounded-lg hidden sm:block" aria-hidden />
+              </div>
             </Link>
           </section>
           
