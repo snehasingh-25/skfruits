@@ -255,215 +255,91 @@ export default function Home() {
   return (
     <div className="min-h-screen fade-in" style={{ backgroundColor: 'var(--background)' }}>
       <>
-          {/* Premium split hero banner */}
-          <section className="w-full" aria-label="Homepage hero banner">
+          {/* Hero Banner Section */}
+          <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6" aria-label="Homepage hero banner">
             <div
-              className="relative w-full overflow-hidden shadow-lg h-[240px] md:h-[410px]"
-              style={{ backgroundColor: "var(--secondary)" }}
+              className="relative w-full h-[280px] md:h-[300px] rounded-lg overflow-hidden flex items-center"
+              style={{
+                backgroundColor: "var(--secondary)",
+                boxShadow: "0 10px 30px -5px rgba(74, 55, 40, 0.08)",
+                border: "1px solid rgba(141, 110, 99, 0.15)",
+              }}
             >
-              <div className="relative w-full h-full">
-                <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 10% 10%, rgba(255,213,128,0.22), transparent 55%)" }} />
+              <div
+                className="absolute inset-0 opacity-20 pointer-events-none"
+                style={{ background: "radial-gradient(circle at 70% 30%, #D2B48C 0%, transparent 60%)" }}
+              />
 
-                {/* Split layout: left 60% / right 40% */}
-                <div className="relative z-10 flex h-full flex-col md:flex-row">
-                  {/* Left: fruit images */}
-                  <div className="relative overflow-hidden flex-[0.6] bg-[#F5E6D3]">
-                    {/* Slight neutral wash */}
-                    <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(245,230,211,0.85) 0%, rgba(245,230,211,0.55) 100%)" }} />
-
-                    {/* Floating fruit framing (edge pieces) */}
-                    <div className="absolute -top-10 -left-20 w-[260px] h-[260px] hero-edge-float-1">
-                      <img
-                        src="/hero.jpeg"
-                        alt=""
-                        aria-hidden
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        decoding="async"
-                        fetchPriority="low"
-                        style={{
-                          objectPosition: heroFruitStages[heroSlide].blueberries.objectPosition,
-                          transform: `scale(${heroFruitStages[heroSlide].blueberries.scale}) rotate(${heroFruitStages[heroSlide].blueberries.rotate})`,
-                          filter: "saturate(1.05) contrast(1.02)",
-                          transition: "transform var(--motion-medium) var(--ease-out)",
-                        }}
-                      />
-                    </div>
-                    <div className="absolute -right-24 bottom-[-40px] w-[320px] h-[320px] hero-edge-float-2">
-                      <img
-                        src="/hero.jpeg"
-                        alt=""
-                        aria-hidden
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        decoding="async"
-                        fetchPriority="low"
-                        style={{
-                          objectPosition: heroFruitStages[heroSlide].cherries.objectPosition,
-                          transform: `scale(${heroFruitStages[heroSlide].cherries.scale}) rotate(${heroFruitStages[heroSlide].cherries.rotate})`,
-                          filter: "saturate(1.05) contrast(1.02)",
-                          transition: "transform var(--motion-medium) var(--ease-out)",
-                        }}
-                      />
-                    </div>
-
-                    {/* Main blueberries + cherries layers */}
-                    <img
-                      src="/hero.jpeg"
-                      alt=""
-                      aria-hidden
-                      className="absolute left-[-180px] top-[-150px] w-[540px] h-[540px] object-cover"
-                      loading="lazy"
-                      decoding="async"
-                      fetchPriority="low"
-                      style={{
-                        objectPosition: heroFruitStages[heroSlide].blueberries.objectPosition,
-                        transform: `scale(${heroFruitStages[heroSlide].blueberries.scale}) rotate(${heroFruitStages[heroSlide].blueberries.rotate})`,
-                        transition: "transform var(--motion-medium) var(--ease-out)",
-                      }}
-                    />
-                    <img
-                      src="/hero.jpeg"
-                      alt=""
-                      aria-hidden
-                      className="absolute left-[-110px] top-[-90px] w-[480px] h-[480px] object-cover"
-                      loading="lazy"
-                      decoding="async"
-                      fetchPriority="low"
-                      style={{
-                        objectPosition: heroFruitStages[heroSlide].cherries.objectPosition,
-                        transform: `scale(${heroFruitStages[heroSlide].cherries.scale}) rotate(${heroFruitStages[heroSlide].cherries.rotate})`,
-                        transition: "transform var(--motion-medium) var(--ease-out)",
-                      }}
-                    />
+              <div className="relative z-10 w-full flex flex-row items-center justify-between px-6 sm:px-10 md:px-12 py-3 h-full">
+                <div className="flex flex-col gap-2.5 max-w-xl lg:max-w-2xl">
+                  <div
+                    className="inline-block px-2.5 py-1 rounded w-fit text-[8px] md:text-[9px] tracking-[0.18em] uppercase font-bold"
+                    style={{ border: "1px solid rgba(210,180,140,0.9)", color: "var(--primary)" }}
+                  >
+                    New Arrivals
                   </div>
 
-                  {/* Right: gradient + text */}
+                  <h1
+                    className="font-display font-bold text-2xl md:text-3xl lg:text-4xl leading-tight tracking-tight"
+                    style={{ color: "var(--primary)" }}
+                  >
+                    Nurtured by Nature,
+                    <br />
+                    Delivered to You
+                  </h1>
+
+                  <p className="text-xs sm:text-sm md:text-sm lg:text-base max-w-xs md:max-w-sm leading-relaxed opacity-90" style={{ color: "var(--text-muted)" }}>
+                    Discover the freshest seasonal selection. Curated from local sustainable orchards and delivered directly to your doorstep.
+                  </p>
+
+                  <div className="mt-1.5">
+                    <Link
+                      to="/shop"
+                      className="inline-flex items-center gap-2.5 py-2.5 px-6 md:px-7 uppercase tracking-widest text-[9px] font-bold transition-all duration-300"
+                      style={{
+                        backgroundColor: "var(--primary)",
+                        color: "var(--primary-foreground)",
+                        boxShadow: "0 10px 30px -5px rgba(74, 55, 40, 0.08)",
+                        borderRadius: 4,
+                      }}
+                    >
+                      Shop the Season
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="hidden md:flex relative h-full w-[390px] lg:w-[450px] items-center justify-end">
                   <div
-                    className="relative flex-[0.4] flex flex-col justify-between"
+                    className="absolute right-0 w-44 h-44 lg:w-52 lg:h-52 rounded-sm overflow-hidden transition-all duration-700"
                     style={{
-                      background:
-                        "linear-gradient(135deg, rgba(252,230,240,1) 0%, rgba(247,197,167,1) 55%, rgba(243,165,110,1) 100%)",
+                      boxShadow: "0 10px 30px -5px rgba(74, 55, 40, 0.08)",
+                      border: "1px solid rgba(141, 110, 99, 0.15)",
+                      filter: "grayscale(20%)",
                     }}
                   >
-                    <div className="px-5 sm:px-10 pt-6 sm:pt-8 text-center">
-                      {/* Brand badge (top center) */}
-                      <div className="flex justify-center mb-4">
-                        <div
-                          className="w-11 h-11 rounded-full flex items-center justify-center font-bold"
-                          style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)", boxShadow: "var(--shadow-soft)" }}
-                        >
-                          SK
-                        </div>
-                      </div>
-
-                      {/* Main heading */}
-                      <h1
-                        className="font-display font-extrabold uppercase leading-none"
-                        style={{
-                          letterSpacing: "0.06em",
-                          fontSize: "clamp(26px, 4.1vw, 52px)",
-                          color: "var(--primary)",
-                        }}
-                      >
-                        FRESH FRUITS WITH{" "}
-                        <span
-                          className="italic"
-                          style={{
-                            fontFamily: '"Brush Script MT", "Segoe Script", cursive',
-                            fontWeight: 700,
-                            color: "var(--primary)",
-                            letterSpacing: "0.02em",
-                          }}
-                        >
-                          Cherries
-                        </span>
-                      </h1>
-                    </div>
-
-                    <div className="px-5 sm:px-10 pb-7 sm:pb-8">
-                      {/* Subheading pill */}
-                      <div
-                        className="w-fit mx-auto sm:mx-0 rounded-full px-4 py-2 text-sm sm:text-base font-semibold"
-                        style={{
-                          backgroundColor: "rgba(0,0,0,0.55)",
-                          color: "rgba(255,255,255,0.92)",
-                          boxShadow: "0 10px 24px rgba(0,0,0,0.10)",
-                          backdropFilter: "blur(6px)",
-                        }}
-                      >
-                        Premium Quality • Freshly Selected
-                      </div>
-
-                      {/* CTA */}
-                      <div className="mt-7 flex justify-center sm:justify-start">
-                        <Link
-                          to="/shop"
-                          className="inline-flex items-center justify-center rounded-full px-6 py-3 font-semibold transition-all"
-                          style={{
-                            backgroundColor: "#FF3B5C",
-                            color: "white",
-                            boxShadow: "0 16px 30px rgba(255,59,92,0.25)",
-                            border: "1px solid rgba(0,0,0,0.05)",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = "#FF5A78";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = "#FF3B5C";
-                          }}
-                        >
-                          Shop Now
-                        </Link>
-                      </div>
-                    </div>
+                    <img alt="Fresh oranges" className="w-full h-full object-cover" src="/shop4.png" loading="lazy" decoding="async" fetchPriority="low" />
                   </div>
-                </div>
-
-                {/* Curved wave separator */}
-                {/* Desktop: vertical wave at the 60% boundary */}
-                <div className="hidden md:block absolute top-0 bottom-0" style={{ left: "60%", width: 96, transform: "translateX(-48px)" }} aria-hidden>
-                  <svg width="96" height="100%" viewBox="0 0 96 1000" preserveAspectRatio="none">
-                    <path
-                      d="M0 0 H96 V430 C70 470 45 470 24 452 C10 441 7 438 0 430 Z
-                         M0 570 C7 562 10 559 24 548 C45 530 70 530 96 570 V1000 H0 Z"
-                      fill="white"
-                      opacity="0.96"
-                    />
-                  </svg>
-                </div>
-
-                {/* Mobile: horizontal wave at the 60% boundary */}
-                <div className="md:hidden absolute left-0 right-0" style={{ top: "60%", height: 92 }} aria-hidden>
-                  <svg width="100%" height="100%" viewBox="0 0 1000 92" preserveAspectRatio="none">
-                    <path
-                      d="M0 0 C160 35 300 60 500 46 C690 33 820 10 1000 0 L1000 92 L0 92 Z"
-                      fill="white"
-                      opacity="0.96"
-                    />
-                  </svg>
-                </div>
-
-                {/* Carousel dots */}
-                <div
-                  className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20"
-                  aria-label="Hero carousel dots"
-                >
-                  {[0, 1, 2].map((i) => (
-                    <button
-                      key={`dot-${i}`}
-                      type="button"
-                      aria-label={`Go to slide ${i + 1}`}
-                      onClick={() => setHeroSlide(i)}
-                      className="rounded-full transition-all duration-300"
-                      style={{
-                        width: 10 + (heroSlide === i ? 6 : 0),
-                        height: heroSlide === i ? 10 : 8,
-                        backgroundColor: heroSlide === i ? "var(--accent)" : "rgba(107,62,38,0.28)",
-                        boxShadow: heroSlide === i ? "0 10px 22px rgba(76,175,80,0.22)" : "none",
-                      }}
-                    />
-                  ))}
+                  <div
+                    className="absolute bottom-4 right-24 lg:right-32 w-36 h-36 lg:w-44 lg:h-44 rounded-sm overflow-hidden rotate-2 z-20"
+                    style={{
+                      boxShadow: "0 10px 30px -5px rgba(74, 55, 40, 0.08)",
+                      border: "4px solid var(--background)",
+                    }}
+                  >
+                    <img alt="Fresh berries" className="w-full h-full object-cover" src="/shop3.jpeg" loading="lazy" decoding="async" fetchPriority="low" />
+                  </div>
+                  <div
+                    className="absolute top-8 right-[12.5rem] lg:top-6 lg:right-64 w-24 h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden -rotate-3 z-10"
+                    style={{
+                      boxShadow: "0 10px 30px -5px rgba(74, 55, 40, 0.08)",
+                      border: "2px solid rgba(210,180,140,0.3)",
+                    }}
+                  >
+                    <img alt="Leafy greens" className="w-full h-full object-cover" src="/shop1.jpeg" loading="lazy" decoding="async" fetchPriority="low" />
+                  </div>
                 </div>
               </div>
             </div>
