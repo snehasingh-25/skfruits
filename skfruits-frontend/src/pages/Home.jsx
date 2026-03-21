@@ -220,7 +220,7 @@ export default function Home() {
       { src: "/shop3.jpeg", fallbackSrc: "/hero.png", alt: "Fresh baskets" },
       { src: "/shop4.jpeg", fallbackSrc: "/model.png", alt: "Fruit counter" },
       { src: "/shop5.jpeg", fallbackSrc: "/mins.png", alt: "Shelf details" },
-      { src: "/shop6.jpeg", fallbackSrc: "/logo.jpeg", alt: "Visit the store" },
+      { src: "/shop6.jpeg", fallbackSrc: "/logo.png", alt: "Visit the store" },
     ],
     []
   );
@@ -292,7 +292,7 @@ export default function Home() {
                       aria-hidden
                     />
                     <Link
-                      to="/shop"
+                      to="/categories"
                       className="group relative inline-flex items-center gap-3 py-3.5 px-9 uppercase tracking-[0.18em] text-[11px] font-bold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-12px_rgba(74,55,40,0.52)] active:translate-y-0"
                       style={{
                         backgroundColor: "var(--primary)",
