@@ -79,7 +79,7 @@ export default function Signup() {
           <h1 className="font-display text-2xl md:text-3xl font-bold mb-2" style={{ color: "var(--foreground)" }}>
             Create account
           </h1>
-          <p style={{ color: "var(--muted)" }}>Join SK Fruits for a fresher experience</p>
+          <p style={{ color: "var(--text-muted)" }}>Join SK Fruits for a fresher experience</p>
         </div>
 
         {error && (
@@ -115,7 +115,7 @@ export default function Signup() {
             <span className="w-full border-t" style={{ borderColor: "var(--border)" }}></span>
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span style={{ background: "var(--background)", color: "var(--muted)", padding: "0 8px" }}>Or sign up with email</span>
+            <span style={{ background: "var(--background)", color: "var(--text-muted)", padding: "0 8px" }}>Or sign up with email</span>
           </div>
         </div>
 
@@ -246,7 +246,7 @@ export default function Signup() {
 
         </form>
 
-        <p className="mt-6 text-center text-sm" style={{ color: "var(--muted)" }}>
+        <p className="mt-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>
           Already have an account?{" "}
           <Link to="/login" className="font-semibold" style={{ color: "var(--primary)" }}>
             Sign in

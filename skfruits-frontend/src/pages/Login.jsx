@@ -64,7 +64,7 @@ export default function Login() {
           <h1 className="font-display text-2xl md:text-3xl font-bold mb-2" style={{ color: "var(--foreground)" }}>
             Welcome back
           </h1>
-          <p style={{ color: "var(--muted)" }}>Sign in to your account</p>
+          <p style={{ color: "var(--text-muted)" }}>Sign in to your account</p>
         </div>
 
         {error && (
@@ -100,7 +100,7 @@ export default function Login() {
             <span className="w-full border-t" style={{ borderColor: "var(--border)" }}></span>
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span style={{ background: "var(--background)", color: "var(--muted)", padding: "0 8px" }}>Or sign in with email</span>
+            <span style={{ background: "var(--background)", color: "var(--text-muted)", padding: "0 8px" }}>Or sign in with email</span>
           </div>
         </div>
 
@@ -160,8 +160,8 @@ export default function Login() {
                 )}
               </button>
             </div>
-            <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
-              <Link to="/login" className="underline hover:no-underline">Forgot password?</Link>
+            <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
+              <Link to="/login" className="underline hover:no-underline" style={{ color: "var(--primary)" }}>Forgot password?</Link>
               <span className="ml-1">(Coming soon)</span>
             </p>
           </div>
@@ -176,13 +176,13 @@ export default function Login() {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm" style={{ color: "var(--muted)" }}>
+        <p className="mt-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>
           Don&apos;t have an account?{" "}
           <Link to="/signup" className="font-semibold" style={{ color: "var(--primary)" }}>
             Sign up
           </Link>
         </p>
-        <p className="mt-3 text-center text-sm" style={{ color: "var(--muted)" }}>
+        <p className="mt-3 text-center text-sm" style={{ color: "var(--text-muted)" }}>
           Admin? Sign in with your admin email — you&apos;ll be redirected to the dashboard.
         </p>
       </div>
