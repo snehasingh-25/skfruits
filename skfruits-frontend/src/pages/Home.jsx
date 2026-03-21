@@ -877,7 +877,7 @@ export default function Home() {
             style={{ background: "linear-gradient(270deg, rgba(255,255,255,0.20) 0%, rgba(133,92,61,0.10) 100%)" }}
           />
 
-          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 70% 10%, rgba(76,175,80,0.18), transparent 50%)" }} />
+          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 70% 10%, rgba(255,213,128,0.12), transparent 50%)" }} />
 
           <div className="relative px-5 sm:px-8 py-6 sm:py-8">
             <div className="flex items-end justify-between gap-6 mb-6">
@@ -899,7 +899,11 @@ export default function Home() {
                 <div
                   key={item.title}
                   className="rounded-[var(--radius-lg)] border"
-                  style={{ borderColor: "rgba(107,62,38,0.16)", backgroundColor: "rgba(255,255,255,0.35)" }}
+                  style={{
+                    borderColor: "rgba(133,92,61,0.2)",
+                    backgroundColor: "rgba(255,252,246,0.9)",
+                    boxShadow: "0 8px 18px rgba(86,60,40,0.08), inset 0 1px 0 rgba(255,255,255,0.7)",
+                  }}
                 >
                   <div className="p-5">
                     <div
