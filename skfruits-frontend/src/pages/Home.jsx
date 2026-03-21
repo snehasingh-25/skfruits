@@ -253,7 +253,7 @@ export default function Home() {
     <div className="min-h-screen fade-in" style={{ backgroundColor: 'var(--background)' }}>
       <>
           {/* Hero Banner Section */}
-          <section className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6" aria-label="Homepage hero banner">
+          <section className="hidden md:block max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6" aria-label="Homepage hero banner">
             <div
               className="relative w-full h-[280px] md:h-[300px] rounded-lg overflow-hidden flex items-center"
               style={{
@@ -476,13 +476,13 @@ export default function Home() {
                       <div
                         className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-[var(--radius-xl)] flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 group-hover:-translate-y-0.5"
                         style={{
-                          background:
-                            "linear-gradient(145deg, rgba(107,62,38,0.92) 0%, rgba(107,62,38,0.72) 45%, rgba(244,196,48,0.10) 100%)",
-                          boxShadow: "inset 0 0 0 1px rgba(245,230,211,0.18)",
+                          backgroundColor: "rgba(255,255,255,0.2)",
+                          border: "1px solid rgba(133,92,61,0.14)",
+                          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.12)",
                         }}
                       >
                         <div
-                          className="w-[calc(100%-12px)] h-[calc(100%-12px)] rounded-[var(--radius-lg)] flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-[1.02]"
+                          className="w-[calc(100%-6px)] h-[calc(100%-6px)] rounded-[var(--radius-lg)] flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-[1.02]"
                           style={{
                             backgroundColor: "var(--secondary)",
                             boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.06)",
@@ -533,93 +533,6 @@ export default function Home() {
           </div>
         </div>
       ) : null}
-
-          {/* Store Experience Section */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: "transparent" }}>
-            <section
-              className="relative overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--border)]"
-              style={{
-                background:
-                  "linear-gradient(180deg, rgba(255,246,231,0.82) 0%, rgba(244,219,186,0.45) 55%, rgba(245,230,211,0.78) 100%), " +
-                  "url('/wooden.jpg') center / cover no-repeat",
-                backgroundBlendMode: "screen, normal",
-                boxShadow:
-                  "0 18px 34px rgba(92,57,34,0.28), 0 6px 0 rgba(126,82,53,0.34), inset 0 1px 0 rgba(255,255,255,0.52), inset 0 -2px 0 rgba(93,56,31,0.18)",
-              }}
-              aria-label="Visit Our Store"
-            >
-              <div
-                className="absolute inset-[-10%] pointer-events-none"
-                style={{
-                  backgroundImage: "url('/wooden.jpg')",
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  transform: "rotate(-3deg) scale(1.05)",
-                  opacity: 0.16,
-                  mixBlendMode: "soft-light",
-                  filter: "saturate(0.9) contrast(1.02) brightness(1.08)",
-                }}
-                aria-hidden
-              />
-
-              <div
-                className="absolute left-2 right-2 bottom-0 h-6 pointer-events-none"
-                style={{
-                  background: "linear-gradient(0deg, rgba(88,53,31,0.34) 0%, rgba(151,110,79,0.16) 70%, rgba(255,255,255,0.10) 100%)",
-                  borderBottomLeftRadius: "calc(var(--radius-2xl) - 4px)",
-                  borderBottomRightRadius: "calc(var(--radius-2xl) - 4px)",
-                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
-                }}
-              />
-              <div
-                className="absolute left-0 top-3 bottom-3 w-3 pointer-events-none"
-                style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.26) 0%, rgba(133,92,61,0.08) 100%)" }}
-              />
-              <div
-                className="absolute right-0 top-3 bottom-3 w-3 pointer-events-none"
-                style={{ background: "linear-gradient(270deg, rgba(255,255,255,0.20) 0%, rgba(133,92,61,0.10) 100%)" }}
-              />
-
-              <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 20% 0%, rgba(255,213,128,0.20), transparent 55%)" }} />
-
-              <div className="relative px-5 sm:px-8 pt-6 pb-5">
-                <div className="flex items-center justify-between gap-4 mb-5">
-                  <div>
-                    <h2 className="font-display text-3xl font-bold text-design-foreground">Visit Our Store</h2>
-                    <p className="mt-2 text-sm sm:text-base text-design-muted">
-                      Step inside our premium fruit shop & explore fresh baskets.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-                  {storeImages.map((img, idx) => (
-                    <div
-                      key={`store-img-${idx}`}
-                      className="group rounded-[var(--radius-lg)] overflow-hidden border"
-                      style={{ borderColor: "rgba(107,62,38,0.22)", backgroundColor: "rgba(255,255,255,0.35)" }}
-                    >
-                      <img
-                        src={img.src}
-                        alt={img.alt}
-                        loading="lazy"
-                        decoding="async"
-                        fetchPriority="low"
-                        onError={(e) => {
-                          const target = e.currentTarget;
-                          if (img.fallbackSrc && target.src !== img.fallbackSrc) {
-                            target.onerror = null; // avoid infinite error loops
-                            target.src = img.fallbackSrc;
-                          }
-                        }}
-                        className="h-40 sm:h-44 w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          </div>
 
           {/* Primary Banner Slider (admin-managed banners) */}
           {!isInitialLoad && <BannerSlider bannerType="primary" />}
@@ -833,6 +746,93 @@ export default function Home() {
 
       {/* Why Choose Us (trust section) */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Store Experience Section */}
+        <div className="mb-10 sm:mb-12" style={{ backgroundColor: "transparent" }}>
+          <section
+            className="relative overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--border)]"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(255,246,231,0.82) 0%, rgba(244,219,186,0.45) 55%, rgba(245,230,211,0.78) 100%), " +
+                "url('/wooden.jpg') center / cover no-repeat",
+              backgroundBlendMode: "screen, normal",
+              boxShadow:
+                "0 18px 34px rgba(92,57,34,0.28), 0 6px 0 rgba(126,82,53,0.34), inset 0 1px 0 rgba(255,255,255,0.52), inset 0 -2px 0 rgba(93,56,31,0.18)",
+            }}
+            aria-label="Visit Our Store"
+          >
+            <div
+              className="absolute inset-[-10%] pointer-events-none"
+              style={{
+                backgroundImage: "url('/wooden.jpg')",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                transform: "rotate(-3deg) scale(1.05)",
+                opacity: 0.16,
+                mixBlendMode: "soft-light",
+                filter: "saturate(0.9) contrast(1.02) brightness(1.08)",
+              }}
+              aria-hidden
+            />
+
+            <div
+              className="absolute left-2 right-2 bottom-0 h-6 pointer-events-none"
+              style={{
+                background: "linear-gradient(0deg, rgba(88,53,31,0.34) 0%, rgba(151,110,79,0.16) 70%, rgba(255,255,255,0.10) 100%)",
+                borderBottomLeftRadius: "calc(var(--radius-2xl) - 4px)",
+                borderBottomRightRadius: "calc(var(--radius-2xl) - 4px)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
+              }}
+            />
+            <div
+              className="absolute left-0 top-3 bottom-3 w-3 pointer-events-none"
+              style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.26) 0%, rgba(133,92,61,0.08) 100%)" }}
+            />
+            <div
+              className="absolute right-0 top-3 bottom-3 w-3 pointer-events-none"
+              style={{ background: "linear-gradient(270deg, rgba(255,255,255,0.20) 0%, rgba(133,92,61,0.10) 100%)" }}
+            />
+
+            <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 20% 0%, rgba(255,213,128,0.20), transparent 55%)" }} />
+
+            <div className="relative px-5 sm:px-8 pt-6 pb-5">
+              <div className="flex items-center justify-between gap-4 mb-5">
+                <div>
+                  <h2 className="font-display text-3xl font-bold text-design-foreground">Visit Our Store</h2>
+                  <p className="mt-2 text-sm sm:text-base text-design-muted">
+                    Step inside our premium fruit shop & explore fresh baskets.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                {storeImages.map((img, idx) => (
+                  <div
+                    key={`store-img-${idx}`}
+                    className="group rounded-[var(--radius-lg)] overflow-hidden border"
+                    style={{ borderColor: "rgba(107,62,38,0.22)", backgroundColor: "rgba(255,255,255,0.35)" }}
+                  >
+                    <img
+                      src={img.src}
+                      alt={img.alt}
+                      loading="lazy"
+                      decoding="async"
+                      fetchPriority="low"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        if (img.fallbackSrc && target.src !== img.fallbackSrc) {
+                          target.onerror = null; // avoid infinite error loops
+                          target.src = img.fallbackSrc;
+                        }
+                      }}
+                      className="h-40 sm:h-44 w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </div>
+
         <section
           className="relative overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--border)]"
           style={{
