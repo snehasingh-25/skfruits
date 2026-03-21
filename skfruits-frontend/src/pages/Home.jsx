@@ -476,7 +476,7 @@ export default function Home() {
                       <div
                         className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-[var(--radius-xl)] flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 group-hover:-translate-y-0.5"
                         style={{
-                          backgroundColor: "rgba(255,255,255,0.2)",
+                          backgroundColor: "#ffffff",
                           border: "1px solid rgba(133,92,61,0.14)",
                           boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.12)",
                         }}
@@ -484,7 +484,7 @@ export default function Home() {
                         <div
                           className="w-[calc(100%-6px)] h-[calc(100%-6px)] rounded-[var(--radius-lg)] flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-[1.02]"
                           style={{
-                            backgroundColor: "var(--secondary)",
+                            backgroundColor: "#ffffff",
                             boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.06)",
                           }}
                         >
