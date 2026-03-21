@@ -517,14 +517,45 @@ export default function Home() {
             className="relative overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--border)]"
             style={{
               background:
-                "linear-gradient(180deg, rgba(107,62,38,0.10) 0%, rgba(245,230,211,0.70) 100%), " +
-                "repeating-linear-gradient(90deg, rgba(107,62,38,0.22) 0 2px, rgba(0,0,0,0) 2px 14px)",
-              boxShadow: "var(--shadow-soft)",
+                "linear-gradient(180deg, rgba(255,246,231,0.82) 0%, rgba(244,219,186,0.45) 55%, rgba(245,230,211,0.78) 100%), " +
+                "url('/wooden.jpg') center / cover no-repeat",
+              backgroundBlendMode: "screen, normal",
+              boxShadow:
+                "0 18px 34px rgba(92,57,34,0.28), 0 6px 0 rgba(126,82,53,0.34), inset 0 1px 0 rgba(255,255,255,0.52), inset 0 -2px 0 rgba(93,56,31,0.18)",
             }}
           >
-            {/* Shelf rails */}
-            <div className="absolute left-0 right-0 top-0 h-3" style={{ background: "rgba(107,62,38,0.35)" }} />
-            <div className="absolute left-0 right-0 bottom-0 h-3" style={{ background: "rgba(107,62,38,0.25)" }} />
+            <div
+              className="absolute inset-[-10%] pointer-events-none"
+              style={{
+                backgroundImage: "url('/wooden.jpg')",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                transform: "rotate(-3deg) scale(1.05)",
+                opacity: 0.16,
+                mixBlendMode: "soft-light",
+                filter: "saturate(0.9) contrast(1.02) brightness(1.08)",
+              }}
+              aria-hidden
+            />
+
+            {/* 3D slab faces */}
+            <div
+              className="absolute left-2 right-2 bottom-0 h-6 pointer-events-none"
+              style={{
+                background: "linear-gradient(0deg, rgba(88,53,31,0.34) 0%, rgba(151,110,79,0.16) 70%, rgba(255,255,255,0.10) 100%)",
+                borderBottomLeftRadius: "calc(var(--radius-2xl) - 4px)",
+                borderBottomRightRadius: "calc(var(--radius-2xl) - 4px)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
+              }}
+            />
+            <div
+              className="absolute left-0 top-3 bottom-3 w-3 pointer-events-none"
+              style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.26) 0%, rgba(133,92,61,0.08) 100%)" }}
+            />
+            <div
+              className="absolute right-0 top-3 bottom-3 w-3 pointer-events-none"
+              style={{ background: "linear-gradient(270deg, rgba(255,255,255,0.20) 0%, rgba(133,92,61,0.10) 100%)" }}
+            />
 
             <div className="relative px-5 sm:px-8 pt-6 sm:pt-8 pb-6 sm:pb-8">
               <div className="flex items-center justify-between mb-6 sm:mb-8">
@@ -637,11 +668,46 @@ export default function Home() {
               className="relative overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--border)]"
               style={{
                 background:
-                  "linear-gradient(180deg, rgba(107,62,38,0.10) 0%, rgba(245,230,211,0.75) 100%), repeating-linear-gradient(90deg, rgba(107,62,38,0.18) 0 2px, rgba(0,0,0,0) 2px 14px)",
-                boxShadow: "var(--shadow-soft)",
+                  "linear-gradient(180deg, rgba(255,246,231,0.82) 0%, rgba(244,219,186,0.45) 55%, rgba(245,230,211,0.78) 100%), " +
+                  "url('/wooden.jpg') center / cover no-repeat",
+                backgroundBlendMode: "screen, normal",
+                boxShadow:
+                  "0 18px 34px rgba(92,57,34,0.28), 0 6px 0 rgba(126,82,53,0.34), inset 0 1px 0 rgba(255,255,255,0.52), inset 0 -2px 0 rgba(93,56,31,0.18)",
               }}
               aria-label="Visit Our Store"
             >
+              <div
+                className="absolute inset-[-10%] pointer-events-none"
+                style={{
+                  backgroundImage: "url('/wooden.jpg')",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  transform: "rotate(-3deg) scale(1.05)",
+                  opacity: 0.16,
+                  mixBlendMode: "soft-light",
+                  filter: "saturate(0.9) contrast(1.02) brightness(1.08)",
+                }}
+                aria-hidden
+              />
+
+              <div
+                className="absolute left-2 right-2 bottom-0 h-6 pointer-events-none"
+                style={{
+                  background: "linear-gradient(0deg, rgba(88,53,31,0.34) 0%, rgba(151,110,79,0.16) 70%, rgba(255,255,255,0.10) 100%)",
+                  borderBottomLeftRadius: "calc(var(--radius-2xl) - 4px)",
+                  borderBottomRightRadius: "calc(var(--radius-2xl) - 4px)",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
+                }}
+              />
+              <div
+                className="absolute left-0 top-3 bottom-3 w-3 pointer-events-none"
+                style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.26) 0%, rgba(133,92,61,0.08) 100%)" }}
+              />
+              <div
+                className="absolute right-0 top-3 bottom-3 w-3 pointer-events-none"
+                style={{ background: "linear-gradient(270deg, rgba(255,255,255,0.20) 0%, rgba(133,92,61,0.10) 100%)" }}
+              />
+
               <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 20% 0%, rgba(255,213,128,0.20), transparent 55%)" }} />
 
               <div className="relative px-5 sm:px-8 pt-6 pb-5">
@@ -676,75 +742,6 @@ export default function Home() {
                         }}
                         className="h-40 sm:h-44 w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
                       />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          </div>
-
-          {/* Why Choose Us (trust section) */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <section
-              className="relative overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--border)]"
-              style={{
-                background:
-                  "linear-gradient(180deg, rgba(245,230,211,0.85) 0%, rgba(245,230,211,0.55) 100%), repeating-linear-gradient(90deg, rgba(107,62,38,0.14) 0 2px, rgba(0,0,0,0) 2px 14px)",
-                boxShadow: "var(--shadow-soft)",
-              }}
-              aria-label="Why Choose Us"
-            >
-              <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 70% 10%, rgba(76,175,80,0.18), transparent 50%)" }} />
-
-              <div className="relative px-5 sm:px-8 py-6 sm:py-8">
-                <div className="flex items-end justify-between gap-6 mb-6">
-                  <div>
-                    <h2 className="font-display text-3xl font-bold text-design-foreground">Why Choose Us</h2>
-                    <p className="mt-2 text-sm sm:text-base text-design-muted">
-                      Premium quality, fresh selection, and fast delivery—made simple.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {[
-                    { title: "Fresh Today", desc: "Carefully selected fruits every day.", icon: "spark" },
-                    { title: "Premium Quality", desc: "Handpicked for taste and texture.", icon: "leaf" },
-                    { title: "Fast Delivery", desc: "Quick packing and on-time delivery.", icon: "truck" },
-                    { title: "Trusted Service", desc: "Friendly support for every order.", icon: "heart" },
-                  ].map((item) => (
-                    <div
-                      key={item.title}
-                      className="rounded-[var(--radius-lg)] border"
-                      style={{ borderColor: "rgba(107,62,38,0.16)", backgroundColor: "rgba(255,255,255,0.35)" }}
-                    >
-                      <div className="p-5">
-                        <div
-                          className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
-                          style={{ backgroundColor: "rgba(255,213,128,0.55)", color: "var(--primary)", boxShadow: "var(--shadow-card)" }}
-                        >
-                          {item.icon === "spark" ? (
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 2l1.5 6L20 9.5l-6.5 1.5L12 18l-1.5-6.5L4 9.5l6.5-1.5L12 2z" />
-                            </svg>
-                          ) : item.icon === "leaf" ? (
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M21 3s-6 1-10 5-5 10-5 10 6-1 10-5 5-10 5-10z" />
-                            </svg>
-                          ) : item.icon === "truck" ? (
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 17h2l2-7h12l2 7h2" />
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M7 20a1 1 0 100-2 1 1 0 000 2zM17 20a1 1 0 100-2 1 1 0 000 2z" />
-                            </svg>
-                          ) : (
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
-                            </svg>
-                          )}
-                        </div>
-                        <div className="font-bold" style={{ color: "var(--foreground)" }}>{item.title}</div>
-                        <div className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>{item.desc}</div>
-                      </div>
                     </div>
                   ))}
                 </div>
@@ -961,6 +958,110 @@ export default function Home() {
             )}
           </div>
         </div>
+
+      {/* Why Choose Us (trust section) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <section
+          className="relative overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--border)]"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(255,246,231,0.82) 0%, rgba(244,219,186,0.45) 55%, rgba(245,230,211,0.78) 100%), " +
+              "url('/wooden.jpg') center / cover no-repeat",
+            backgroundBlendMode: "screen, normal",
+            boxShadow:
+              "0 18px 34px rgba(92,57,34,0.28), 0 6px 0 rgba(126,82,53,0.34), inset 0 1px 0 rgba(255,255,255,0.52), inset 0 -2px 0 rgba(93,56,31,0.18)",
+          }}
+          aria-label="Why Choose Us"
+        >
+          <div
+            className="absolute inset-[-10%] pointer-events-none"
+            style={{
+              backgroundImage: "url('/wooden.jpg')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              transform: "rotate(-3deg) scale(1.05)",
+              opacity: 0.16,
+              mixBlendMode: "soft-light",
+              filter: "saturate(0.9) contrast(1.02) brightness(1.08)",
+            }}
+            aria-hidden
+          />
+
+          <div
+            className="absolute left-2 right-2 bottom-0 h-6 pointer-events-none"
+            style={{
+              background: "linear-gradient(0deg, rgba(88,53,31,0.34) 0%, rgba(151,110,79,0.16) 70%, rgba(255,255,255,0.10) 100%)",
+              borderBottomLeftRadius: "calc(var(--radius-2xl) - 4px)",
+              borderBottomRightRadius: "calc(var(--radius-2xl) - 4px)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
+            }}
+          />
+          <div
+            className="absolute left-0 top-3 bottom-3 w-3 pointer-events-none"
+            style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.26) 0%, rgba(133,92,61,0.08) 100%)" }}
+          />
+          <div
+            className="absolute right-0 top-3 bottom-3 w-3 pointer-events-none"
+            style={{ background: "linear-gradient(270deg, rgba(255,255,255,0.20) 0%, rgba(133,92,61,0.10) 100%)" }}
+          />
+
+          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 70% 10%, rgba(76,175,80,0.18), transparent 50%)" }} />
+
+          <div className="relative px-5 sm:px-8 py-6 sm:py-8">
+            <div className="flex items-end justify-between gap-6 mb-6">
+              <div>
+                <h2 className="font-display text-3xl font-bold text-design-foreground">Why Choose Us</h2>
+                <p className="mt-2 text-sm sm:text-base text-design-muted">
+                  Premium quality, fresh selection, and fast delivery—made simple.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { title: "Fresh Today", desc: "Carefully selected fruits every day.", icon: "spark" },
+                { title: "Premium Quality", desc: "Handpicked for taste and texture.", icon: "leaf" },
+                { title: "Fast Delivery", desc: "Quick packing and on-time delivery.", icon: "truck" },
+                { title: "Trusted Service", desc: "Friendly support for every order.", icon: "heart" },
+              ].map((item) => (
+                <div
+                  key={item.title}
+                  className="rounded-[var(--radius-lg)] border"
+                  style={{ borderColor: "rgba(107,62,38,0.16)", backgroundColor: "rgba(255,255,255,0.35)" }}
+                >
+                  <div className="p-5">
+                    <div
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
+                      style={{ backgroundColor: "rgba(255,213,128,0.55)", color: "var(--primary)", boxShadow: "var(--shadow-card)" }}
+                    >
+                      {item.icon === "spark" ? (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 2l1.5 6L20 9.5l-6.5 1.5L12 18l-1.5-6.5L4 9.5l6.5-1.5L12 2z" />
+                        </svg>
+                      ) : item.icon === "leaf" ? (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 3s-6 1-10 5-5 10-5 10 6-1 10-5 5-10 5-10z" />
+                        </svg>
+                      ) : item.icon === "truck" ? (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 17h2l2-7h12l2 7h2" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M7 20a1 1 0 100-2 1 1 0 000 2zM17 20a1 1 0 100-2 1 1 0 000 2z" />
+                        </svg>
+                      ) : (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+                        </svg>
+                      )}
+                    </div>
+                    <div className="font-bold" style={{ color: "var(--foreground)" }}>{item.title}</div>
+                    <div className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>{item.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </div>
 
       {/* Secondary Banner Section - Between Gifts and Reels */}
       {!isInitialLoad && <BannerSlider bannerType="secondary" />}
