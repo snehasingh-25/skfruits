@@ -79,6 +79,31 @@ export const requireCustomerAuth = (req, res, next) => {
   }
 };
 
+/** Like requireCustomerAuth but verifies DB role is `customer` (excludes admin/driver tokens). */
+export const requireCustomerOnly = async (req, res, next) => {
+  try {
+    const token = getBearerToken(req);
+    if (!token) return res.status(401).json({ message: "Login required" });
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userId = Number(decoded.userId);
+    if (!userId) return res.status(401).json({ message: "Invalid token" });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true },
+    });
+    if (!user) return res.status(401).json({ message: "User not found" });
+    if (user.role !== "customer") {
+      return res.status(403).json({ message: "Only customer accounts can use this feature" });
+    }
+
+    req.customerUserId = user.id;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
+};
+
 /** Optionally set req.customerUserId when valid JWT is present (for order creation to link user). */
 export const optionalCustomerAuth = (req, res, next) => {
   const token = req.headers.authorization?.replace(/^Bearer\s+/i, "").trim();

@@ -49,7 +49,7 @@ router.post("/create", optionalCustomerAuth, async (req, res) => {
       return res.status(400).json({ error: "sessionId and customerDetails required" });
     }
 
-    const { name, phone, address, city, state, pincode, email, latitude, longitude } = customerDetails;
+    const { name, phone, address, city, state, pincode, email, latitude, longitude, notes: notesFromDetails } = customerDetails;
     if (!name?.trim()) return res.status(400).json({ error: "Full name is required" });
     if (!phone?.trim()) return res.status(400).json({ error: "Phone number is required" });
     if (!address?.trim()) return res.status(400).json({ error: "Address is required" });
@@ -107,6 +107,10 @@ router.post("/create", optionalCustomerAuth, async (req, res) => {
     const addressLine = [address.trim(), city.trim(), state.trim(), pincode.trim()].filter(Boolean).join(", ");
     const paymentMethod = req.body.paymentMethod === "cod" ? "cod" : "online";
     const userId = req.customerUserId || null;
+    const orderNotes =
+      (typeof req.body.notes === "string" && req.body.notes.trim()) ||
+      (typeof notesFromDetails === "string" && notesFromDetails.trim()) ||
+      null;
 
     const order = await prisma.$transaction(async (tx) => {
       await deductStockForOrder(tx, items);
@@ -131,6 +135,7 @@ router.post("/create", optionalCustomerAuth, async (req, res) => {
           deliveryFee,
           estimatedDeliveryDate: estimatedDeliveryDate ? new Date(estimatedDeliveryDate) : null,
           deliverySlotId,
+          notes: orderNotes,
           items: {
             create: items.map((item) => ({
               productId: item.productId,
@@ -259,9 +264,11 @@ router.get("/my-orders", requireCustomerAuth, async (req, res) => {
       items: order.items.map((item) => ({
         productId: item.productId,
         name: item.productName,
+        sizeLabel: item.sizeLabel,
         image: parseProductImage(item.product),
         quantity: item.quantity,
         price: item.price,
+        subtotal: item.subtotal,
       })),
     }));
     res.json(list);

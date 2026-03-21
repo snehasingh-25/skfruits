@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import { API } from "../../api";
+import { isFruitBasketPackagingLine, orderContainsFruitBasket } from "../../utils/fruitBasketOrder";
 
 const STATUS_OPTIONS = [
   { value: "processing", label: "Processing" },
@@ -213,6 +214,16 @@ export default function AdminOrderDetailPage() {
           <StatusBadge status={order.orderStatus} />
         </div>
 
+        {orderContainsFruitBasket(order.items) && (
+          <div
+            className="rounded-xl border px-4 py-3 text-sm"
+            style={{ borderColor: "var(--border)", background: "var(--secondary)", color: "var(--foreground)" }}
+          >
+            <strong>🧺 Personalized fruit basket</strong> — includes a basket packaging line plus customer-selected fruits.
+            Pack the basket style shown on the packaging line (title) with the fruit SKUs listed below.
+          </div>
+        )}
+
         {!isCancelled && (
           <section className="rounded-xl border p-6" style={{ borderColor: "var(--border)", background: "var(--background)" }}>
             <h2 className="text-sm font-semibold uppercase tracking-wide mb-4" style={{ color: "var(--muted)" }}>Order status</h2>
@@ -317,7 +328,14 @@ export default function AdminOrderDetailPage() {
                   {item.image ? <img src={item.image} alt={item.productName} className="w-full h-full object-cover" /> : <span className="text-xs" style={{ color: "var(--muted)" }}>—</span>}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium" style={{ color: "var(--foreground)" }}>{item.productName}</p>
+                  <p className="font-medium" style={{ color: "var(--foreground)" }}>
+                    {item.productName}
+                    {isFruitBasketPackagingLine(item) && (
+                      <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "var(--accent)", color: "var(--foreground)" }}>
+                        Basket packaging
+                      </span>
+                    )}
+                  </p>
                   <p className="text-sm" style={{ color: "var(--muted)" }}>{item.sizeLabel} × {item.quantity}</p>
                 </div>
                 <p className="font-semibold" style={{ color: "var(--primary)" }}>₹{Number(item.subtotal).toFixed(2)}</p>

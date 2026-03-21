@@ -70,6 +70,7 @@ export default function Navbar() {
   const navItems = [
     { path: "/", label: "Home" },
     { path: "/categories", label: "Categories" },
+    { path: "/fruit-basket", label: "Basket" },
     { path: "/seasonal", label: "Seasonal" },
     { path: "/exotic", label: "Exotic" },
     { path: "/organic", label: "Organic" },

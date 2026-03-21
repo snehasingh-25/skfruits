@@ -205,6 +205,11 @@ router.post("/verify", optionalCustomerAuth, async (req, res) => {
     const addressLine = [address.trim(), city.trim(), state.trim(), pincode.trim()].filter(Boolean).join(", ");
 
     const userId = req.customerUserId || null;
+    const notesFromCheckout =
+      (typeof checkoutData?.notes === "string" && checkoutData.notes.trim()) ||
+      (typeof customerDetails?.notes === "string" && customerDetails.notes.trim()) ||
+      null;
+
     const order = await prisma.$transaction(async (tx) => {
       await deductStockForOrder(tx, items);
       if (deliverySlotId != null) {
@@ -230,6 +235,7 @@ router.post("/verify", optionalCustomerAuth, async (req, res) => {
           deliveryFee,
           estimatedDeliveryDate: estimatedDeliveryDate ? new Date(estimatedDeliveryDate) : null,
           deliverySlotId,
+          notes: notesFromCheckout,
           items: {
             create: items.map((item) => ({
               productId: item.productId,

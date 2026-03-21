@@ -26,7 +26,7 @@ export default function Cart() {
   };
 
   const handleOpenProduct = (item) => {
-    if (!item?.productId) return;
+    if (!item?.productId || item.isPackagingLine) return;
     navigate(`/product/${item.productId}`);
   };
 
@@ -94,78 +94,117 @@ export default function Cart() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
-            {cartItems.map((item) => (
-              <div
-                key={item.id}
-                className="rounded-2xl p-4 sm:p-5 border"
-                style={{ background: "var(--background)" }}
-              >
+            {cartItems.map((item) => {
+              const isPackaging = Boolean(item.isPackagingLine);
+              const RowInner = (
                 <div className="flex gap-4">
-                  <button
-                    onClick={() => handleOpenProduct(item)}
-                    className="flex-1 min-w-0 text-left"
-                    title="Open product"
-                  >
-                    <div className="flex gap-4">
-                      <div className="w-28 h-28 rounded-2xl overflow-hidden shrink-0 flex items-center justify-center" style={{ background: "var(--muted)" }}>
-                        {item.productImage ? (
-                          <img src={item.productImage} alt={item.productName} className="w-full h-full object-cover" />
-                        ) : (
-                          <img src="/logo.png" alt="SK Fruits" className="w-14 h-14 object-contain opacity-50" />
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-sm font-semibold leading-tight" style={{ color: "var(--foreground)" }}>{item.productName}</h3>
-                        <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-                          {item.selectedWeight ? (
-                            <>Weight: <span className="font-medium" style={{ color: "var(--foreground)" }}>{item.sizeLabel}</span></>
-                          ) : (
-                            <>Size: <span className="font-medium" style={{ color: "var(--foreground)" }}>{item.sizeLabel}</span></>
-                          )}
-                        </p>
-                        <p className="mt-4 text-sm font-semibold" style={{ color: "var(--foreground)" }}>₹{Number(item.subtotal || 0).toFixed(2)}</p>
-                        {(typeof item.stock === "number" && item.stock <= 5 && item.stock > 0) && (
-                          <p className="text-xs mt-1" style={{ color: "var(--accent)" }}>Only {item.stock} left</p>
-                        )}
-                        {(typeof item.stock === "number" && item.stock === 0) && (
-                          <p className="text-xs mt-1" style={{ color: "var(--destructive)" }}>Out of stock</p>
-                        )}
-                      </div>
-                    </div>
-                  </button>
+                  <div className="w-28 h-28 rounded-2xl overflow-hidden shrink-0 flex items-center justify-center" style={{ background: "var(--muted)" }}>
+                    {item.productImage ? (
+                      <img src={item.productImage} alt={item.productName} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-4xl" aria-hidden>🧺</span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-semibold leading-tight" style={{ color: "var(--foreground)" }}>
+                      {item.productName}
+                    </h3>
+                    <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
+                      {isPackaging ? (
+                        <span className="font-medium" style={{ color: "var(--foreground)" }}>
+                          Custom fruit basket packaging
+                        </span>
+                      ) : item.selectedWeight ? (
+                        <>
+                          Weight: <span className="font-medium" style={{ color: "var(--foreground)" }}>{item.sizeLabel}</span>
+                        </>
+                      ) : (
+                        <>
+                          Size: <span className="font-medium" style={{ color: "var(--foreground)" }}>{item.sizeLabel}</span>
+                        </>
+                      )}
+                    </p>
+                    <p className="mt-4 text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                      ₹{Number(item.subtotal || 0).toFixed(2)}
+                    </p>
+                    {!isPackaging && typeof item.stock === "number" && item.stock <= 5 && item.stock > 0 && (
+                      <p className="text-xs mt-1" style={{ color: "var(--accent)" }}>
+                        Only {item.stock} left
+                      </p>
+                    )}
+                    {!isPackaging && typeof item.stock === "number" && item.stock === 0 && (
+                      <p className="text-xs mt-1" style={{ color: "var(--destructive)" }}>
+                        Out of stock
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
 
-                  <div className="flex flex-col items-end justify-between">
-                    <button
-                      onClick={() => removeFromCart(item.id)}
-                      className="text-3xl leading-none px-1"
-                      style={{ color: "var(--foreground)" }}
-                      title="Remove item"
-                    >
-                      ×
-                    </button>
+              return (
+                <div
+                  key={item.id}
+                  className="rounded-2xl p-4 sm:p-5 border"
+                  style={{ background: "var(--background)" }}
+                >
+                  <div className="flex gap-4">
+                    {isPackaging ? (
+                      <div className="flex-1 min-w-0 text-left">{RowInner}</div>
+                    ) : (
+                      <button
+                        onClick={() => handleOpenProduct(item)}
+                        className="flex-1 min-w-0 text-left"
+                        title="Open product"
+                        type="button"
+                      >
+                        {RowInner}
+                      </button>
+                    )}
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col items-end justify-between">
                       <button
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="w-10 h-10 rounded-2xl border flex items-center justify-center text-2xl disabled:opacity-50 disabled:cursor-not-allowed"
-                        style={{ borderColor: "var(--border)", color: "var(--foreground)", background: "var(--background)" }}
+                        type="button"
+                        onClick={() => removeFromCart(item.id)}
+                        className="text-3xl leading-none px-1"
+                        style={{ color: "var(--foreground)" }}
+                        title="Remove item"
                       >
-                        −
+                        ×
                       </button>
-                      <span className="text-2xl font-medium w-6 text-center" style={{ color: "var(--foreground)" }}>{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        disabled={typeof item.stock === "number" && item.quantity >= item.stock}
-                        className="w-10 h-10 rounded-2xl flex items-center justify-center text-2xl disabled:opacity-50 disabled:cursor-not-allowed"
-                        style={{ background: "var(--foreground)", color: "var(--background)" }}
-                      >
-                        +
-                      </button>
+
+                      {isPackaging ? (
+                        <span className="text-2xl font-medium mt-auto" style={{ color: "var(--foreground-muted)" }}>
+                          ×{item.quantity}
+                        </span>
+                      ) : (
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            className="w-10 h-10 rounded-2xl border flex items-center justify-center text-2xl disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{ borderColor: "var(--border)", color: "var(--foreground)", background: "var(--background)" }}
+                          >
+                            −
+                          </button>
+                          <span className="text-2xl font-medium w-6 text-center" style={{ color: "var(--foreground)" }}>
+                            {item.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            disabled={typeof item.stock === "number" && item.quantity >= item.stock}
+                            className="w-10 h-10 rounded-2xl flex items-center justify-center text-2xl disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{ background: "var(--foreground)", color: "var(--background)" }}
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Order Summary */}

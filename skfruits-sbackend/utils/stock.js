@@ -35,6 +35,7 @@ export async function deductStockForOrder(tx, items) {
   const key = (item) => `${item.productId}|${item.sizeId ?? ""}|${item.selectedWeight ?? ""}`;
   const byVariant = new Map();
   for (const item of items) {
+    if (item.skipStockDeduction) continue;
     const qty = Math.max(0, Number(item.quantity) || 0);
     if (!qty || !item.productId) continue;
     const k = key(item);
@@ -122,6 +123,7 @@ export async function validateStockForItems(items) {
   const key = (item) => `${item.productId}|${item.sizeId ?? ""}|${item.selectedWeight ?? ""}`;
   const byVariant = new Map();
   for (const item of items) {
+    if (item.skipStockDeduction) continue;
     const qty = Math.max(0, Number(item.quantity) || 0);
     if (!qty || !item.productId) continue;
     const k = key(item);

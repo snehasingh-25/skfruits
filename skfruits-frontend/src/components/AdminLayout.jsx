@@ -7,6 +7,7 @@ const SIDEBAR_ITEMS = [
   { id: "seasonal", label: "Seasonal", path: "/admin/dashboard", search: "?tab=seasonal" },
   { id: "occasions", label: "Exotic", path: "/admin/dashboard", search: "?tab=occasions" },
   { id: "banners", label: "Banners", path: "/admin/dashboard", search: "?tab=banners" },
+  { id: "baskets", label: "Fruit Baskets", path: "/admin/dashboard", search: "?tab=baskets" },
   { id: "reels", label: "Reels", path: "/admin/dashboard", search: "?tab=reels" },
   { id: "orders", label: "Orders", path: "/admin/orders" },
   { id: "drivers", label: "Drivers", path: "/admin/drivers" },

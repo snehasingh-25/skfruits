@@ -172,6 +172,45 @@ export function CartProvider({ children }) {
   const getCartTotal = () => cartItems.reduce((sum, item) => sum + (item.subtotal || 0), 0);
   const getCartCount = () => cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
 
+  /**
+   * Add a personalized fruit basket: all fruit lines + packaging fee (server validates basket + stock).
+   * @param {{ fruitBasketId: number, items: Array<{ productId: number, quantity: number, selectedWeight?: string|null, productSizeId?: number|null }> }} payload
+   */
+  const addFruitBasketBundleToCart = useCallback(
+    async (payload) => {
+      const sessionId = getStoredSessionId();
+      const headers = { "Content-Type": "application/json" };
+      if (sessionId) headers["X-Cart-Session-Id"] = sessionId;
+      const auth = getAuthHeaders();
+      if (auth.Authorization) headers.Authorization = auth.Authorization;
+
+      try {
+        const res = await fetch(`${API}/cart/fruit-basket`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(payload),
+          credentials: "include",
+        });
+        const data = await res.json();
+        const newSessionId = res.headers.get("X-Cart-Session-Id") || data.sessionId;
+        if (newSessionId) setStoredSessionId(newSessionId);
+
+        if (!res.ok) {
+          toast.error(data.error || "Could not add fruit basket to cart");
+          return false;
+        }
+        setCartItems(Array.isArray(data.items) ? data.items : []);
+        toast.success("Fruit basket added to cart");
+        return true;
+      } catch (err) {
+        console.error("addFruitBasketBundleToCart:", err);
+        toast.error("Could not add fruit basket to cart");
+        return false;
+      }
+    },
+    [getAuthHeaders, toast]
+  );
+
   const mergeCart = useCallback(async () => {
     const guestSessionId = getStoredSessionId();
     const headers = { "Content-Type": "application/json" };
@@ -208,6 +247,7 @@ export function CartProvider({ children }) {
         getCartCount,
         refreshCart: fetchCart,
         mergeCart,
+        addFruitBasketBundleToCart,
       }}
     >
       {children}

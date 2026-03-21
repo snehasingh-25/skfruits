@@ -5,6 +5,7 @@ import { useToast } from "../context/ToastContext";
 import { useCart } from "../context/CartContext";
 import { API } from "../api";
 import DriverInfo from "../components/DriverInfo";
+import { isFruitBasketPackagingLine, orderContainsFruitBasket } from "../utils/fruitBasketOrder";
 
 const STEPS = ["Processing", "Confirmed", "Out for Delivery", "Delivered"];
 
@@ -115,7 +116,9 @@ export default function OrderDetails() {
     if (!order?.items?.length || reordering) return;
     setReordering(true);
     let added = 0;
+    const hadFruitBasket = orderContainsFruitBasket(order.items);
     for (const item of order.items) {
+      if (isFruitBasketPackagingLine(item)) continue;
       try {
         const productRes = await fetch(`${API}/products/${item.productId}`);
         if (!productRes.ok) continue;
@@ -129,7 +132,11 @@ export default function OrderDetails() {
     }
     setReordering(false);
     if (added > 0) {
-      toast.success(`Added ${added} item(s) to cart`);
+      if (hadFruitBasket) {
+        toast.success(`Added ${added} item(s) to cart. Rebuild your basket style at Fruit Basket — packaging was skipped.`, { duration: 4200 });
+      } else {
+        toast.success(`Added ${added} item(s) to cart`);
+      }
       navigate("/cart");
     } else {
       toast.error("Could not add items to cart");
@@ -278,6 +285,17 @@ export default function OrderDetails() {
         {/* Items */}
         <div className="rounded-xl border p-6 mb-8" style={{ borderColor: "var(--border)", background: "var(--background)" }}>
           <h2 className="text-sm font-semibold uppercase tracking-wide mb-4" style={{ color: "var(--muted)" }}>Items</h2>
+          {orderContainsFruitBasket(order.items) && (
+            <div
+              className="mb-4 rounded-xl px-4 py-3 text-sm flex flex-wrap items-center gap-2"
+              style={{ background: "var(--secondary)", border: "1px solid var(--border)", color: "var(--foreground)" }}
+            >
+              <span className="text-lg" aria-hidden>🧺</span>
+              <span>
+                This order includes a <strong>personalized fruit basket</strong> (fruits + basket packaging below).
+              </span>
+            </div>
+          )}
           <ul className="space-y-4">
             {order.items?.map((item, idx) => (
               <li key={idx} className="flex gap-4 py-3 border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
@@ -285,7 +303,14 @@ export default function OrderDetails() {
                   {item.image ? <img src={item.image} alt={item.name} className="w-full h-full object-cover" /> : <span className="text-xs" style={{ color: "var(--muted)" }}>—</span>}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium truncate" style={{ color: "var(--foreground)" }}>{item.name}</p>
+                  <p className="font-medium truncate" style={{ color: "var(--foreground)" }}>
+                    {item.name}
+                    {isFruitBasketPackagingLine(item) && (
+                      <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full align-middle" style={{ background: "var(--accent)", color: "var(--foreground)" }}>
+                        Basket
+                      </span>
+                    )}
+                  </p>
                   <p className="text-sm" style={{ color: "var(--muted)" }}>{item.sizeLabel} × {item.quantity}</p>
                 </div>
                 <p className="font-semibold" style={{ color: "var(--primary)" }}>₹{Number(item.subtotal).toFixed(2)}</p>

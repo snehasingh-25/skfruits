@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
+import { FruitBasketProvider } from "./context/FruitBasketContext";
 import { ToastProvider } from "./context/ToastContext";
 import { UserAuthProvider } from "./context/UserAuthContext";
 import { WishlistProvider } from "./context/WishlistContext";
@@ -43,6 +44,10 @@ import MyOrders from "./pages/MyOrders";
 import OrderDetails from "./pages/OrderDetails";
 import Wishlist from "./pages/Wishlist";
 import DriverDashboard from "./pages/DriverDashboard";
+import FruitBasketLanding from "./pages/FruitBasketLanding";
+import FruitBasketCreate from "./pages/FruitBasketCreate";
+import FruitBasketFruits from "./pages/FruitBasketFruits";
+import FruitBasketReview from "./pages/FruitBasketReview";
 
 function RedirectOccasionToExotic() {
   const { slug } = useParams();
@@ -78,6 +83,10 @@ function PublicLayout() {
         <Route path="/orders/:id" element={<OrderDetails />} />
         <Route path="/driver" element={<DriverProtectedRoute><DriverDashboard /></DriverProtectedRoute>} />
         <Route path="/search" element={<Search />} />
+        <Route path="/fruit-basket" element={<FruitBasketLanding />} />
+        <Route path="/fruit-basket/create" element={<FruitBasketCreate />} />
+        <Route path="/fruit-basket/create/fruits" element={<FruitBasketFruits />} />
+        <Route path="/fruit-basket/create/review" element={<FruitBasketReview />} />
         {/* Redirect old paths to new (name-matched) paths */}
         <Route path="/occasion" element={<Navigate to="/exotic" replace />} />
         <Route path="/occasion/:slug" element={<RedirectOccasionToExotic />} />
@@ -99,6 +108,7 @@ export default function App() {
           <WishlistProvider>
           <RecentlyViewedProvider>
           <CartProvider>
+          <FruitBasketProvider>
           <BrowserRouter>
             <ScrollToTop />
             <ToastViewport />
@@ -128,6 +138,7 @@ export default function App() {
               <Route path="/*" element={<PublicLayout />} />
             </Routes>
           </BrowserRouter>
+          </FruitBasketProvider>
           </CartProvider>
           </RecentlyViewedProvider>
           </WishlistProvider>

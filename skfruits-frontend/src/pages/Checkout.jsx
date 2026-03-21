@@ -7,6 +7,7 @@ import { API } from "../api";
 import AddressForm from "../components/AddressForm";
 import LocationPicker from "../components/LocationPicker";
 import { CART_SESSION_KEY } from "../context/CartContext";
+import { getPendingOrderNotes, clearPendingOrderNotes } from "../utils/orderNotesStorage";
 
 const RAZORPAY_SCRIPT_URL = "https://checkout.razorpay.com/v1/checkout.js";
 const PAYMENT_METHOD_ONLINE = "online";
@@ -170,10 +171,14 @@ export default function Checkout() {
   };
 
   const getCustomerDetails = () => {
+    const pendingNotes = getPendingOrderNotes();
+    const withNotes = (base) =>
+      pendingNotes ? { ...base, notes: pendingNotes } : base;
+
     if (isAuthenticated && selectedAddressId && addresses.length) {
       const addr = addresses.find((a) => a.id === selectedAddressId);
       if (addr) {
-        return {
+        return withNotes({
           name: addr.fullName,
           phone: addr.phone,
           address: addr.addressLine,
@@ -183,10 +188,10 @@ export default function Checkout() {
           email: form.email?.trim() || undefined,
           latitude: addr.latitude ?? undefined,
           longitude: addr.longitude ?? undefined,
-        };
+        });
       }
     }
-    return {
+    return withNotes({
       name: form.name.trim(),
       phone: form.phone.trim(),
       address: form.address.trim(),
@@ -196,7 +201,7 @@ export default function Checkout() {
       email: form.email?.trim() || undefined,
       latitude: form.latitude ?? undefined,
       longitude: form.longitude ?? undefined,
-    };
+    });
   };
 
   const saveAddressToAccount = async (details) => {
@@ -285,6 +290,7 @@ export default function Checkout() {
         if (isAuthenticated && usedManualFormRef.current && saveAddressForNextTime) {
           await saveAddressToAccount(customerDetails);
         }
+        clearPendingOrderNotes();
         navigate(`/order-success?orderId=${data.orderId}`, { replace: true });
       } catch (err) {
         console.error(err);
@@ -399,6 +405,7 @@ export default function Checkout() {
             }
             paymentInProgressRef.current = false;
             setSubmitting(false);
+            clearPendingOrderNotes();
             navigate(`/order-success?orderId=${verifyData.orderId}`, { replace: true });
           } catch (err) {
             console.error(err);

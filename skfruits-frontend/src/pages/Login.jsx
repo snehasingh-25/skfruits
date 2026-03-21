@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useUserAuth } from "../context/UserAuthContext";
 import { useCart } from "../context/CartContext";
 import { API } from "../api";
@@ -13,6 +13,15 @@ export default function Login() {
   const { login } = useUserAuth();
   const { mergeCart } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const getSafeReturnPath = () => {
+    const fromState = location.state?.from;
+    const q = new URLSearchParams(location.search).get("returnTo");
+    const raw = typeof fromState === "string" ? fromState : q;
+    if (typeof raw !== "string" || !raw.startsWith("/") || raw.startsWith("//")) return "/";
+    return raw;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,7 +40,7 @@ export default function Login() {
         return;
       }
       await mergeCart();
-      navigate("/", { replace: true });
+      navigate(getSafeReturnPath(), { replace: true });
     } else {
       setError(result.error || "Login failed");
     }

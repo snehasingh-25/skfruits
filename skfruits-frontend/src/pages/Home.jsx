@@ -212,18 +212,15 @@ export default function Home() {
   // Check if any data is still loading
   const isInitialLoad = loading.categories || loading.occasions || loading.products || loading.reels || loading.banners;
 
-  // Production-safe store photos.
-  // Expect real images to be placed into `public/` as:
-  //  - /store-1.png ... /store-6.png
-  // If they aren't present, we gracefully fall back to existing public assets.
+  // Store photos in `public/`: shop1.jpeg … shop6.jpeg. Fallbacks if a file is missing.
   const storeImages = useMemo(
     () => [
-      { src: "/store-1.png", fallbackSrc: "/hero1.png", alt: "Store entrance" },
-      { src: "/store-2.png", fallbackSrc: "/hero2.png", alt: "Wood shelf display" },
-      { src: "/store-3.png", fallbackSrc: "/hero.png", alt: "Fresh baskets" },
-      { src: "/store-4.png", fallbackSrc: "/model.png", alt: "Fruit counter" },
-      { src: "/store-5.png", fallbackSrc: "/mins.png", alt: "Shelf details" },
-      { src: "/store-6.png", fallbackSrc: "/logo.jpeg", alt: "Visit the store" },
+      { src: "/shop1.jpeg", fallbackSrc: "/hero1.png", alt: "Store entrance" },
+      { src: "/shop2.jpeg", fallbackSrc: "/hero2.png", alt: "Wood shelf display" },
+      { src: "/shop3.jpeg", fallbackSrc: "/hero.png", alt: "Fresh baskets" },
+      { src: "/shop4.jpeg", fallbackSrc: "/model.png", alt: "Fruit counter" },
+      { src: "/shop5.jpeg", fallbackSrc: "/mins.png", alt: "Shelf details" },
+      { src: "/shop6.jpeg", fallbackSrc: "/logo.jpeg", alt: "Visit the store" },
     ],
     []
   );
@@ -396,7 +393,7 @@ export default function Home() {
                       </div>
 
                       {/* CTA */}
-                      <div className="mt-7 flex justify-center sm:justify-start">
+                      <div className="mt-7 flex flex-col sm:flex-row flex-wrap justify-center sm:justify-start gap-3">
                         <Link
                           to="/shop"
                           className="inline-flex items-center justify-center rounded-full px-6 py-3 font-semibold transition-all"
@@ -414,6 +411,19 @@ export default function Home() {
                           }}
                         >
                           Shop Now
+                        </Link>
+                        <Link
+                          to="/fruit-basket"
+                          className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 font-semibold transition-all border-2"
+                          style={{
+                            borderColor: "rgba(0,0,0,0.12)",
+                            color: "rgba(60,40,30,0.95)",
+                            backgroundColor: "rgba(255,255,255,0.55)",
+                            boxShadow: "0 8px 20px rgba(0,0,0,0.06)",
+                          }}
+                        >
+                          <span aria-hidden>🧺</span>
+                          Build a fruit basket
                         </Link>
                       </div>
                     </div>
@@ -467,6 +477,37 @@ export default function Home() {
                 </div>
               </div>
             </div>
+          </section>
+
+          {/* Phase 5: Fruit basket discovery strip */}
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2" aria-label="Personalized fruit baskets">
+            <Link
+              to="/fruit-basket"
+              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[var(--radius-2xl)] border px-5 py-4 sm:px-8 sm:py-5 transition-all hover:shadow-md"
+              style={{
+                borderColor: "var(--border)",
+                background: "linear-gradient(135deg, rgba(252,230,240,0.9) 0%, rgba(245,230,211,0.95) 100%)",
+                boxShadow: "var(--shadow-soft)",
+              }}
+            >
+              <div className="text-left">
+                <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--primary)" }}>
+                  New
+                </p>
+                <h2 className="font-display text-xl sm:text-2xl font-bold" style={{ color: "var(--foreground)" }}>
+                  Personalized fruit baskets
+                </h2>
+                <p className="text-sm mt-1 max-w-xl" style={{ color: "var(--foreground-muted)" }}>
+                  Pick a basket, choose your fruits, and checkout — save your favourite combos when you&apos;re logged in.
+                </p>
+              </div>
+              <span
+                className="inline-flex items-center justify-center rounded-full px-6 py-3 font-semibold text-sm sm:text-base flex-shrink-0 self-start sm:self-center"
+                style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
+              >
+                Start building →
+              </span>
+            </Link>
           </section>
 
           {/* Shop By Category Section */}

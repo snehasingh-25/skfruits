@@ -101,6 +101,22 @@ export const uploadReelFiles = multer({
   },
 });
 
+// Basket images: emptyImage + filledImage (both optional)
+export const uploadBasketImages = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only image files are allowed"), false);
+    }
+  },
+}).fields([
+  { name: "emptyImage", maxCount: 1 },
+  { name: "filledImage", maxCount: 1 },
+]);
+
 // Product media: images (field "images") + videos (field "videos")
 export const uploadProductMedia = multer({
   storage: storage,

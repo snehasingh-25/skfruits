@@ -4,6 +4,7 @@ import { useUserAuth } from "../context/UserAuthContext";
 import { useToast } from "../context/ToastContext";
 import { API } from "../api";
 import DriverInfo from "../components/DriverInfo";
+import { orderContainsFruitBasket } from "../utils/fruitBasketOrder";
 
 function OrderCardSkeleton() {
   return (
@@ -156,8 +157,17 @@ export default function MyOrders() {
                 <div className="p-6">
                   <div className="flex flex-wrap justify-between items-start gap-4 mb-4">
                     <div>
-                      <p className="text-sm font-mono font-medium" style={{ color: "var(--muted)" }}>
-                        Order #{order.id}
+                      <p className="text-sm font-mono font-medium flex flex-wrap items-center gap-2" style={{ color: "var(--muted)" }}>
+                        <span>Order #{order.id}</span>
+                        {orderContainsFruitBasket(order.items) && (
+                          <span
+                            className="text-xs font-semibold px-2 py-0.5 rounded-full normal-case"
+                            style={{ background: "var(--accent)", color: "var(--foreground)" }}
+                            title="Includes personalized fruit basket"
+                          >
+                            🧺 Fruit basket
+                          </span>
+                        )}
                       </p>
                       <p className="text-sm mt-0.5" style={{ color: "var(--foreground)" }}>
                         {formatDate(order.createdAt)}
