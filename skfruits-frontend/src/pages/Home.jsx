@@ -267,8 +267,8 @@ export default function Home() {
                 style={{ background: "radial-gradient(circle at 70% 30%, #D2B48C 0%, transparent 60%)" }}
               />
 
-              <div className="relative z-10 w-full flex flex-row items-center justify-between gap-4 md:gap-6 px-6 sm:px-10 md:px-14 py-3 h-full">
-                <div className="flex flex-1 min-w-0 flex-col gap-3 pr-1 md:pr-3">
+              <div className="relative z-10 w-full flex flex-row items-center justify-between gap-3 md:gap-4 px-6 sm:px-10 md:px-14 py-3 h-full">
+                <div className="flex flex-1 min-w-0 flex-col gap-2.5 pr-1 md:pr-2">
                   <div
                     className="inline-block px-3 py-1 rounded w-fit text-[9px] tracking-[0.2em] uppercase font-bold"
                     style={{ border: "1px solid rgba(210,180,140,0.9)", color: "var(--primary)" }}
@@ -285,36 +285,42 @@ export default function Home() {
                     Delivered to You
                   </h1>
 
-                  <p className="text-sm md:text-base max-w-xs md:max-w-md leading-relaxed opacity-90" style={{ color: "var(--text-muted)" }}>
-                    Discover the freshest seasonal selection. Curated from local sustainable orchards and delivered directly to your doorstep.
-                  </p>
-
-                  <div className="mt-1">
+                  <div className="relative mt-1 w-fit">
+                    <div
+                      className="absolute -inset-2 rounded-md pointer-events-none"
+                      style={{ background: "radial-gradient(circle, rgba(210,180,140,0.26) 0%, rgba(210,180,140,0) 75%)" }}
+                      aria-hidden
+                    />
                     <Link
                       to="/shop"
-                      className="inline-flex items-center gap-3 py-3 px-8 uppercase tracking-widest text-[10px] font-bold transition-all duration-300"
+                      className="group relative inline-flex items-center gap-3 py-3.5 px-9 uppercase tracking-[0.18em] text-[11px] font-bold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-12px_rgba(74,55,40,0.52)] active:translate-y-0"
                       style={{
                         backgroundColor: "var(--primary)",
                         color: "var(--primary-foreground)",
-                        boxShadow: "0 10px 30px -5px rgba(74, 55, 40, 0.08)",
+                        boxShadow: "0 14px 32px -10px rgba(74, 55, 40, 0.38)",
                         borderRadius: 4,
                       }}
                     >
-                      Get Fresh Fruits in 30 mins
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                      Shop Fresh Now
+                      <svg className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </Link>
                   </div>
+
+                  <p className="text-xs md:text-sm max-w-xs md:max-w-md leading-relaxed opacity-80" style={{ color: "var(--text-muted)" }}>
+                    30-minute delivery on handpicked seasonal fruits.
+                  </p>
                 </div>
 
                 <div className="hidden md:flex relative h-full w-[400px] lg:w-[460px] items-center justify-end ml-1 lg:ml-2">
                   <div
                     className="absolute right-0 w-44 h-44 lg:w-52 lg:h-52 rounded-sm overflow-hidden transition-all duration-700"
                     style={{
-                      boxShadow: "0 10px 30px -5px rgba(74, 55, 40, 0.08)",
+                      boxShadow: "0 8px 24px -10px rgba(74, 55, 40, 0.20)",
                       border: "1px solid rgba(141, 110, 99, 0.15)",
-                      filter: "grayscale(20%)",
+                      filter: "saturate(0.84) contrast(0.9) brightness(0.97)",
+                      opacity: 0.92,
                     }}
                   >
                     <img alt="Fresh oranges" className="w-full h-full object-cover" src="/shop4.png" loading="lazy" decoding="async" fetchPriority="low" />
@@ -322,8 +328,9 @@ export default function Home() {
                   <div
                     className="absolute bottom-4 right-24 lg:right-32 w-36 h-36 lg:w-44 lg:h-44 rounded-sm overflow-hidden rotate-2 z-20"
                     style={{
-                      boxShadow: "0 10px 30px -5px rgba(74, 55, 40, 0.08)",
+                      boxShadow: "0 10px 24px -10px rgba(74, 55, 40, 0.24)",
                       border: "4px solid var(--background)",
+                      filter: "saturate(0.9) contrast(0.94)",
                     }}
                   >
                     <img alt="Fresh berries" className="w-full h-full object-cover" src="/shop1.jpeg" loading="lazy" decoding="async" fetchPriority="low" />
@@ -331,8 +338,10 @@ export default function Home() {
                   <div
                     className="absolute top-8 right-[12.5rem] lg:top-6 lg:right-64 w-24 h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden -rotate-3 z-10"
                     style={{
-                      boxShadow: "0 10px 30px -5px rgba(74, 55, 40, 0.08)",
-                      border: "2px solid rgba(210,180,140,0.3)",
+                      boxShadow: "0 8px 20px -10px rgba(74, 55, 40, 0.22)",
+                      border: "2px solid rgba(210,180,140,0.24)",
+                      filter: "saturate(0.84) contrast(0.92)",
+                      opacity: 0.9,
                     }}
                   >
                     <img alt="Leafy greens" className="w-full h-full object-cover" src="/shop1.jpeg" loading="lazy" decoding="async" fetchPriority="low" />
