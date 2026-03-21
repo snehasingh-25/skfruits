@@ -40,12 +40,6 @@ export default function Navbar() {
   const [allProducts, setAllProducts] = useState([]);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window === "undefined") return false;
-    const stored = localStorage.getItem("skfruits-theme");
-    if (stored === "dark" || stored === "light") return stored === "dark";
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  });
   const typedElementRef = useRef(null);
   const typedInstanceRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -53,17 +47,12 @@ export default function Navbar() {
 
   const isActive = (path) => location.pathname === path;
 
-  // Apply theme to document and persist
+  // Force light theme for now while keeping dark styles available for later.
   useEffect(() => {
     const root = document.documentElement;
-    if (isDark) {
-      root.classList.add("dark");
-      localStorage.setItem("skfruits-theme", "dark");
-    } else {
-      root.classList.remove("dark");
-      localStorage.setItem("skfruits-theme", "light");
-    }
-  }, [isDark]);
+    root.classList.remove("dark");
+    localStorage.setItem("skfruits-theme", "light");
+  }, []);
 
   const navItems = [
     { path: "/", label: "Home" },
