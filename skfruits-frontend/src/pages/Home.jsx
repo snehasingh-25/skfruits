@@ -267,17 +267,17 @@ export default function Home() {
                 style={{ background: "radial-gradient(circle at 70% 30%, #D2B48C 0%, transparent 60%)" }}
               />
 
-              <div className="relative z-10 w-full flex flex-row items-center justify-between px-6 sm:px-10 md:px-12 py-3 h-full">
-                <div className="flex flex-col gap-2.5 max-w-xl lg:max-w-2xl">
+              <div className="relative z-10 w-full flex flex-row items-center justify-between gap-4 md:gap-6 px-6 sm:px-10 md:px-14 py-3 h-full">
+                <div className="flex flex-1 min-w-0 flex-col gap-3 pr-1 md:pr-3">
                   <div
-                    className="inline-block px-2.5 py-1 rounded w-fit text-[8px] md:text-[9px] tracking-[0.18em] uppercase font-bold"
+                    className="inline-block px-3 py-1 rounded w-fit text-[9px] tracking-[0.2em] uppercase font-bold"
                     style={{ border: "1px solid rgba(210,180,140,0.9)", color: "var(--primary)" }}
                   >
                     New Arrivals
                   </div>
 
                   <h1
-                    className="font-display font-bold text-2xl md:text-3xl lg:text-4xl leading-tight tracking-tight"
+                    className="font-display font-bold text-3xl md:text-5xl lg:text-6xl leading-[0.95] tracking-tight"
                     style={{ color: "var(--primary)" }}
                   >
                     Nurtured by Nature,
@@ -285,14 +285,14 @@ export default function Home() {
                     Delivered to You
                   </h1>
 
-                  <p className="text-xs sm:text-sm md:text-sm lg:text-base max-w-xs md:max-w-sm leading-relaxed opacity-90" style={{ color: "var(--text-muted)" }}>
+                  <p className="text-sm md:text-base max-w-xs md:max-w-md leading-relaxed opacity-90" style={{ color: "var(--text-muted)" }}>
                     Discover the freshest seasonal selection. Curated from local sustainable orchards and delivered directly to your doorstep.
                   </p>
 
-                  <div className="mt-1.5">
+                  <div className="mt-1">
                     <Link
                       to="/shop"
-                      className="inline-flex items-center gap-2.5 py-2.5 px-6 md:px-7 uppercase tracking-widest text-[9px] font-bold transition-all duration-300"
+                      className="inline-flex items-center gap-3 py-3 px-8 uppercase tracking-widest text-[10px] font-bold transition-all duration-300"
                       style={{
                         backgroundColor: "var(--primary)",
                         color: "var(--primary-foreground)",
@@ -300,7 +300,7 @@ export default function Home() {
                         borderRadius: 4,
                       }}
                     >
-                      Shop the Season
+                      Get Fresh Fruits in 30 mins
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
@@ -308,7 +308,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="hidden md:flex relative h-full w-[390px] lg:w-[450px] items-center justify-end">
+                <div className="hidden md:flex relative h-full w-[400px] lg:w-[460px] items-center justify-end ml-1 lg:ml-2">
                   <div
                     className="absolute right-0 w-44 h-44 lg:w-52 lg:h-52 rounded-sm overflow-hidden transition-all duration-700"
                     style={{
@@ -326,7 +326,7 @@ export default function Home() {
                       border: "4px solid var(--background)",
                     }}
                   >
-                    <img alt="Fresh berries" className="w-full h-full object-cover" src="/shop3.jpeg" loading="lazy" decoding="async" fetchPriority="low" />
+                    <img alt="Fresh berries" className="w-full h-full object-cover" src="/shop1.jpeg" loading="lazy" decoding="async" fetchPriority="low" />
                   </div>
                   <div
                     className="absolute top-8 right-[12.5rem] lg:top-6 lg:right-64 w-24 h-24 lg:w-28 lg:h-28 rounded-full overflow-hidden -rotate-3 z-10"
