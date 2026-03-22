@@ -491,7 +491,7 @@ export default function Home() {
 
                 <button
                   onClick={() => scrollCategories("right")}
-                  className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-10 rounded-full p-2 sm:p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
+                  className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-10 rounded-full p-1 sm:p-2 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border active:scale-95"
                   style={{
                     backgroundColor: "rgba(245,230,211,0.78)",
                     borderColor: "rgba(107,62,38,0.25)",
