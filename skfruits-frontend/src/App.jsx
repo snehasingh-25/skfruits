@@ -59,7 +59,7 @@ function PublicLayout() {
   return (
     <>
       <Navbar />
-      <div className="pb-[76px] md:pb-0">
+      <div className="pb-19 md:pb-0">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Home />} />
@@ -98,6 +98,7 @@ function PublicLayout() {
         </Routes>
       </div>
       <Footer />
+      <div className="h-19 md:hidden" aria-hidden />
       <BottomMenuBar />
       {/* <ChatBot /> */}
     </>

@@ -24,7 +24,7 @@ export default function WhatsAppFloatingButton() {
       aria-label="Order on WhatsApp"
       title="Order on WhatsApp"
       onClick={() => window.open(buildHref(), "_blank", "noopener,noreferrer")}
-      className="fixed bottom-6 right-6 z-50 w-[52px] h-[52px] md:w-[56px] md:h-[56px] rounded-full shadow-2xl transition-all duration-300 hover:-translate-y-1 active:scale-[0.98] flex items-center justify-center"
+      className="fixed bottom-23 md:bottom-6 right-6 z-50 w-[52px] h-[52px] md:w-[56px] md:h-[56px] rounded-full shadow-2xl transition-all duration-300 hover:-translate-y-1 active:scale-[0.98] flex items-center justify-center"
       style={{
         backgroundColor: "var(--accent)",
         color: "white",

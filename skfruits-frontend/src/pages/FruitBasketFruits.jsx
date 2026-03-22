@@ -85,7 +85,7 @@ export default function FruitBasketFruits() {
   const total = getBasketTotal();
 
   return (
-    <div className="min-h-screen pb-24" style={{ backgroundColor: "var(--background)" }}>
+    <div className="min-h-screen pb-40 sm:pb-24" style={{ backgroundColor: "var(--background)" }}>
       <div className="sticky top-0 z-10 px-4 py-3 border-b" style={{ backgroundColor: "var(--background)", borderColor: "var(--border)" }}>
         <div className="max-w-6xl mx-auto flex items-center gap-3">
           <Link
@@ -209,7 +209,7 @@ export default function FruitBasketFruits() {
 
       {/* Mobile sticky bottom bar */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-20 px-4 py-3 border-t sm:hidden"
+        className="fixed bottom-19 left-0 right-0 z-50 px-4 py-3 border-t sm:hidden"
         style={{ backgroundColor: "var(--card-white)", borderColor: "var(--border)", boxShadow: "0 -4px 20px rgba(0,0,0,0.08)" }}
       >
         <div className="flex items-center justify-between max-w-6xl mx-auto">
