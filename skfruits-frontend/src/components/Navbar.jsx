@@ -230,6 +230,14 @@ export default function Navbar() {
             </div>
 
             {/* Search (desktop) */}
+            
+
+          </div>
+
+          {/* Right-side actions */}
+          <div className="flex items-center gap-3 ml-3 lg:ml-4 shrink-0">
+
+            {/* User auth: Login/Signup or user menu */}
             <div className="relative hidden md:block">
               <div className="relative">
                 <input
@@ -392,13 +400,6 @@ export default function Navbar() {
                 )}
               </div>
             </div>
-
-          </div>
-
-          {/* Right-side actions */}
-          <div className="flex items-center gap-3 ml-3 lg:ml-4 shrink-0">
-
-            {/* User auth: Login/Signup or user menu */}
             <div className="hidden md:flex items-center gap-2" ref={userMenuRef}>
               {isAuthenticated && user ? (
                 <div className="relative">

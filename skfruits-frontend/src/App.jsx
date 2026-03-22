@@ -7,6 +7,7 @@ import { UserAuthProvider } from "./context/UserAuthContext";
 import { WishlistProvider } from "./context/WishlistContext";
 import { RecentlyViewedProvider } from "./context/RecentlyViewedContext";
 import Navbar from "./components/Navbar";
+import BottomMenuBar from "./components/BottomMenuBar";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DriverProtectedRoute from "./components/DriverProtectedRoute";
@@ -58,43 +59,46 @@ function PublicLayout() {
   return (
     <>
       <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/shop" element={<Home />} />
-        <Route path="/categories" element={<CategoriesPage />} />
-        <Route path="/category/:slug" element={<CategoriesPage />} />
-        <Route path="/seasonal" element={<Seasonal />} />
-        <Route path="/seasonal/:slug" element={<Seasonal />} />
-        <Route path="/exotic" element={<Occasion />} />
-        <Route path="/exotic/:slug" element={<Occasion />} />
-        <Route path="/organic" element={<NewArrivals />} />
-        <Route path="/gift-boxes" element={<About />} />
-        <Route path="/blog" element={<Contact />} />
-        <Route path="/product/:id" element={<ProductDetail />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/order-success" element={<OrderSuccess />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/auth/callback" element={<OAuthCallback />} />
-        <Route path="/profile/addresses" element={<ProfileAddresses />} />
-        <Route path="/profile/orders" element={<MyOrders />} />
-        <Route path="/profile/wishlist" element={<Wishlist />} />
-        <Route path="/orders/:id" element={<OrderDetails />} />
-        <Route path="/driver" element={<DriverProtectedRoute><DriverDashboard /></DriverProtectedRoute>} />
-        <Route path="/search" element={<Search />} />
-        <Route path="/fruit-basket" element={<FruitBasketLanding />} />
-        <Route path="/fruit-basket/create" element={<FruitBasketCreate />} />
-        <Route path="/fruit-basket/create/fruits" element={<FruitBasketFruits />} />
-        <Route path="/fruit-basket/create/review" element={<FruitBasketReview />} />
-        {/* Redirect old paths to new (name-matched) paths */}
-        <Route path="/occasion" element={<Navigate to="/exotic" replace />} />
-        <Route path="/occasion/:slug" element={<RedirectOccasionToExotic />} />
-        <Route path="/new" element={<Navigate to="/organic" replace />} />
-        <Route path="/about" element={<Navigate to="/gift-boxes" replace />} />
-        <Route path="/contact" element={<Navigate to="/blog" replace />} />
-      </Routes>
+      <div className="pb-[76px] md:pb-0">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/shop" element={<Home />} />
+          <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/category/:slug" element={<CategoriesPage />} />
+          <Route path="/seasonal" element={<Seasonal />} />
+          <Route path="/seasonal/:slug" element={<Seasonal />} />
+          <Route path="/exotic" element={<Occasion />} />
+          <Route path="/exotic/:slug" element={<Occasion />} />
+          <Route path="/organic" element={<NewArrivals />} />
+          <Route path="/gift-boxes" element={<About />} />
+          <Route path="/blog" element={<Contact />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/auth/callback" element={<OAuthCallback />} />
+          <Route path="/profile/addresses" element={<ProfileAddresses />} />
+          <Route path="/profile/orders" element={<MyOrders />} />
+          <Route path="/profile/wishlist" element={<Wishlist />} />
+          <Route path="/orders/:id" element={<OrderDetails />} />
+          <Route path="/driver" element={<DriverProtectedRoute><DriverDashboard /></DriverProtectedRoute>} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/fruit-basket" element={<FruitBasketLanding />} />
+          <Route path="/fruit-basket/create" element={<FruitBasketCreate />} />
+          <Route path="/fruit-basket/create/fruits" element={<FruitBasketFruits />} />
+          <Route path="/fruit-basket/create/review" element={<FruitBasketReview />} />
+          {/* Redirect old paths to new (name-matched) paths */}
+          <Route path="/occasion" element={<Navigate to="/exotic" replace />} />
+          <Route path="/occasion/:slug" element={<RedirectOccasionToExotic />} />
+          <Route path="/new" element={<Navigate to="/organic" replace />} />
+          <Route path="/about" element={<Navigate to="/gift-boxes" replace />} />
+          <Route path="/contact" element={<Navigate to="/blog" replace />} />
+        </Routes>
+      </div>
       <Footer />
+      <BottomMenuBar />
       {/* <ChatBot /> */}
     </>
   );
