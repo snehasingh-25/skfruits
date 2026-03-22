@@ -513,9 +513,9 @@ export default function Home() {
               to="/fruit-basket"
               className="flex flex-row items-center justify-between gap-3 sm:gap-4 rounded-[var(--radius-xl)] border px-5 py-4 sm:px-8 sm:py-2 transition-all hover:shadow-md"
               style={{
-                borderColor: "var(--border)",
-                background: "linear-gradient(135deg, rgb(167 137 87 / 82%) 0%, rgba(245,230,211,0.95) 100%)",
-                boxShadow: "var(--shadow-soft)",
+                borderColor: "rgba(126, 82, 53, 0.26)",
+                background: "linear-gradient(135deg, rgba(248, 229, 201, 0.96) 0%, rgba(238, 210, 173, 0.9) 100%)",
+                boxShadow: "0 10px 24px rgba(92, 57, 34, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.45)",
               }}
             >
               <div className="text-left min-w-0 flex-1 pr-2">
