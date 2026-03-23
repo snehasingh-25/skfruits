@@ -30,6 +30,18 @@ const items = [
     ),
   },
   {
+    key: "basket",
+    label: "Basket",
+    to: "/fruit-basket",
+    isActive: (pathname) => pathname.startsWith("/fruit-basket"),
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.9} d="M3 3h18v2H3V3zm2 2h14l-1.5 10.5c-.2 1.2-1.3 2.1-2.6 2.1H7.1c-1.3 0-2.4-.9-2.6-2.1L5 5z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.9} d="M9 11v5m6-5v5" />
+      </svg>
+    ),
+  },
+  {
     key: "profile",
     label: "Profile",
     toAuth: "/profile/orders",
@@ -73,7 +85,7 @@ export default function BottomMenuBar() {
       }}
       aria-label="Bottom menu"
     >
-      <div className="grid grid-cols-4 h-[68px] px-2">
+      <div className="grid grid-cols-5 h-[68px] px-2">
         {items.map((item) => {
           const active = item.isActive(location.pathname);
           const to = item.key === "profile" ? (isAuthenticated ? item.toAuth : item.toGuest) : item.to;

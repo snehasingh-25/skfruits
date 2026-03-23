@@ -19,6 +19,7 @@ function parseProductImage(product) {
   }
 }
 
+
 function paymentStatus(order) {
   if (order.paymentMethod === "cod") return "COD";
   if (order.razorpayPaymentId) return "Paid";
