@@ -29,10 +29,9 @@ import "leaflet/dist/leaflet.css";
  *   url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
  *   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
  * ──────────────────────────────────────────────────────────────────────── */
-// OpenStreetMap — no API key required, works in production and on mobile
-const TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+const TILE_URL = "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png";
 const TILE_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://stadiamaps.com/">Stadia Maps</a>';
 
 /* ── Fix Leaflet's default marker icon (broken paths in bundlers) ────────── */
 delete L.Icon.Default.prototype._getIconUrl;
