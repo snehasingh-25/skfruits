@@ -73,7 +73,7 @@ export default function CategoryList({ categories, onEdit, onDelete }) {
         <div className="font-semibold" style={{ color: "var(--foreground)" }}>
           {category.name}
         </div>
-        <div className="text-xs" style={{ color: "var(--muted)" }}>
+        <div className="text-xs text-muted">
           Slug: {category.slug}
         </div>
       </div>

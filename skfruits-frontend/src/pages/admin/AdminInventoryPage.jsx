@@ -151,7 +151,7 @@ export default function AdminInventoryPage() {
             className="inline-block h-10 w-10 rounded-full border-2 border-t-transparent animate-spin mx-auto"
             style={{ borderColor: "var(--primary)" }}
           />
-          <p className="mt-4 text-sm" style={{ color: "var(--muted)" }}>
+          <p className="mt-4 text-sm text-muted">
             Loading inventory…
           </p>
         </div>
@@ -204,7 +204,7 @@ export default function AdminInventoryPage() {
                         <span className="font-medium">{row.variantLabel}</span>
                       )}
                       {row.variantType === "single" && (
-                        <span style={{ color: "var(--muted)" }}>Single price</span>
+                        <span className="text-muted">Single price</span>
                       )}
                     </td>
                     <td className="px-4 py-3" style={{ color: "var(--foreground)" }}>

@@ -6,28 +6,21 @@ import { PACKAGING_PRODUCT_NAME } from "../utils/fruitBasketPackagingProduct.js"
 const router = express.Router();
 
 /**
- * GET /home — Single request for homepage: categories, occasions, products, reels, primary banners.
- * Reduces 5 round-trips to 1 when frontend and backend are on localhost (or any network).
+ * GET /home — Single request for homepage: categories, products, reels, primary banners.
  * Cached 5 minutes.
  */
 router.get("/", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
   try {
-    const [categories, occasions, products, reels, banners] = await Promise.all([
+    const [categories, products, reels, banners] = await Promise.all([
       prisma.category.findMany({
         include: { _count: { select: { products: true } } },
         orderBy: [{ order: "asc" }, { name: "asc" }],
-      }),
-      prisma.occasion.findMany({
-        where: { isActive: true },
-        include: { _count: { select: { products: true } } },
-        orderBy: [{ order: "asc" }, { createdAt: "desc" }],
       }),
       prisma.product.findMany({
         where: { name: { not: PACKAGING_PRODUCT_NAME } },
         include: {
           sizes: true,
           categories: { include: { category: true } },
-          occasions: { include: { occasion: true } },
         },
         orderBy: [{ order: "asc" }, { createdAt: "desc" }],
       }),
@@ -65,12 +58,10 @@ router.get("/", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
           })()
         : [],
       categories: p.categories ? p.categories.map((pc) => pc.category) : [],
-      occasions: p.occasions ? p.occasions.map((po) => po.occasion) : [],
     }));
 
     res.json({
       categories,
-      occasions,
       products: parsedProducts,
       reels,
       banners,

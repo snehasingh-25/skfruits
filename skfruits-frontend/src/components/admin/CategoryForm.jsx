@@ -253,7 +253,7 @@ export default function CategoryForm({ category, onSave, onCancel }) {
             style={{ borderColor: "var(--border)", backgroundColor: "var(--input)", color: "var(--foreground)" }}
             min="0"
           />
-          <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Lower order shows first on the website.</p>
+          <p className="text-xs mt-1 text-muted">Lower order shows first on the website.</p>
         </div>
         </div>
         <div>

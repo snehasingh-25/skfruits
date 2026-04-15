@@ -10,8 +10,6 @@ import CategoryList from "../components/admin/CategoryList";
 import MessageList from "../components/admin/MessageList";
 import ReelForm from "../components/admin/ReelForm";
 import ReelList from "../components/admin/ReelList";
-import OccasionForm from "../components/admin/OccasionForm";
-import OccasionList from "../components/admin/OccasionList";
 import SeasonalForm from "../components/admin/SeasonalForm";
 import SeasonalList from "../components/admin/SeasonalList";
 import BannerForm from "../components/admin/BannerForm";
@@ -19,7 +17,7 @@ import BannerList from "../components/admin/BannerList";
 import BasketForm from "../components/admin/BasketForm";
 import BasketList from "../components/admin/BasketList";
 
-const DASHBOARD_TABS = ["products", "categories", "seasonal", "occasions", "banners", "baskets", "reels", "messages"];
+const DASHBOARD_TABS = ["products", "categories", "seasonal", "banners", "baskets", "reels", "messages"];
 
 export default function AdminDashboard() {
   const { logout, user } = useAuth();
@@ -35,7 +33,6 @@ export default function AdminDashboard() {
   }, [searchParams]);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [occasions, setOccasions] = useState([]);
   const [messages, setMessages] = useState([]);
   const [reels, setReels] = useState([]);
   const [banners, setBanners] = useState([]);
@@ -43,7 +40,6 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [editingOccasion, setEditingOccasion] = useState(null);
   const [editingReel, setEditingReel] = useState(null);
   const [editingBanner, setEditingBanner] = useState(null);
   const [editingBasket, setEditingBasket] = useState(null);
@@ -69,9 +65,8 @@ export default function AdminDashboard() {
       const headers = { Authorization: `Bearer ${token}` };
 
       if (activeTab === "products") {
-        const [productsRes, occasionsRes, categoriesRes] = await Promise.all([
+        const [productsRes, categoriesRes] = await Promise.all([
           fetch(`${API}/products`), // Public endpoint, no auth needed
-          fetch(`${API}/occasions/all`, { headers }),
           fetch(`${API}/categories`), // Public endpoint, no auth needed
         ]);
         
@@ -85,14 +80,6 @@ export default function AdminDashboard() {
           setProducts(Array.isArray(productsData) ? productsData : []);
         }
         
-        if (occasionsRes.ok) {
-          const occasionsData = await occasionsRes.json();
-          setOccasions(Array.isArray(occasionsData) ? occasionsData : []);
-        } else if (occasionsRes.status === 401) {
-          toast.error("Session expired. Please login again.");
-          logout();
-        }
-
         if (categoriesRes.ok) {
           const categoriesData = await categoriesRes.json();
           setCategories(Array.isArray(categoriesData) ? categoriesData : []);
@@ -108,15 +95,6 @@ export default function AdminDashboard() {
         if (res.ok) {
           const data = await res.json();
           setSeasonals(Array.isArray(data) ? data : []);
-        } else if (res.status === 401) {
-          toast.error("Session expired. Please login again.");
-          logout();
-        }
-      } else if (activeTab === "occasions") {
-        const res = await fetch(`${API}/occasions/all`, { headers });
-        if (res.ok) {
-          const data = await res.json();
-          setOccasions(data);
         } else if (res.status === 401) {
           toast.error("Session expired. Please login again.");
           logout();
@@ -176,11 +154,6 @@ export default function AdminDashboard() {
     loadData();
   };
 
-  const handleOccasionSave = () => {
-    setEditingOccasion(null);
-    loadData();
-  };
-
   const handleSeasonalSave = () => {
     setEditingSeasonal(null);
     loadData();
@@ -205,7 +178,6 @@ export default function AdminDashboard() {
     { id: "products", label: "All Fruits", icon: null },
     { id: "categories", label: "Categories", icon: null },
     { id: "seasonal", label: "Seasonal", icon: null },
-    { id: "occasions", label: "Exotic", icon: null },
     { id: "banners", label: "Banners", icon: null },
     { id: "baskets", label: "Fruit Baskets", icon: null },
     { id: "reels", label: "Reels", icon: null },
@@ -221,7 +193,6 @@ export default function AdminDashboard() {
     setEditingProduct(null);
     setEditingCategory(null);
     setEditingSeasonal(null);
-    setEditingOccasion(null);
     setEditingReel(null);
     setEditingBanner(null);
     setEditingBasket(null);
@@ -268,7 +239,7 @@ export default function AdminDashboard() {
           {loading ? (
             <div className="rounded-lg shadow p-12 text-center" style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)" }}>
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: "var(--primary)" }}></div>
-              <p style={{ color: "var(--muted)" }}>Loading...</p>
+              <p className="text-muted">Loading...</p>
             </div>
           ) : (
             <>
@@ -277,7 +248,6 @@ export default function AdminDashboard() {
                 <ProductForm
                   product={editingProduct}
                   categories={categories}
-                  occasions={occasions}
                   onSave={handleProductSave}
                   onCancel={() => setEditingProduct(null)}
                 />
@@ -314,21 +284,6 @@ export default function AdminDashboard() {
                 <SeasonalList
                   seasonals={seasonals}
                   onEdit={setEditingSeasonal}
-                  onDelete={loadData}
-                />
-              </div>
-            )}
-
-            {activeTab === "occasions" && (
-              <div>
-                <OccasionForm
-                  occasion={editingOccasion}
-                  onSave={handleOccasionSave}
-                  onCancel={() => setEditingOccasion(null)}
-                />
-                <OccasionList
-                  occasions={occasions}
-                  onEdit={setEditingOccasion}
                   onDelete={loadData}
                 />
               </div>

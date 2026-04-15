@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import { FruitBasketProvider } from "./context/FruitBasketContext";
@@ -19,9 +19,7 @@ import ToastViewport from "./components/ToastViewport";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
-import Occasion from "./pages/Occasion";
 import Seasonal from "./pages/Seasonal";
-import NewArrivals from "./pages/NewArrivals";
 import CategoriesPage from "./pages/CategoriesPage";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
@@ -50,11 +48,6 @@ import FruitBasketCreate from "./pages/FruitBasketCreate";
 import FruitBasketFruits from "./pages/FruitBasketFruits";
 import FruitBasketReview from "./pages/FruitBasketReview";
 
-function RedirectOccasionToExotic() {
-  const { slug } = useParams();
-  return <Navigate to={slug ? `/exotic/${slug}` : "/exotic"} replace />;
-}
-
 function PublicLayout() {
   return (
     <>
@@ -67,11 +60,8 @@ function PublicLayout() {
           <Route path="/category/:slug" element={<CategoriesPage />} />
           <Route path="/seasonal" element={<Seasonal />} />
           <Route path="/seasonal/:slug" element={<Seasonal />} />
-          <Route path="/exotic" element={<Occasion />} />
-          <Route path="/exotic/:slug" element={<Occasion />} />
-          <Route path="/organic" element={<NewArrivals />} />
-          <Route path="/gift-boxes" element={<About />} />
-          <Route path="/blog" element={<Contact />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
@@ -90,11 +80,6 @@ function PublicLayout() {
           <Route path="/fruit-basket/create/fruits" element={<FruitBasketFruits />} />
           <Route path="/fruit-basket/create/review" element={<FruitBasketReview />} />
           {/* Redirect old paths to new (name-matched) paths */}
-          <Route path="/occasion" element={<Navigate to="/exotic" replace />} />
-          <Route path="/occasion/:slug" element={<RedirectOccasionToExotic />} />
-          <Route path="/new" element={<Navigate to="/organic" replace />} />
-          <Route path="/about" element={<Navigate to="/gift-boxes" replace />} />
-          <Route path="/contact" element={<Navigate to="/blog" replace />} />
         </Routes>
       </div>
       <Footer />

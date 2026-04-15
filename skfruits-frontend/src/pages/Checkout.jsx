@@ -535,7 +535,7 @@ export default function Checkout() {
                               </span>
                             )}
                             <p className="font-semibold" style={{ color: "var(--foreground)" }}>{addr.fullName}</p>
-                            <p className="text-sm" style={{ color: "var(--muted)" }}>{addr.phone}</p>
+                            <p className="text-sm text-muted">{addr.phone}</p>
                             <p className="text-sm mt-0.5" style={{ color: "var(--foreground)" }}>
                               {addr.addressLine}, {addr.city}, {addr.state} – {addr.pincode}
                             </p>
@@ -552,8 +552,8 @@ export default function Checkout() {
                   <button
                     type="button"
                     onClick={() => setAddAddressModalOpen(true)}
-                    className="w-full py-3 rounded-xl border-2 border-dashed font-medium"
-                    style={{ borderColor: "var(--border)", color: "var(--muted)" }}
+                    className="w-full py-3 rounded-xl border-2 border-dashed font-medium text-muted"
+                    style={{ borderColor: "var(--border)" }}
                   >
                     + Add new address
                   </button>
@@ -569,7 +569,7 @@ export default function Checkout() {
                       value={form.name}
                       onChange={(e) => updateField("name", e.target.value)}
                       placeholder="Your full name"
-                      className="w-full px-4 py-2.5 rounded-lg border text-[var(--foreground)] placeholder-[var(--muted)] focus:outline-none focus:ring-2 transition-all"
+                      className="w-full px-4 py-2.5 rounded-lg border text-[var(--foreground)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 transition-all"
                       style={{ background: "var(--background)", borderColor: errors.name ? "var(--destructive)" : "var(--border)" }}
                       autoComplete="name"
                     />
@@ -585,7 +585,7 @@ export default function Checkout() {
                       value={form.phone}
                       onChange={(e) => updateField("phone", e.target.value)}
                       placeholder="10-digit mobile number"
-                      className="w-full px-4 py-2.5 rounded-lg border text-[var(--foreground)] placeholder-[var(--muted)] focus:outline-none focus:ring-2 transition-all"
+                      className="w-full px-4 py-2.5 rounded-lg border text-[var(--foreground)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 transition-all"
                       style={{ background: "var(--background)", borderColor: errors.phone ? "var(--destructive)" : "var(--border)" }}
                       autoComplete="tel"
                     />
@@ -611,7 +611,7 @@ export default function Checkout() {
                       initialLat={form.latitude}
                       initialLng={form.longitude}
                       placeholder="Search address to fill below"
-                      className="w-full px-4 py-2.5 rounded-lg border text-[var(--foreground)] placeholder-[var(--muted)] focus:outline-none focus:ring-2 transition-all"
+                      className="w-full px-4 py-2.5 rounded-lg border text-[var(--foreground)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 transition-all"
                       style={{ background: "var(--background)", borderColor: "var(--border)" }}
                       showMap={true}
                     />
@@ -625,7 +625,7 @@ export default function Checkout() {
                       value={form.address}
                       onChange={(e) => updateField("address", e.target.value)}
                       placeholder="Street, building, landmark"
-                      className="w-full px-4 py-2.5 rounded-lg border text-[var(--foreground)] placeholder-[var(--muted)] focus:outline-none focus:ring-2 transition-all"
+                      className="w-full px-4 py-2.5 rounded-lg border text-[var(--foreground)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 transition-all"
                       style={{ background: "var(--background)", borderColor: errors.address ? "var(--destructive)" : "var(--border)" }}
                       autoComplete="street-address"
                     />
@@ -640,7 +640,7 @@ export default function Checkout() {
                       value={form.city}
                       onChange={(e) => updateField("city", e.target.value)}
                       placeholder="City"
-                      className="w-full px-4 py-2.5 rounded-lg border text-[var(--foreground)] placeholder-[var(--muted)] focus:outline-none focus:ring-2 transition-all"
+                      className="w-full px-4 py-2.5 rounded-lg border text-[var(--foreground)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 transition-all"
                       style={{ background: "var(--background)", borderColor: errors.city ? "var(--destructive)" : "var(--border)" }}
                       autoComplete="address-level2"
                     />
@@ -655,7 +655,7 @@ export default function Checkout() {
                       value={form.state}
                       onChange={(e) => updateField("state", e.target.value)}
                       placeholder="State"
-                      className="w-full px-4 py-2.5 rounded-lg border text-[var(--foreground)] placeholder-[var(--muted)] focus:outline-none focus:ring-2 transition-all"
+                      className="w-full px-4 py-2.5 rounded-lg border text-[var(--foreground)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 transition-all"
                       style={{ background: "var(--background)", borderColor: errors.state ? "var(--destructive)" : "var(--border)" }}
                       autoComplete="address-level1"
                     />
@@ -672,7 +672,7 @@ export default function Checkout() {
                       value={form.pincode}
                       onChange={(e) => updateField("pincode", e.target.value.replace(/\D/g, "").slice(0, 6))}
                       placeholder="6-digit pincode"
-                      className="w-full px-4 py-2.5 rounded-lg border text-[var(--foreground)] placeholder-[var(--muted)] focus:outline-none focus:ring-2 transition-all"
+                      className="w-full px-4 py-2.5 rounded-lg border text-[var(--foreground)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 transition-all"
                       style={{ background: "var(--background)", borderColor: errors.pincode ? "var(--destructive)" : "var(--border)" }}
                       autoComplete="postal-code"
                     />
@@ -751,7 +751,7 @@ export default function Checkout() {
                     )}
                   </div>
                   {!deliverySummary.isFreeDelivery && deliverySummary.deliveryFee > 0 && (
-                    <p className="text-sm" style={{ color: "var(--muted)" }}>
+                    <p className="text-sm text-muted">
                       Delivery fee: ₹{Number(deliverySummary.deliveryFee).toFixed(2)}
                     </p>
                   )}
@@ -796,7 +796,7 @@ export default function Checkout() {
                         <div className="font-medium text-sm" style={{ color: "var(--foreground)" }}>
                           {dateLabel}
                         </div>
-                        <div className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>
+                        <div className="text-xs mt-0.5 text-muted">
                           {slot.startTime} – {slot.endTime}
                         </div>
                         {isSelected && (
@@ -812,8 +812,7 @@ export default function Checkout() {
                   <button
                     type="button"
                     onClick={() => setSelectedSlotId(null)}
-                    className="mt-3 text-sm font-medium underline"
-                    style={{ color: "var(--muted)" }}
+                    className="mt-3 text-sm font-medium underline text-muted"
                   >
                     Clear selection
                   </button>
@@ -878,14 +877,14 @@ export default function Checkout() {
               </h2>
               <div>
                 <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--foreground)" }}>
-                  Email <span className="text-[var(--muted)]">(optional)</span>
+                  Email <span className="text-muted">(optional)</span>
                 </label>
                 <input
                   type="email"
                   value={form.email}
                   onChange={(e) => updateField("email", e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full px-4 py-2.5 rounded-lg border text-[var(--foreground)] placeholder-[var(--muted)] focus:outline-none focus:ring-2 transition-all"
+                  className="w-full px-4 py-2.5 rounded-lg border text-[var(--foreground)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 transition-all"
                   style={{ background: "var(--background)", borderColor: "var(--border)" }}
                   autoComplete="email"
                 />
@@ -914,7 +913,7 @@ export default function Checkout() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-medium truncate text-sm" style={{ color: "var(--foreground)" }}>{item.productName}</p>
-                      <p className="text-xs" style={{ color: "var(--muted)" }}>{item.sizeLabel} × {item.quantity}</p>
+                      <p className="text-xs text-muted">{item.sizeLabel} × {item.quantity}</p>
                       <p className="text-sm font-semibold mt-0.5" style={{ color: "var(--primary)" }}>₹{Number(item.subtotal || 0).toFixed(2)}</p>
                     </div>
                   </div>
@@ -967,7 +966,7 @@ export default function Checkout() {
                       className="w-4 h-4"
                     />
                     <span style={{ color: "var(--foreground)" }}>Pay Online</span>
-                    <span className="text-xs" style={{ color: "var(--muted)" }}>UPI, Card, Netbanking, Wallets</span>
+                    <span className="text-xs text-muted">UPI, Card, Netbanking, Wallets</span>
                   </label>
                   <label className="flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition" style={{ borderColor: paymentMethod === PAYMENT_METHOD_COD ? "var(--primary)" : "var(--border)", background: paymentMethod === PAYMENT_METHOD_COD ? "var(--secondary)" : "transparent" }}>
                     <input
@@ -978,7 +977,7 @@ export default function Checkout() {
                       className="w-4 h-4"
                     />
                     <span style={{ color: "var(--foreground)" }}>Cash on Delivery</span>
-                    <span className="text-xs" style={{ color: "var(--muted)" }}>Pay when you receive</span>
+                    <span className="text-xs text-muted">Pay when you receive</span>
                   </label>
                 </div>
               </div>

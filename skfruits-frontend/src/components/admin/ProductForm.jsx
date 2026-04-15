@@ -8,17 +8,13 @@ import { useToast } from "../../context/ToastContext";
 // Treat as "edit" only when product has a valid id (duplicate passes product with id null/undefined)
 const isEditProduct = (p) => p && (p.id != null && p.id !== "");
 
-export default function ProductForm({ product, categories, occasions = [], onSave, onCancel }) {
+export default function ProductForm({ product, categories, onSave, onCancel }) {
   const toast = useToast();
   const isEdit = isEditProduct(product);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     badge: "",
-    isFestival: false,
-    isNew: false,
-    isTrending: false,
-    isReady60Min: false,
     hasSinglePrice: false,
     singlePrice: "",
     originalPrice: "", // MRP for single-price products
@@ -33,7 +29,6 @@ export default function ProductForm({ product, categories, occasions = [], onSav
   const [existingVideos, setExistingVideos] = useState([]);
   const [instagramEmbeds, setInstagramEmbeds] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedOccasions, setSelectedOccasions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingSizeOptions, setLoadingSizeOptions] = useState(false);
   const [generatingDescription, setGeneratingDescription] = useState(false);
@@ -49,11 +44,10 @@ export default function ProductForm({ product, categories, occasions = [], onSav
       weights,
       existingImages,
       selectedCategories,
-      selectedOccasions,
       // For new images, treat any selection as "dirty"
       imagesSelectedCount: images.length,
     });
-  }, [formData, sizes, weights, existingImages, selectedCategories, selectedOccasions, images.length]);
+  }, [formData, sizes, weights, existingImages, selectedCategories, images.length]);
 
   const isDirty = initialSnapshotRef.current !== "" && snapshot !== initialSnapshotRef.current;
 
@@ -63,10 +57,6 @@ export default function ProductForm({ product, categories, occasions = [], onSav
         name: product.name || "",
         description: product.description || "",
         badge: product.badge || "",
-        isFestival: product.isFestival || false,
-        isNew: product.isNew || false,
-        isTrending: product.isTrending || false,
-        isReady60Min: product.isReady60Min || false,
         hasSinglePrice: product.hasSinglePrice || false,
         singlePrice: product.singlePrice ? String(product.singlePrice) : "",
         originalPrice: product.originalPrice != null ? String(product.originalPrice) : "",
@@ -111,21 +101,12 @@ export default function ProductForm({ product, categories, occasions = [], onSav
       } else {
         setSelectedCategories([]);
       }
-      setSelectedOccasions(
-        product.occasions && product.occasions.length > 0
-          ? product.occasions.map((o) => o.occasionId || o.occasion?.id || o.id)
-          : []
-      );
     } else {
       // Reset form
       setFormData({
         name: "",
         description: "",
         badge: "",
-        isFestival: false,
-        isNew: false,
-        isTrending: false,
-        isReady60Min: false,
         hasSinglePrice: false,
         singlePrice: "",
         originalPrice: "",
@@ -137,21 +118,16 @@ export default function ProductForm({ product, categories, occasions = [], onSav
       setExistingImages([]);
       setInstagramEmbeds([]);
       setSelectedCategories([]);
-      setSelectedOccasions([]);
     }
 
     // snapshot after state settles
     setTimeout(() => {
       initialSnapshotRef.current = JSON.stringify({
-        formData: product
+      formData: product
           ? {
               name: product.name || "",
               description: product.description || "",
               badge: product.badge || "",
-              isFestival: product.isFestival || false,
-              isNew: product.isNew || false,
-              isTrending: product.isTrending || false,
-              isReady60Min: product.isReady60Min || false,
               hasSinglePrice: product.hasSinglePrice || false,
               singlePrice: product.singlePrice ? String(product.singlePrice) : "",
               originalPrice: product.originalPrice != null ? String(product.originalPrice) : "",
@@ -161,10 +137,6 @@ export default function ProductForm({ product, categories, occasions = [], onSav
               name: "",
               description: "",
               badge: "",
-              isFestival: false,
-              isNew: false,
-              isTrending: false,
-              isReady60Min: false,
               hasSinglePrice: false,
               singlePrice: "",
               originalPrice: "",
@@ -192,10 +164,6 @@ export default function ProductForm({ product, categories, occasions = [], onSav
             ? product.categories.map((pc) => pc.categoryId || pc.category?.id || pc.id)
             : product?.categoryId
             ? [product.categoryId]
-            : [],
-        selectedOccasions:
-          product?.occasions && product.occasions.length > 0
-            ? product.occasions.map((o) => o.occasionId || o.occasion?.id || o.id)
             : [],
         imagesSelectedCount: 0,
       });
@@ -244,10 +212,6 @@ export default function ProductForm({ product, categories, occasions = [], onSav
       formDataToSend.append("name", formData.name);
       formDataToSend.append("description", formData.description);
       formDataToSend.append("badge", formData.badge);
-      formDataToSend.append("isFestival", formData.isFestival);
-      formDataToSend.append("isNew", formData.isNew);
-      formDataToSend.append("isTrending", formData.isTrending);
-      formDataToSend.append("isReady60Min", formData.isReady60Min);
       formDataToSend.append("hasSinglePrice", formData.hasSinglePrice);
       formDataToSend.append("singlePrice", formData.hasSinglePrice && formData.singlePrice ? formData.singlePrice : "");
       formDataToSend.append("originalPrice", formData.hasSinglePrice && formData.originalPrice ? formData.originalPrice : "");
@@ -295,8 +259,6 @@ export default function ProductForm({ product, categories, occasions = [], onSav
         )
       );
       
-      formDataToSend.append("occasionIds", JSON.stringify(selectedOccasions));
-
       if (product && existingImages.length > 0) {
         formDataToSend.append("existingImages", JSON.stringify(existingImages));
       }
@@ -333,10 +295,6 @@ export default function ProductForm({ product, categories, occasions = [], onSav
           name: "",
           description: "",
           badge: "",
-          isFestival: false,
-          isNew: false,
-          isTrending: false,
-          isReady60Min: false,
           hasSinglePrice: false,
           singlePrice: "",
           originalPrice: "",
@@ -347,7 +305,6 @@ export default function ProductForm({ product, categories, occasions = [], onSav
         setImages([]);
         setExistingImages([]);
         setSelectedCategories([]);
-        setSelectedOccasions([]);
         initialSnapshotRef.current = "";
       } else {
         toast.error(data.error || data.message || "Failed to save product");
@@ -371,10 +328,6 @@ export default function ProductForm({ product, categories, occasions = [], onSav
       name: "",
       description: "",
       badge: "",
-      isFestival: false,
-      isNew: false,
-      isTrending: false,
-      isReady60Min: false,
       hasSinglePrice: false,
       singlePrice: "",
       originalPrice: "",
@@ -387,7 +340,6 @@ export default function ProductForm({ product, categories, occasions = [], onSav
     setVideos([]);
     setExistingVideos([]);
     setSelectedCategories([]);
-    setSelectedOccasions([]);
     initialSnapshotRef.current = "";
     onCancel?.();
   };
@@ -505,10 +457,6 @@ export default function ProductForm({ product, categories, occasions = [], onSav
         .map((id) => categories.find((c) => c.id === id)?.name)
         .filter(Boolean)
         .join(", ");
-      const occasionNames = selectedOccasions
-        .map((id) => occasions.find((o) => o.id === id)?.name)
-        .filter(Boolean)
-        .join(", ");
       const sizeVariant = sizes.map((s) => s.label).filter(Boolean).join(", ");
       let priceRange = "";
       if (formData.hasSinglePrice && formData.singlePrice) {
@@ -525,7 +473,7 @@ export default function ProductForm({ product, categories, occasions = [], onSav
         color: "",
         target_audience: "",
         price_range: priceRange || "",
-        use_case: occasionNames || "",
+        use_case: "",
         features: formData.keywords || formData.badge || "",
         language: descriptionLanguage,
       };
@@ -691,7 +639,7 @@ export default function ProductForm({ product, categories, occasions = [], onSav
               })}
           </div>
           {selectedCategories.length === 0 && (
-            <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Select at least one category.</p>
+            <p className="text-xs mt-1 text-muted">Select at least one category.</p>
           )}
         </div>
 
@@ -746,97 +694,17 @@ export default function ProductForm({ product, categories, occasions = [], onSav
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Badge (e.g., 60 Min Delivery)</label>
-            <input
-              type="text"
-              value={formData.badge}
-              onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
-              className="w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none transition"
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">Badge (optional)</label>
+          <input
+            type="text"
+            value={formData.badge}
+            onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
+            className="w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none transition"
             style={{ borderColor: "var(--border)", backgroundColor: "var(--input)", color: "var(--foreground)" }}
-              placeholder="Optional"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Options</label>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={formData.isFestival}
-                  onChange={(e) => setFormData({ ...formData, isFestival: e.target.checked })}
-                  className="w-4 h-4 text-pink-600 rounded focus:ring-pink-500"
-                />
-                <span className="text-sm text-gray-700">Festival Item</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={formData.isNew}
-                  onChange={(e) => setFormData({ ...formData, isNew: e.target.checked })}
-                  className="w-4 h-4 text-pink-600 rounded focus:ring-pink-500"
-                />
-                <span className="text-sm text-gray-700">New Arrival</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={formData.isTrending}
-                  onChange={(e) => setFormData({ ...formData, isTrending: e.target.checked })}
-                  className="w-4 h-4 text-pink-600 rounded focus:ring-pink-500"
-                />
-                <span className="text-sm text-gray-700">Trending</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={formData.isReady60Min}
-                  onChange={(e) => setFormData({ ...formData, isReady60Min: e.target.checked })}
-                  className="w-4 h-4 text-pink-600 rounded focus:ring-pink-500"
-                />
-                <span className="text-sm text-gray-700">60 Minutes Ready</span>
-              </label>
-            </div>
-          </div>
+            placeholder="Optional"
+          />
         </div>
-
-        {occasions.length > 0 && (
-          <div>
-            <label className="block text-sm font-semibold mb-2" style={{ color: "var(--foreground)" }}>Exotic (optional)</label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 p-3 rounded-xl border-2" style={{ borderColor: "var(--border)", backgroundColor: "var(--muted)" }}>
-              {[...occasions]
-                .filter((o) => o.isActive !== false)
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .map((occ) => {
-                  const isSelected = selectedOccasions.includes(occ.id);
-                  return (
-                    <label
-                      key={occ.id}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition ${
-                        isSelected ? "border-pink-500 bg-pink-50" : "border-gray-200 bg-white hover:border-pink-300"
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => {
-                          if (isSelected) {
-                            setSelectedOccasions(selectedOccasions.filter((id) => id !== occ.id));
-                          } else {
-                            setSelectedOccasions([...selectedOccasions, occ.id]);
-                          }
-                        }}
-                        className="w-4 h-4 text-pink-600 rounded focus:ring-pink-500 shrink-0"
-                      />
-                      <span className="text-sm font-medium text-gray-700 truncate">{occ.name}</span>
-                    </label>
-                  );
-                })}
-            </div>
-            <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Select exotic items this product is suitable for (optional)</p>
-          </div>
-        )}
 
         <ImageUpload
           images={images}

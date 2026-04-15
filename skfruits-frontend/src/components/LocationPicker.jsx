@@ -331,7 +331,7 @@ export default function LocationPicker({
       )}
 
       {/* Hint text */}
-      <p className="text-xs" style={{ color: "var(--muted)" }}>
+      <p className="text-xs text-muted">
         Tap the map to drop a pin, or use the{" "}
         <button type="button" onClick={handleUseMyLocation} className="underline" style={{ color: "var(--primary)" }}>
           locate me

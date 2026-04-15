@@ -178,7 +178,7 @@ export default function AdminOrdersPage() {
         {loading ? (
           <div className="rounded-xl border p-8 text-center" style={{ borderColor: "var(--border)", background: "var(--secondary)" }}>
             <div className="inline-block h-8 w-8 rounded-full border-2 border-t-transparent animate-spin mx-auto" style={{ borderColor: "var(--primary)" }} />
-            <p className="mt-4 text-sm" style={{ color: "var(--muted)" }}>Loading orders…</p>
+            <p className="mt-4 text-sm text-muted">Loading orders…</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="rounded-xl border p-12 text-center" style={{ borderColor: "var(--border)", background: "var(--secondary)" }}>
@@ -213,7 +213,7 @@ export default function AdminOrdersPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="font-medium" style={{ color: "var(--foreground)" }}>{order.customerDetails?.name || "—"}</div>
-                        {order.customerDetails?.phone && <div className="text-xs" style={{ color: "var(--muted)" }}>{order.customerDetails.phone}</div>}
+                        {order.customerDetails?.phone && <div className="text-xs text-muted">{order.customerDetails.phone}</div>}
                       </td>
                       <td className="px-4 py-3" style={{ color: "var(--foreground)" }}>{formatDate(order.createdAt)}</td>
                       <td className="px-4 py-3 font-semibold" style={{ color: "var(--primary)" }}>₹{Number(order.totalAmount || 0).toFixed(2)}</td>
@@ -254,7 +254,7 @@ export default function AdminOrdersPage() {
             </div>
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
-            <div className="text-sm" style={{ color: "var(--muted)" }}>
+            <div className="text-sm text-muted">
               Page {safePage} of {totalPages} · {filtered.length} order(s)
             </div>
             <div className="flex items-center gap-2">

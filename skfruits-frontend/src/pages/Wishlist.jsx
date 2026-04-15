@@ -124,7 +124,7 @@ export default function Wishlist() {
             <p className="text-xl font-semibold mb-2" style={{ color: "var(--foreground)" }}>
               Your wishlist is empty
             </p>
-            <p className="text-sm mb-8 max-w-sm mx-auto" style={{ color: "var(--muted)" }}>
+            <p className="text-sm mb-8 max-w-sm mx-auto text-muted">
               Save your favourite fruits and add them to cart when you&apos;re ready.
             </p>
             <Link
@@ -225,7 +225,7 @@ export default function Wishlist() {
                           ₹{Number(displayPrice).toLocaleString("en-IN")}
                         </span>
                         {displayMrp != null && displayMrp > displayPrice && (
-                          <span className="text-sm line-through" style={{ color: "var(--muted)" }}>
+                          <span className="text-sm line-through text-muted">
                             ₹{Number(displayMrp).toLocaleString("en-IN")}
                           </span>
                         )}

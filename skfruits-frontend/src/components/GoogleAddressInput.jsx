@@ -104,11 +104,11 @@ export default function GoogleAddressInput({
   if (error) {
     return (
       <div className="space-y-1">
-        <p className="text-sm" style={{ color: "var(--muted)" }}>
+        <p className="text-sm text-muted">
           Address search unavailable. Enter address manually below.
         </p>
         {error === "Google Maps API key not configured" && (
-          <p className="text-xs" style={{ color: "var(--muted)" }}>
+          <p className="text-xs text-muted">
             Add <code className="px-1 rounded bg-[var(--muted)]">VITE_GOOGLE_MAPS_API_KEY</code> to your <code className="px-1 rounded bg-[var(--muted)]">.env</code> to enable map search.
           </p>
         )}

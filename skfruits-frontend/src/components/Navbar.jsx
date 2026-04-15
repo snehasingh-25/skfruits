@@ -59,9 +59,8 @@ export default function Navbar() {
     { path: "/categories", label: "Categories" },
     { path: "/fruit-basket", label: "Basket" },
     { path: "/seasonal", label: "Seasonal" },
-    { path: "/organic", label: "Organic" },
-    { path: "/gift-boxes", label: "About" },
-    { path: "/blog", label: "Contact" },
+    { path: "/about", label: "About" },
+    { path: "/contact", label: "Contact" },
   ];
 
   useEffect(() => {

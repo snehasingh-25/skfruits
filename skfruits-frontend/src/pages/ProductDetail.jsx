@@ -520,21 +520,6 @@ export default function ProductDetail() {
 
                       {/* Badges */}
                       <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-                        {product.isReady60Min ? (
-                          <span className="px-3 py-1 text-xs font-bold rounded-full bg-white/90 shadow" style={{ color: "oklch(20% .02 340)" }}>
-                            60 Min
-                          </span>
-                        ) : null}
-                        {product.isFestival ? (
-                          <span className="px-3 py-1 text-xs font-bold rounded-full bg-white/90 shadow" style={{ color: "oklch(20% .02 340)" }}>
-                            Festival
-                          </span>
-                        ) : null}
-                        {product.isNew ? (
-                          <span className="px-3 py-1 text-xs font-bold rounded-full bg-white/90 shadow" style={{ color: "oklch(20% .02 340)" }}>
-                            New
-                          </span>
-                        ) : null}
                         {product.badge ? (
                           <span className="px-3 py-1 text-xs font-bold rounded-full bg-pink-500 text-white shadow">
                             {product.badge}

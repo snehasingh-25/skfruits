@@ -136,7 +136,7 @@ export default function DeliveryMapCard({
           </span>
         )}
         {locationError && (
-          <span className="text-xs" style={{ color: "var(--muted)" }}>
+          <span className="text-xs text-muted">
             Allow location for distance
           </span>
         )}

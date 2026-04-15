@@ -74,7 +74,7 @@ export default function Cart() {
             <h2 className="text-xl font-bold mb-4 font-display" style={{ color: "var(--foreground)" }}>
               Your cart is empty
             </h2>
-            <p className="mb-8" style={{ color: "var(--muted)" }}>
+            <p className="mb-8 text-muted">
               Looks like you haven&apos;t added anything to your cart yet.
             </p>
             <Link
@@ -113,7 +113,7 @@ export default function Cart() {
                     <h3 className="text-sm font-semibold leading-tight" style={{ color: "var(--foreground)" }}>
                       {item.productName}
                     </h3>
-                    <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
+                    <p className="mt-1 text-sm text-muted">
                       {isPackaging ? (
                         <span className="font-medium" style={{ color: "var(--foreground)" }}>
                           Custom fruit basket packaging

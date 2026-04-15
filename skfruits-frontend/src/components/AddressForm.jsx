@@ -103,7 +103,7 @@ export default function AddressForm({
   };
 
   const inputClass = (field) =>
-    `w-full px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 transition-all text-[var(--foreground)] placeholder-[var(--muted)] ${errors[field] ? "border-[var(--destructive)]" : ""}`;
+    `w-full px-4 py-2.5 rounded-lg border focus:outline-none focus:ring-2 transition-all text-[var(--foreground)] placeholder:text-[var(--text-muted)] ${errors[field] ? "border-[var(--destructive)]" : ""}`;
   const inputStyle = (field) => ({
     background: "var(--background)",
     borderColor: errors[field] ? "var(--destructive)" : "var(--border)",

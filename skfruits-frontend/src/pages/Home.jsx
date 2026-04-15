@@ -15,35 +15,21 @@ export default function Home() {
   const { wishlistItems } = useWishlist();
   const { isAuthenticated, getAuthHeaders } = useUserAuth();
   const [products, setProducts] = useState([]);
-  const [trendingProducts, setTrendingProducts] = useState([]);
+  const [popularProducts, setPopularProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [occasions, setOccasions] = useState([]);
   const [reels, setReels] = useState([]);
-  const [banners, setBanners] = useState([]);
   const [topRatedProducts, setTopRatedProducts] = useState([]);
   const [buyAgainIds, setBuyAgainIds] = useState([]);
   const [visibleProductsCount, setVisibleProductsCount] = useState(10);
   const [loading, setLoading] = useState({
     categories: true,
-    occasions: true,
     products: true,
     reels: true,
     banners: true,
   });
   const scrollRef = useRef(null);
-  const occasionScrollRef = useRef(null);
   const scrollEndTimerRef = useRef(null);
-  const occasionScrollEndTimerRef = useRef(null);
-  const [heroSlide, setHeroSlide] = useState(0);
-
-  useEffect(() => {
-    // Auto-advance the hero visuals (respect reduced motion where possible).
-    if (typeof window === "undefined") return;
-    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-    if (reduceMotion) return;
-    const t = setInterval(() => setHeroSlide((s) => (s + 1) % 3), 4800);
-    return () => clearInterval(t);
-  }, []);
+  // (Hero slide state removed — visuals are static for now.)
   
   // Single request for homepage data (faster: 1 round-trip instead of 5)
   useEffect(() => {
@@ -52,20 +38,18 @@ export default function Home() {
       .then((res) => res.json())
       .then((data) => {
         if (!data || data.error) {
-          setLoading((prev) => ({ ...prev, categories: false, occasions: false, products: false, reels: false, banners: false }));
+          setLoading((prev) => ({ ...prev, categories: false, products: false, reels: false, banners: false }));
           return;
         }
         setCategories(Array.isArray(data.categories) ? data.categories : []);
-        setOccasions(Array.isArray(data.occasions) ? data.occasions : []);
         const list = shuffleArray(Array.isArray(data.products) ? data.products : []);
         setProducts(list);
-        setTrendingProducts(list.filter((p) => p.isTrending));
+        setPopularProducts(list.slice(0, 12));
         setReels(Array.isArray(data.reels) ? data.reels : []);
-        setBanners(Array.isArray(data.banners) ? data.banners : []);
-        setLoading((prev) => ({ ...prev, categories: false, occasions: false, products: false, reels: false, banners: false }));
+        setLoading((prev) => ({ ...prev, categories: false, products: false, reels: false, banners: false }));
       })
       .catch(() => {
-        setLoading((prev) => ({ ...prev, categories: false, occasions: false, products: false, reels: false, banners: false }));
+        setLoading((prev) => ({ ...prev, categories: false, products: false, reels: false, banners: false }));
       });
     return () => ac.abort();
   }, []);
@@ -83,7 +67,8 @@ export default function Home() {
   // Lazy: buy-again product IDs (authenticated)
   useEffect(() => {
     if (!isAuthenticated) {
-      setBuyAgainIds([]);
+      // Avoid synchronous setState inside effect body (eslint rule).
+      setTimeout(() => setBuyAgainIds([]), 0);
       return;
     }
     const headers = getAuthHeaders();
@@ -115,7 +100,6 @@ export default function Home() {
   useEffect(() => {
     return () => {
       if (scrollEndTimerRef.current) clearTimeout(scrollEndTimerRef.current);
-      if (occasionScrollEndTimerRef.current) clearTimeout(occasionScrollEndTimerRef.current);
     };
   }, []);
 
@@ -139,12 +123,7 @@ export default function Home() {
     () => (categories.length > 0 ? [...categories, ...categories, ...categories] : []),
     [categories]
   );
-  const occasionsTriple = useMemo(
-    () => (occasions.length > 0 ? [...occasions, ...occasions, ...occasions] : []),
-    [occasions]
-  );
   const categorySetWidthRef = useRef(0);
-  const occasionSetWidthRef = useRef(0);
 
   // Initialize scroll position to middle set and handle loop reset (categories)
   useEffect(() => {
@@ -154,14 +133,6 @@ export default function Home() {
     categorySetWidthRef.current = setWidth;
     el.scrollLeft = setWidth;
   }, [categories]);
-
-  useEffect(() => {
-    const el = occasionScrollRef.current;
-    if (!el || occasions.length === 0) return;
-    const setWidth = el.scrollWidth / 3;
-    occasionSetWidthRef.current = setWidth;
-    el.scrollLeft = setWidth;
-  }, [occasions]);
 
   const scrollCategories = (direction) => {
     const el = scrollRef.current;
@@ -177,20 +148,6 @@ export default function Home() {
     }, 350);
   };
 
-  const scrollOccasions = (direction) => {
-    const el = occasionScrollRef.current;
-    if (!el || occasions.length === 0) return;
-    const scrollAmount = 300;
-    el.scrollBy({ left: direction === "left" ? -scrollAmount : scrollAmount, behavior: "smooth" });
-    const setWidth = occasionSetWidthRef.current || el.scrollWidth / 3;
-    setTimeout(() => {
-      if (!occasionScrollRef.current) return;
-      const sl = occasionScrollRef.current.scrollLeft;
-      if (sl >= setWidth * 2 - 50) occasionScrollRef.current.scrollLeft = sl - setWidth;
-      else if (sl <= 50) occasionScrollRef.current.scrollLeft = sl + setWidth;
-    }, 350);
-  };
-
   // Scroll loop reset on scroll end (for drag/swipe and so middle set stays in sync)
   const handleCategoryScrollEnd = () => {
     const el = scrollRef.current;
@@ -200,17 +157,8 @@ export default function Home() {
     if (sl >= setWidth * 2 - 50) el.scrollLeft = sl - setWidth;
     else if (sl <= 50) el.scrollLeft = sl + setWidth;
   };
-  const handleOccasionScrollEnd = () => {
-    const el = occasionScrollRef.current;
-    if (!el || occasions.length === 0) return;
-    const setWidth = occasionSetWidthRef.current || el.scrollWidth / 3;
-    const sl = el.scrollLeft;
-    if (sl >= setWidth * 2 - 50) el.scrollLeft = sl - setWidth;
-    else if (sl <= 50) el.scrollLeft = sl + setWidth;
-  };
-
   // Check if any data is still loading
-  const isInitialLoad = loading.categories || loading.occasions || loading.products || loading.reels || loading.banners;
+  const isInitialLoad = loading.categories || loading.products || loading.reels || loading.banners;
 
   // Store photos in `public/`: shop1.jpeg … shop6.jpeg. Fallbacks if a file is missing.
   const storeImages = useMemo(
@@ -221,30 +169,6 @@ export default function Home() {
       { src: "/shop4.jpeg", fallbackSrc: "/model.png", alt: "Fruit counter" },
       { src: "/shop5.jpeg", fallbackSrc: "/mins.png", alt: "Shelf details" },
       { src: "/shop6.jpeg", fallbackSrc: "/logo.png", alt: "Visit the store" },
-    ],
-    []
-  );
-
-  const heroFruitStages = useMemo(
-    () => [
-      {
-        blueberries: { objectPosition: "80% 86%", left: "-160px", top: "-120px", scale: 1.16, rotate: "-3deg" },
-        cherries: { objectPosition: "58% 78%", left: "-90px", top: "-70px", scale: 1.12, rotate: "4deg" },
-        frame1: { left: "-120px", top: "30px", scale: 0.34 },
-        frame2: { right: "-140px", bottom: "-10px", scale: 0.36 },
-      },
-      {
-        blueberries: { objectPosition: "78% 82%", left: "-150px", top: "-105px", scale: 1.18, rotate: "1deg" },
-        cherries: { objectPosition: "55% 80%", left: "-70px", top: "-60px", scale: 1.10, rotate: "-6deg" },
-        frame1: { left: "-105px", top: "20px", scale: 0.32 },
-        frame2: { right: "-150px", bottom: "-20px", scale: 0.38 },
-      },
-      {
-        blueberries: { objectPosition: "82% 88%", left: "-170px", top: "-130px", scale: 1.14, rotate: "-1deg" },
-        cherries: { objectPosition: "62% 76%", left: "-105px", top: "-55px", scale: 1.11, rotate: "6deg" },
-        frame1: { left: "-130px", top: "38px", scale: 0.35 },
-        frame2: { right: "-135px", bottom: "-5px", scale: 0.35 },
-      },
     ],
     []
   );
@@ -541,7 +465,7 @@ export default function Home() {
           </section>
           
 
-      {/* Popular Fruits (Trending) */}
+      {/* Popular Fruits */}
       {isInitialLoad ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: "var(--background)" }}>
           <div className="flex items-center justify-between mb-10">
@@ -555,12 +479,12 @@ export default function Home() {
             ))}
           </div>
         </div>
-      ) : trendingProducts.length > 0 ? (
+      ) : popularProducts.length > 0 ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
           <div className="flex items-center justify-between mb-10">
             <h2 className="font-display text-xl font-bold text-design-foreground">Popular Fruits</h2>
             <Link
-              to="/categories?trending=true"
+              to="/categories"
               className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group text-design-foreground hover:opacity-80"
             >
               View All
@@ -573,7 +497,7 @@ export default function Home() {
             className="flex gap-5 overflow-x-auto pb-4 px-1 snap-x snap-mandatory scrollbar-thin"
             style={{ WebkitOverflowScrolling: "touch" }}
           >
-            {trendingProducts.map((p) => (
+            {popularProducts.map((p) => (
               <div
                 key={p.id}
                 className="shrink-0 snap-start w-[48%] lg:w-[20%]"
@@ -639,77 +563,6 @@ export default function Home() {
           <ProductCarouselSection title="Buy Again" productIds={buyAgainIds} />
         </div>
       )}
-
-      {/* Shop By Occasion Section (Seasonal Picks) */}
-      {occasions.length > 0 ? (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="font-display text-xl font-bold text-design-foreground">Shop By Occasion</h2>
-            <Link 
-              to="/exotic" 
-              className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group text-design-foreground hover:opacity-80"
-            >
-              View All
-              <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
-          <div className="relative">
-            <button
-              onClick={() => scrollOccasions("left")}
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border border-design active:scale-95 bg-[var(--background)] hover:bg-design-secondary"
-            >
-              <svg className="w-5 h-5 text-design-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <div
-              ref={occasionScrollRef}
-              className="flex gap-5 overflow-x-auto scrollbar-hide pb-4 px-2"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-              onScroll={() => {
-                if (occasionScrollEndTimerRef.current) clearTimeout(occasionScrollEndTimerRef.current);
-                occasionScrollEndTimerRef.current = setTimeout(handleOccasionScrollEnd, 150);
-              }}
-            >
-              {occasionsTriple.map((occasion, i) => (
-                <Link
-                  key={`occ-${i}-${occasion.id}`}
-                  to={`/exotic/${occasion.slug}`}
-                  className="flex-shrink-0 flex flex-col items-center min-w-[140px] sm:min-w-[160px] group"
-                >
-                  <div className="w-32 h-32 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-lg flex items-center justify-center text-4xl sm:text-5xl group-hover:shadow-lg group-hover:scale-110 transition-all duration-300 overflow-hidden cursor-pointer bg-design-secondary"
-                  >
-                    {occasion.imageUrl ? (
-                      <img
-                        src={occasion.imageUrl}
-                        alt={occasion.name}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    ) : (
-                      <div className="w-full h-full rounded-lg flex items-center justify-center overflow-hidden bg-design-secondary">
-                        <img src="/logo.png" alt="SK Fruits" className="w-3/4 h-3/4 object-contain" />
-                      </div>
-                    )}
-                  </div>
-                  <span className="text-sm font-semibold text-center transition-colors mt-2 text-design-muted group-hover:text-design-foreground">
-                    {occasion.name}
-                  </span>
-                </Link>
-              ))}
-            </div>
-            <button
-              onClick={() => scrollOccasions("right")}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 border border-design active:scale-95 bg-[var(--background)] hover:bg-design-secondary"
-            >
-              <svg className="w-5 h-5 text-design-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      ) : null}
 
       {/* Trending Gifts Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>

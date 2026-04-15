@@ -72,10 +72,6 @@ model Product {
   description   String         @db.Text
   aiDescription String?        @db.Text // Cached AI-generated description (avoids repeat API calls)
   badge         String?
-  isFestival    Boolean        @default(false)
-  isNew         Boolean        @default(false)
-  isTrending    Boolean        @default(false)
-  isReady60Min  Boolean        @default(false) // 60 minutes ready/delivery option
   hasSinglePrice Boolean       @default(false) // If true, use singlePrice instead of sizes
   singlePrice   Float?         // Selling price for products without size variants
   originalPrice Float?         // MRP / list price for single-price products (strikethrough on frontend)
@@ -93,16 +89,12 @@ model Product {
   categories    ProductCategory[]
   sizes         ProductSize[]
   orderItems    OrderItem[]
-  occasions     ProductOccasion[]
   reels         Reel[]
   cartItems     CartItem[]
   wishlists     Wishlist[]
   reviews       Review[]
 
   @@index([createdAt])
-  @@index([isTrending, createdAt])
-  @@index([isNew, createdAt])
-  @@index([isFestival, createdAt])
   @@index([order])
 }
 
@@ -249,21 +241,6 @@ model Reel {
   @@index([isFeatured])
 }
 
-model Occasion {
-  id          Int              @id @default(autoincrement())
-  name        String
-  slug        String           @unique
-  description String?          @db.Text
-  imageUrl    String?          @db.Text
-  isActive    Boolean          @default(true)
-  order       Int              @default(0) // For ordering occasions
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  products    ProductOccasion[]
-
-  @@index([order])
-}
-
 model Seasonal {
   id          Int       @id @default(autoincrement())
   name        String
@@ -288,17 +265,6 @@ model ProductCategory {
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@unique([productId, categoryId])
-}
-
-model ProductOccasion {
-  id         Int      @id @default(autoincrement())
-  productId  Int
-  occasionId Int
-
-  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  occasion   Occasion @relation(fields: [occasionId], references: [id], onDelete: Cascade)
-
-  @@unique([productId, occasionId])
 }
 
 model Cart {

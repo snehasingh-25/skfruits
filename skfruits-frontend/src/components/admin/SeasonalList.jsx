@@ -53,11 +53,11 @@ export default function SeasonalList({ seasonals, onEdit, onDelete }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="font-semibold" style={{ color: "var(--foreground)" }}>{seasonal.name}</div>
-        <div className="text-xs" style={{ color: "var(--muted)" }}>Slug: {seasonal.slug}</div>
+        <div className="text-xs text-muted">Slug: {seasonal.slug}</div>
       </div>
       <div className="flex-shrink-0">
         {!seasonal.isActive && (
-          <span className="px-2 py-0.5 text-xs rounded-full font-semibold" style={{ backgroundColor: "var(--secondary)", color: "var(--muted)" }}>Inactive</span>
+          <span className="px-2 py-0.5 text-xs rounded-full font-semibold text-muted" style={{ backgroundColor: "var(--secondary)" }}>Inactive</span>
         )}
       </div>
       <div className="flex-shrink-0 flex gap-2">
@@ -105,7 +105,7 @@ export default function SeasonalList({ seasonals, onEdit, onDelete }) {
       emptyState={
         <>
           <img src="/logo.png" alt="SK Fruits" className="w-20 h-20 mx-auto mb-4 object-contain opacity-50" />
-          <p className="font-medium" style={{ color: "var(--muted)" }}>No seasonal items yet. Add your first seasonal above!</p>
+          <p className="font-medium text-muted">No seasonal items yet. Add your first seasonal above!</p>
         </>
       }
     />

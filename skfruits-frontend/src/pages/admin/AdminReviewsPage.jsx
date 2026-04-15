@@ -97,7 +97,7 @@ export default function AdminReviewsPage() {
             className="rounded-2xl border-2 border-dashed p-12 text-center"
             style={{ borderColor: "var(--border)", background: "var(--secondary)" }}
           >
-            <p className="text-sm" style={{ color: "var(--muted)" }}>
+            <p className="text-sm text-muted">
               No reviews yet.
             </p>
           </div>
@@ -118,7 +118,7 @@ export default function AdminReviewsPage() {
                     >
                       {r.productName || `Product #${r.productId}`}
                     </Link>
-                    <span className="text-xs" style={{ color: "var(--muted)" }}>
+                    <span className="text-xs text-muted">
                       #{r.productId}
                     </span>
                   </div>
@@ -128,7 +128,7 @@ export default function AdminReviewsPage() {
                       {r.userName || "Anonymous"}
                     </span>
                     {r.userEmail ? (
-                      <span className="text-xs" style={{ color: "var(--muted)" }}>
+                      <span className="text-xs text-muted">
                         ({r.userEmail})
                       </span>
                     ) : null}
@@ -138,7 +138,7 @@ export default function AdminReviewsPage() {
                       {r.comment}
                     </p>
                   ) : null}
-                  <p className="text-xs mt-2" style={{ color: "var(--muted)" }}>
+                  <p className="text-xs mt-2 text-muted">
                     {formatDate(r.createdAt)}
                   </p>
                 </div>

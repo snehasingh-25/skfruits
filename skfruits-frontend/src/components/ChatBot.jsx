@@ -63,7 +63,7 @@ export default function ChatBot() {
         const errText = (data.error || "").toLowerCase();
         if (res.status === 429 || errText.includes("quota") || errText.includes("billing")) {
           setIsOpen(false);
-          navigate("/categories?trending=true");
+          navigate("/categories");
           return;
         }
         throw new Error(data.error || "Something went wrong");
@@ -120,7 +120,6 @@ export default function ChatBot() {
 
   const quickActions = [
     { label: "Browse Products", action: () => navigate("/categories") },
-    { label: "View Exotic", action: () => navigate("/exotic") },
     { label: "Chat on WhatsApp", action: () => window.open(WHATSAPP_LINK, "_blank") },
   ];
 

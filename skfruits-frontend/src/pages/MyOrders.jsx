@@ -128,14 +128,14 @@ export default function MyOrders() {
               className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
               style={{ background: "var(--muted)" }}
             >
-              <svg className="w-8 h-8" style={{ color: "var(--muted)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-8 h-8 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
             </div>
             <p className="text-lg font-medium mb-2" style={{ color: "var(--foreground)" }}>
               No orders yet
             </p>
-            <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>
+            <p className="text-sm mb-6 text-muted">
               When you place an order, it will show up here.
             </p>
             <Link
@@ -157,7 +157,7 @@ export default function MyOrders() {
                 <div className="p-6">
                   <div className="flex flex-wrap justify-between items-start gap-4 mb-4">
                     <div>
-                      <p className="text-sm font-mono font-medium flex flex-wrap items-center gap-2" style={{ color: "var(--muted)" }}>
+                      <p className="text-sm font-mono font-medium flex flex-wrap items-center gap-2 text-muted">
                         <span>Order #{order.id}</span>
                         {orderContainsFruitBasket(order.items) && (
                           <span
@@ -199,7 +199,7 @@ export default function MyOrders() {
                         {item.image ? (
                           <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-xs" style={{ color: "var(--muted)" }}>—</span>
+                          <span className="text-xs text-muted">—</span>
                         )}
                       </div>
                     ))}

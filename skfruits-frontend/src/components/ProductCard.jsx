@@ -91,19 +91,9 @@ function ProductCard({ product, compact = false }) {
 
   const badges = useMemo(() => {
     const list = [];
-
-    // Fresh Today
-    if (product?.isReady60Min) list.push({ key: "fresh", label: "Fresh Today", tone: "fresh" });
-
-    // Bestseller
-    if (product?.isTrending) list.push({ key: "best", label: "Bestseller", tone: "bestseller" });
-
-    // Limited Stock (urgent)
     if (lowStock && !outOfStock) list.push({ key: "limited", label: "Limited Stock", tone: "limited" });
-
-    // Keep it clean
     return list.slice(0, 2);
-  }, [product?.isReady60Min, product?.isTrending, lowStock, outOfStock]);
+  }, [lowStock, outOfStock]);
 
   const handleAddToCart = async () => {
     if (outOfStock) {

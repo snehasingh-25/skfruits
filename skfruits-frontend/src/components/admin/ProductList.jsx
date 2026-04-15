@@ -52,7 +52,6 @@ function cloneProductForDuplicate(product) {
         })()
       : null,
     categories: product.categories || [],
-    occasions: product.occasions || [],
   };
 }
 
@@ -174,27 +173,6 @@ export default function ProductList({ products, onEdit, onDelete }) {
             <span style={{ color: typeof product.stock === 'number' && product.stock <= 5 ? 'oklch(50% .2 25)' : 'oklch(55% .02 340)' }}>
               <strong>Stock:</strong> {typeof product.stock === 'number' ? product.stock : 0}
             </span>
-          </div>
-        </div>
-
-        {/* Badges */}
-        <div className="flex-shrink-0">
-          <div className="flex flex-wrap gap-1">
-            {product.isFestival && (
-              <span className="px-2 py-0.5 bg-pink-100 text-pink-700 text-xs rounded-full font-semibold">
-                Festival
-              </span>
-            )}
-            {product.isNew && (
-              <span className="px-2 py-0.5 bg-pink-100 text-pink-700 text-xs rounded-full font-semibold">
-                New
-              </span>
-            )}
-            {product.isTrending && (
-              <span className="px-2 py-0.5 bg-pink-100 text-pink-700 text-xs rounded-full font-semibold">
-                Trending
-              </span>
-            )}
           </div>
         </div>
 
