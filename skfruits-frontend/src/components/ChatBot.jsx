@@ -3,21 +3,38 @@ import { useNavigate } from "react-router-dom";
 import { API } from "../api";
 import ProductCard from "./ProductCard";
 
-const WHATSAPP_LINK = "https://wa.me/919116546255?text=" + encodeURIComponent("Hello! I need assistance with GiftChoice.");
+const SUPPORT_PHONE_E164 = "+919116546255";
+const SUPPORT_WHATSAPP = "919116546255";
+
+const buildWhatsAppLink = (text) =>
+  `https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent(text || "Hello! I need assistance.")}`;
+
+const CHAT_UNAVAILABLE_WHATSAPP_TEXT =
+  "Our chat assistant is briefly unavailable. Tap below to continue on WhatsApp — our team will help you right away.";
+
+function looksLikeModelUnavailablePayload(text) {
+  const s = String(text || "").trim();
+  if (!s.startsWith("{")) return false;
+  return (
+    /"code"\s*:\s*503/.test(s) ||
+    /"status"\s*:\s*"UNAVAILABLE"/i.test(s) ||
+    /high demand/i.test(s) ||
+    /UNAVAILABLE/i.test(s)
+  );
+}
 
 const WELCOME_MESSAGE = {
   id: "welcome",
-  text: `👋 Hi! I'm Gift Buddy 🎁\nYour personal gift assistant.\nLooking for the perfect gift today?`,
+  text: `👋 Hi! I’m your customer support assistant for SK Fruits.\nHow can I help you today?`,
   sender: "bot",
   timestamp: new Date(),
   quickOptions: [
-    { label: "🎂 Birthday Gifts", value: "Birthday gifts" },
-    { label: "💍 Anniversary / Wedding Gifts", value: "Anniversary or wedding gifts" },
-    { label: "❤️ Gifts for Loved Ones", value: "Gifts for loved ones" },
-    { label: "🧸 Kids Gifts", value: "Gifts for kids" },
-    { label: "🏢 Corporate / Bulk Gifts", value: "Corporate or bulk gifts" },
-    { label: "💰 Gifts by Budget", value: "Gifts by budget - help me choose" },
-    { label: "✍️ Type your requirement", value: "" },
+    { label: "Delivery timing", value: "What are your delivery timings?" },
+    { label: "Pricing", value: "Can you share pricing details?" },
+    { label: "Availability", value: "Is this product available?" },
+    { label: "Payment options", value: "What payment options are available?" },
+    { label: "Talk to team", value: "I want to talk to customer support" },
+    { label: "✍️ Type your question", value: "" },
   ],
 };
 
@@ -57,16 +74,83 @@ export default function ChatBot() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: conversationRef.current }),
       });
-      const data = await res.json();
+      const rawBody = await res.text();
+      let data = {};
+      try {
+        data = rawBody ? JSON.parse(rawBody) : {};
+      } catch {
+        data = {};
+      }
 
       if (!res.ok) {
-        const errText = (data.error || "").toLowerCase();
-        if (res.status === 429 || errText.includes("quota") || errText.includes("billing")) {
+        const errObj = data?.error;
+        const errText =
+          typeof errObj === "string"
+            ? errObj
+            : typeof errObj?.message === "string"
+              ? errObj.message
+              : typeof data?.message === "string"
+                ? data.message
+                : "";
+        const errLower = errText.toLowerCase();
+        const isQuota =
+          res.status === 429 ||
+          errObj?.code === 429 ||
+          errLower.includes("quota") ||
+          errLower.includes("billing");
+        if (isQuota) {
           setIsOpen(false);
           navigate("/categories");
           return;
         }
-        throw new Error(data.error || "Something went wrong");
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now() + 1,
+            text: CHAT_UNAVAILABLE_WHATSAPP_TEXT,
+            sender: "bot",
+            timestamp: new Date(),
+            action: "whatsapp",
+          },
+        ]);
+        return;
+      }
+
+      if (data?.handoff) {
+        const channel = data?.handoffChannel || "whatsapp";
+        const support = data?.support || {};
+        const botMsg = {
+          id: Date.now() + 1,
+          text: data.message || "I’m transferring you to our support team. Please hold on.",
+          sender: "bot",
+          timestamp: new Date(),
+          action: "handoff",
+          handoffChannel: channel,
+          support: {
+            phone: support.phone || SUPPORT_PHONE_E164,
+            whatsapp: support.whatsapp || SUPPORT_WHATSAPP,
+          },
+        };
+        setMessages((prev) => [...prev, botMsg]);
+        conversationRef.current = [
+          ...conversationRef.current,
+          { role: "assistant", content: botMsg.text },
+        ];
+        return;
+      }
+
+      if (looksLikeModelUnavailablePayload(data.message)) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now() + 1,
+            text: CHAT_UNAVAILABLE_WHATSAPP_TEXT,
+            sender: "bot",
+            timestamp: new Date(),
+            action: "whatsapp",
+          },
+        ]);
+        return;
       }
 
       const botMsg = {
@@ -79,15 +163,14 @@ export default function ChatBot() {
       setMessages((prev) => [...prev, botMsg]);
       conversationRef.current = [
         ...conversationRef.current,
-        { role: "assistant", content: data.message },
+        { role: "assistant", content: botMsg.text },
       ];
-    } catch (err) {
-      const errMsg = err.message || "I'm syncing the latest gifts right now 😊 Meanwhile, you can chat with me directly on WhatsApp for quick help 🎁";
+    } catch {
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now() + 1,
-          text: errMsg,
+          text: CHAT_UNAVAILABLE_WHATSAPP_TEXT,
           sender: "bot",
           timestamp: new Date(),
           action: "whatsapp",
@@ -114,13 +197,17 @@ export default function ChatBot() {
 
   const handleAction = (action) => {
     if (action === "whatsapp") {
-      window.open(WHATSAPP_LINK, "_blank");
+      window.open(buildWhatsAppLink("Hello! I need assistance with SK Fruits."), "_blank", "noopener,noreferrer");
+    }
+    if (action === "call") {
+      window.open(`tel:${SUPPORT_PHONE_E164}`, "_self");
     }
   };
 
   const quickActions = [
     { label: "Browse Products", action: () => navigate("/categories") },
-    { label: "Chat on WhatsApp", action: () => window.open(WHATSAPP_LINK, "_blank") },
+    { label: "Chat on WhatsApp", action: () => window.open(buildWhatsAppLink("Hello! I need assistance with SK Fruits."), "_blank", "noopener,noreferrer") },
+    { label: "Call Support", action: () => window.open(`tel:${SUPPORT_PHONE_E164}`, "_self") },
   ];
 
   return (
@@ -129,18 +216,18 @@ export default function ChatBot() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50 rounded-full w-14 h-14 md:w-16 md:h-16 shadow-2xl hover:scale-110 transition-all duration-300 flex items-center justify-center group active:scale-95"
-        style={{ backgroundColor: "oklch(92% .04 340)" }}
-        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "oklch(88% .06 340)")}
-        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "oklch(92% .04 340)")}
+        style={{ backgroundColor: "var(--btn-primary-bg)", color: "var(--btn-primary-fg)" }}
+        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--hover-accent)")}
+        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--btn-primary-bg)")}
       >
         {!isOpen ? (
           <img 
             src="/model.png" 
-            alt="Gift Buddy" 
+            alt="Support" 
             className="w-10 h-10"
           />
         ) : (
-          <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: "oklch(20% .02 340)" }}>
+          <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: "var(--btn-primary-fg)" }}>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         )}
@@ -150,39 +237,39 @@ export default function ChatBot() {
       {isOpen && (
         <div
           className="fixed inset-x-0 bottom-0 md:bottom-24 md:right-8 md:left-auto z-50 w-full md:w-96 h-[100dvh] md:h-[600px] bg-white md:rounded-2xl shadow-2xl flex flex-col border-2 md:border-2 border-t-2 overflow-hidden"
-          style={{ borderColor: "oklch(92% .04 340)" }}
+          style={{ borderColor: "var(--border)", backgroundColor: "var(--card-white)" }}
         >
           {/* Header - responsive padding */}
           <div
             className="p-3 md:p-4 border-b-2 flex items-center justify-between shrink-0"
-            style={{ borderColor: "oklch(92% .04 340)", backgroundColor: "oklch(92% .04 340)" }}
+            style={{ borderColor: "var(--border)", backgroundColor: "var(--secondary)" }}
           >
             <div className="flex items-center gap-2 md:gap-3">
-              <div className="w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center overflow-hidden" style={{ backgroundColor: "oklch(88% .06 340)" }}>
+              <div className="w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center overflow-hidden" style={{ backgroundColor: "var(--card-white)" }}>
                 <img 
                   src="/model.png" 
-                  alt="Gift Buddy" 
+                  alt="Support" 
                   className="w-10 h-10"
                 />
               </div>
               <div>
-                <h3 className="font-bold text-sm md:text-base" style={{ color: "oklch(20% .02 340)" }}>
-                  Gift Buddy
+                <h3 className="font-bold text-sm md:text-base" style={{ color: "var(--foreground)" }}>
+                  SK Fruits Support
                 </h3>
-                <p className="text-xs" style={{ color: "oklch(60% .02 340)" }}>
-                  Your personal gift assistant
+                <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  Customer support assistant
                 </p>
               </div>
             </div>
             <button onClick={() => setIsOpen(false)} className="p-1 rounded-lg hover:bg-white/50 transition">
-              <svg className="w-5 h-5" style={{ color: "oklch(20% .02 340)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" style={{ color: "var(--foreground)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
           {/* Messages - responsive padding and spacing */}
-          <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4" style={{ backgroundColor: "white" }}>
+          <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4" style={{ backgroundColor: "var(--card-white)" }}>
             {messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
                 <div
@@ -190,8 +277,8 @@ export default function ChatBot() {
                     msg.sender === "user" ? "rounded-br-sm" : "rounded-bl-sm"
                   }`}
                   style={{
-                    backgroundColor: msg.sender === "user" ? "oklch(92% .04 340)" : "oklch(96% .02 340)",
-                    color: "oklch(20% .02 340)",
+                    backgroundColor: msg.sender === "user" ? "var(--peach-bg)" : "var(--secondary)",
+                    color: "var(--foreground)",
                   }}
                 >
                   <p className="text-xs md:text-sm whitespace-pre-line">{msg.text}</p>
@@ -203,7 +290,7 @@ export default function ChatBot() {
                           onClick={() => handleQuickOption(opt)}
                           disabled={loading || opt.value === ""}
                           className="px-2 md:px-2.5 py-1 rounded-full text-[10px] md:text-xs font-medium transition disabled:opacity-50"
-                          style={{ backgroundColor: "oklch(92% .04 340)", color: "oklch(20% .02 340)" }}
+                          style={{ backgroundColor: "var(--btn-primary-bg)", color: "var(--btn-primary-fg)" }}
                         >
                           {opt.label}
                         </button>
@@ -221,10 +308,41 @@ export default function ChatBot() {
                     <button
                       onClick={() => handleAction("whatsapp")}
                       className="mt-2 px-2.5 md:px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-semibold w-full"
-                      style={{ backgroundColor: "oklch(92% .04 340)", color: "oklch(20% .02 340)" }}
+                      style={{ backgroundColor: "var(--btn-primary-bg)", color: "var(--btn-primary-fg)" }}
                     >
                       Chat on WhatsApp
                     </button>
+                  )}
+                  {msg.action === "handoff" && (
+                    <div className="mt-2 space-y-2">
+                      <button
+                        onClick={() => {
+                          const phone = msg?.support?.phone || SUPPORT_PHONE_E164;
+                          window.open(`tel:${phone}`, "_self");
+                        }}
+                        className="px-2.5 md:px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-semibold w-full"
+                        style={{ backgroundColor: "var(--btn-primary-bg)", color: "var(--btn-primary-fg)" }}
+                      >
+                        Call support
+                      </button>
+                      <button
+                        onClick={() => {
+                          const wa = msg?.support?.whatsapp || SUPPORT_WHATSAPP;
+                          const lastUser = conversationRef.current
+                            .slice()
+                            .reverse()
+                            .find((m) => m.role === "user")?.content;
+                          const link = `https://wa.me/${wa}?text=${encodeURIComponent(
+                            `Hello! I need help. ${lastUser ? `My question: ${lastUser}` : ""}`.trim()
+                          )}`;
+                          window.open(link, "_blank", "noopener,noreferrer");
+                        }}
+                        className="px-2.5 md:px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-semibold w-full"
+                        style={{ backgroundColor: "var(--btn-primary-bg)", color: "var(--btn-primary-fg)" }}
+                      >
+                        Chat on WhatsApp
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -233,7 +351,7 @@ export default function ChatBot() {
               <div className="flex justify-start">
                 <div
                   className="rounded-2xl rounded-bl-sm px-3 md:px-4 py-2"
-                  style={{ backgroundColor: "oklch(96% .02 340)", color: "oklch(20% .02 340)" }}
+                  style={{ backgroundColor: "var(--secondary)", color: "var(--foreground)" }}
                 >
                   <span className="inline-block w-3 h-3 md:w-4 md:h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                   <span className="ml-2 text-xs md:text-sm">Thinking…</span>
@@ -246,14 +364,14 @@ export default function ChatBot() {
           {/* Quick actions - responsive and scrollable on mobile */}
           <div
             className="p-2 md:p-3 border-t-2 flex gap-1.5 md:gap-2 overflow-x-auto shrink-0 scrollbar-hide"
-            style={{ borderColor: "oklch(92% .04 340)", backgroundColor: "oklch(96% .02 340)" }}
+            style={{ borderColor: "var(--border)", backgroundColor: "var(--secondary)" }}
           >
             {quickActions.map((action, idx) => (
               <button
                 key={idx}
                 onClick={action.action}
                 className="px-2.5 md:px-3 py-1 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold whitespace-nowrap transition-all"
-                style={{ backgroundColor: "oklch(92% .04 340)", color: "oklch(20% .02 340)" }}
+                style={{ backgroundColor: "var(--btn-primary-bg)", color: "var(--btn-primary-fg)" }}
               >
                 {action.label}
               </button>
@@ -261,7 +379,7 @@ export default function ChatBot() {
           </div>
 
           {/* Input form - responsive padding and sizing */}
-          <form onSubmit={handleSendMessage} className="p-3 md:p-4 border-t-2 shrink-0" style={{ borderColor: "oklch(92% .04 340)" }}>
+          <form onSubmit={handleSendMessage} className="p-3 md:p-4 border-t-2 shrink-0" style={{ borderColor: "var(--border)" }}>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -269,14 +387,14 @@ export default function ChatBot() {
                 onChange={(e) => setInputMessage(e.target.value)}
                 placeholder="Type your message..."
                 className="flex-1 px-3 md:px-4 py-2 md:py-2.5 rounded-full text-xs md:text-sm border-2 focus:outline-none transition"
-                style={{ borderColor: "oklch(92% .04 340)", backgroundColor: "white", color: "oklch(20% .02 340)" }}
+                style={{ borderColor: "var(--border)", backgroundColor: "var(--card-white)", color: "var(--foreground)" }}
                 disabled={loading}
               />
               <button
                 type="submit"
                 disabled={loading}
                 className="px-3 md:px-4 py-2 md:py-2.5 rounded-full font-semibold transition hover:scale-105 active:scale-95 disabled:opacity-50 shrink-0"
-                style={{ backgroundColor: "oklch(92% .04 340)", color: "oklch(20% .02 340)" }}
+                style={{ backgroundColor: "var(--btn-primary-bg)", color: "var(--btn-primary-fg)" }}
               >
                 <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 2 9 18z" />

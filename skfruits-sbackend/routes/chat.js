@@ -1,64 +1,106 @@
 import express from "express";
-// import OpenAI from "openai";
-import { GoogleGenAI } from "@google/genai";
-import prisma from "../prisma.js";
 
 const router = express.Router();
 
-const GIFT_BUDDY_SYSTEM_PROMPT = `You are Gift Buddy 🤝🎁, a friendly and helpful Gift Shopping Assistant for an online gift shop.
+const COMPANY_NAME = process.env.CHATBOT_COMPANY_NAME || "SK Fruits";
+const SUPPORT_PHONE_E164 = process.env.SUPPORT_PHONE_E164 || "+919116546255";
+const SUPPORT_WHATSAPP = process.env.SUPPORT_WHATSAPP || "919116546255";
 
-Your job: help customers find the perfect gift (recipient, budget, quantity). Be like a real, friendly advisor—not a robot.
+const ASK_TEAM = "Would you like me to connect you with our team?";
 
-LANGUAGE & TONE (IMPORTANT):
-- Reply ONLY in Hinglish (natural mix of Hindi + English). Example: "Achha choice hai! Ye gifts dekh lo 🎁" or "Budget ke hisaab se ye options best hain."
-- Keep your "message" SHORT: 1–3 sentences max. No long paragraphs. Friendly, warm, casual.
-- Use emojis sparingly (🎁 😊 👍). Never sound robotic or salesy.
-
-GIFT SUGGESTION RULES (CRITICAL):
-- Suggest ONLY 2–4 products. Use ONLY products from LIVE_PRODUCT_DATA. Never invent products or prices.
-- Every suggestion: gift name, why it's good, price range. Match budget from the user.
-- If out of stock: "Ye abhi out of stock hai 😕 Par similar options dikhata hoon."
-
-LINKS (IMPORTANT): Product cards with clickable "View" / "Add" links are shown BELOW your message automatically. So:
-- NEVER say "main direct link nahi de sakta", "search karo", "product IDs de raha hoon website par search karo", or "link nahi de sakta". That is wrong—links are already there in the cards below.
-- Instead say: "Neeche in gifts pe click karke dekh lo! 😊" or "In options pe View/Add pe click karo." so user knows the cards below are clickable. Do NOT mention product IDs or "search" in your reply.
-
-BUDGET: Respect user budget. No exact match? Suggest nearby options in 1 short line.
-
-RESPONSE FORMAT (JSON only): Reply with exactly this JSON, nothing else:
-{"message": "Your short Hinglish reply here", "productIds": [id1, id2, ...]}
-
-- "message": Short, friendly reply in Hinglish (1–3 sentences).
-- "productIds": Product IDs from LIVE_PRODUCT_DATA only. Max 2–4. Empty [] if no products.
-- Be honest, helpful, and keep it brief.`;
-
-function buildProductContext(products, categories) {
-  const items = products.map((p) => {
-    const cats = (p.categories || []).map((c) => c.name || c).join(", ");
-    let priceStr = "";
-    if (p.hasSinglePrice && p.singlePrice != null) {
-      priceStr = `₹${p.singlePrice}`;
-    } else if (p.sizes && p.sizes.length > 0) {
-      const prices = p.sizes.map((s) => s.price);
-      const min = Math.min(...prices);
-      const max = Math.max(...prices);
-      priceStr = min === max ? `₹${min}` : `₹${min} - ₹${max}`;
-    }
-    return {
-      id: p.id,
-      name: p.name,
-      description: (p.description || "").slice(0, 200),
-      price: priceStr,
-      categories: cats,
-      inStock: true,
-    };
-  });
-  return JSON.stringify(items, null, 2);
+function getLastUserText(messages) {
+  for (let i = (messages?.length || 0) - 1; i >= 0; i -= 1) {
+    const m = messages[i];
+    if (m?.role === "user") return String(m.content || "");
+  }
+  return "";
 }
 
-function buildWelcomeContext(categories) {
-  const catNames = (categories || []).map((c) => c.name).filter(Boolean);
-  return { categories: catNames };
+function normalizeText(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildHandoffPayload(channel = "whatsapp") {
+  return {
+    message: "I’m transferring you to our support team. Please hold on.",
+    products: [],
+    handoff: true,
+    handoffChannel: channel,
+    support: {
+      phone: SUPPORT_PHONE_E164,
+      whatsapp: SUPPORT_WHATSAPP,
+    },
+  };
+}
+
+function detectHandoffIntent(userText) {
+  const t = normalizeText(userText);
+  if (!t) return null;
+  const wantsHuman =
+    /\b(human|agent|representative|support team|team|someone|person|talk to|speak to|call me|call|phone|urgent|asap|immediately|right away)\b/.test(
+      t
+    ) ||
+    /need help|help me|complaint|refund|cancel order|return|damaged|wrong item/.test(t);
+  if (!wantsHuman) return null;
+
+  const wantsCall = /\b(call|phone|ring)\b/.test(t);
+  return { channel: wantsCall ? "call" : "whatsapp" };
+}
+
+/** Rule-based replies only — no LLM, minimal processing. Unknown → handoff. */
+function buildFaqReply(userText) {
+  const t = normalizeText(userText);
+  if (!t) return null;
+
+  // Topic keywords before generic “hi/hello” so “hello, what’s the price?” hits pricing.
+  if (/\b(hours|timing|open|close|working hours)\b/.test(t)) {
+    return { message: `Support is available during our usual business hours. ${ASK_TEAM}`, handoff: false };
+  }
+  if (/\b(delivery|shipping|deliver|how long)\b/.test(t)) {
+    return { message: `Delivery depends on your area and what you order. ${ASK_TEAM}`, handoff: false };
+  }
+  if (/\b(price|pricing|cost|how much)\b/.test(t)) {
+    return { message: `Prices are shown on each product. ${ASK_TEAM}`, handoff: false };
+  }
+  if (/\b(available|availability|in stock|stock)\b/.test(t)) {
+    return { message: `Stock can change quickly. ${ASK_TEAM}`, handoff: false };
+  }
+  if (/\b(payment|pay|cod|upi|card)\b/.test(t)) {
+    return {
+      message: `We accept Razorpay payments: UPI, Debit/Credit Cards, Netbanking, and Wallets. ${ASK_TEAM}`,
+      handoff: false,
+    };
+  }
+  if (/\b(return|refund|replace|cancel)\b/.test(t)) {
+    return { handoff: true, handoffChannel: "whatsapp" };
+  }
+  if (/\b(track|order status|where is my order|my order)\b/.test(t)) {
+    return { handoff: true, handoffChannel: "whatsapp" };
+  }
+  if (/\b(shop|buy|product|fruits|catalog|menu)\b/.test(t)) {
+    return {
+      message: `You can browse products on the site. ${ASK_TEAM}`,
+      handoff: false,
+    };
+  }
+
+  if (/\b(thanks|thank you|thx)\b/.test(t)) {
+    return { message: `You’re welcome! ${ASK_TEAM}`, handoff: false };
+  }
+  if (/\b(bye|goodbye)\b/.test(t)) {
+    return { message: "Goodbye — we’re here if you need anything else.", handoff: false };
+  }
+  if (/^(hi|hello|hey|good morning|good afternoon|good evening)\b/.test(t)) {
+    return {
+      message: `Hi! I’m here for quick questions about ${COMPANY_NAME}. ${ASK_TEAM}`,
+      handoff: false,
+    };
+  }
+
+  return null;
 }
 
 router.post("/", async (req, res) => {
@@ -68,150 +110,30 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "messages array is required" });
     }
 
-    const [productsRaw, categories] = await Promise.all([
-      prisma.product.findMany({
-        where: {},
-        include: {
-          sizes: true,
-          categories: { include: { category: true } },
-        },
-        orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-      }),
-      prisma.category.findMany({ orderBy: { order: "asc" } }),
-    ]);
+    const lastUserText = getLastUserText(messages);
 
-    const products = productsRaw.map((p) => {
-      let imgs = [];
-      try {
-        const parsed = JSON.parse(p.images || "[]");
-        imgs = Array.isArray(parsed) ? parsed : [];
-      } catch (_) {}
-      return {
-        ...p,
-        images: imgs,
-        categories: (p.categories || []).map((pc) => pc.category),
-      };
-    });
+    const intent = detectHandoffIntent(lastUserText);
+    if (intent) {
+      return res.json(buildHandoffPayload(intent.channel));
+    }
 
-    const productContext = buildProductContext(products, categories);
-    const welcomeContext = buildWelcomeContext(categories);
-
-    const systemContent = `${GIFT_BUDDY_SYSTEM_PROMPT}
-
-LIVE_PRODUCT_DATA (use these IDs when suggesting products):
-${productContext}
-
-AVAILABLE_CATEGORIES: ${JSON.stringify(welcomeContext.categories)}
-`;
-
-    // --- Gemini / Gemma (Gemma does not support systemInstruction; pass as first user message, then full history) ---
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (apiKey && apiKey.trim() !== "") {
-      const ai = new GoogleGenAI({ apiKey });
-      const history = messages.map((m) => ({
-        role: m.role === "assistant" ? "model" : "user",
-        parts: [{ text: String(m.content || "") }],
-      }));
-      const contents = [
-        { role: "user", parts: [{ text: `${systemContent}\n\n---\n\nYou must reply with ONLY valid JSON: {"message": "your reply", "productIds": [id1, id2, ...]}. No other text. Now here is the conversation:\n\n(Continue below.)` }] },
-        { role: "model", parts: [{ text: '{"message": "Ready!", "productIds": []}' }] },
-        ...history,
-      ];
-      const response = await ai.models.generateContent({
-        model: "gemma-3-12b-it",
-        contents,
-        config: {
-          maxOutputTokens: 400,
-          temperature: 0.7,
-        },
-      });
-      const raw = response.text?.trim();
-      if (!raw) {
-        return res.status(502).json({ error: "No response from assistant." });
-      }
-      let parsed;
-      try {
-        parsed = JSON.parse(raw);
-      } catch {
-        return res.json({ message: raw, products: [] });
-      }
-      const productIds = Array.isArray(parsed.productIds) ? parsed.productIds : [];
-      const suggested = products.filter((p) => productIds.includes(p.id)).slice(0, 4);
-      const productPayload = suggested.map((p) => ({
-        id: p.id,
-        name: p.name,
-        description: (p.description || "").slice(0, 200),
-        images: p.images || [],
-        hasSinglePrice: p.hasSinglePrice,
-        singlePrice: p.singlePrice,
-        originalPrice: p.originalPrice,
-        sizes: (p.sizes || []).map((s) => ({ id: s.id, label: s.label, price: s.price, originalPrice: s.originalPrice })),
-        categories: (p.categories || []).map((c) => ({ id: c?.id, name: c?.name })),
-        badge: p.badge,
-      }));
+    const faq = buildFaqReply(lastUserText);
+    if (faq?.handoff) {
+      return res.json(buildHandoffPayload(faq.handoffChannel || "whatsapp"));
+    }
+    if (faq?.message) {
       return res.json({
-        message: parsed.message || raw,
-        products: productPayload,
+        message: faq.message,
+        products: [],
+        handoff: false,
+        handoffChannel: null,
       });
     }
 
-    // --- OpenAI (commented out – uncomment and set OPENAI_API_KEY to use) ---
-    // const openaiKey = process.env.OPENAI_API_KEY;
-    // if (openaiKey && openaiKey.trim() !== "") {
-    //   const openai = new OpenAI({ apiKey: openaiKey });
-    //   const apiMessages = [
-    //     { role: "system", content: systemContent },
-    //     ...messages.map((m) => ({
-    //       role: m.role === "user" || m.role === "assistant" ? m.role : "user",
-    //       content: String(m.content || ""),
-    //     })),
-    //   ];
-    //   const completion = await openai.chat.completions.create({
-    //     model: "gpt-4o-mini",
-    //     messages: apiMessages,
-    //     max_tokens: 600,
-    //     temperature: 0.7,
-    //     response_format: { type: "json_object" },
-    //   });
-    //   const raw = completion.choices[0]?.message?.content?.trim();
-    //   if (!raw) {
-    //     return res.status(502).json({ error: "No response from assistant." });
-    //   }
-    //   let parsed;
-    //   try {
-    //     parsed = JSON.parse(raw);
-    //   } catch {
-    //     return res.json({ message: raw, products: [] });
-    //   }
-    //   const productIds = Array.isArray(parsed.productIds) ? parsed.productIds : [];
-    //   const suggested = products.filter((p) => productIds.includes(p.id)).slice(0, 4);
-    //   const productPayload = suggested.map((p) => ({
-    //     id: p.id,
-    //     name: p.name,
-    //     description: (p.description || "").slice(0, 200),
-    //     images: p.images || [],
-    //     hasSinglePrice: p.hasSinglePrice,
-    //     singlePrice: p.singlePrice,
-    //     originalPrice: p.originalPrice,
-    //     sizes: (p.sizes || []).map((s) => ({ id: s.id, label: s.label, price: s.price, originalPrice: s.originalPrice })),
-    //     categories: (p.categories || []).map((c) => ({ id: c?.id, name: c?.name })),
-    //
-    //     badge: p.badge,
-    //   }));
-    //   return res.json({
-    //     message: parsed.message || raw,
-    //     products: productPayload,
-    //   });
-    // }
-
-    return res.status(400).json({
-      error: "GEMINI_API_KEY is not configured. Add it in your server environment variables (or use OPENAI_API_KEY by uncommenting the OpenAI block).",
-    });
+    return res.json(buildHandoffPayload("whatsapp"));
   } catch (err) {
     console.error("Chat error:", err);
-    const status = err.status === 401 ? 401 : err.status === 429 ? 429 : 500;
-    const message = err.message || err.error?.message || "Chat failed.";
-    return res.status(status).json({ error: message });
+    return res.json(buildHandoffPayload("whatsapp"));
   }
 });
 

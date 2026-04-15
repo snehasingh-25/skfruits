@@ -85,7 +85,7 @@ function PublicLayout() {
       <Footer />
       <div className="h-19 md:hidden" aria-hidden />
       <BottomMenuBar />
-      {/* <ChatBot /> */}
+      <ChatBot />
     </>
   );
 }
