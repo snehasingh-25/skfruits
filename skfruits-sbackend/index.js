@@ -37,6 +37,18 @@ import deliveryRoutes from "./routes/delivery.js";
 import cache from "./utils/cache.js";
 import { ensureAdminUser } from "./utils/ensureAdminUser.js";
 import { getFruitBasketPackagingProductId } from "./utils/fruitBasketPackagingProduct.js";
+import {
+  globalPublicRateLimiter,
+  writeMethodRateLimiter,
+  authRateLimiter,
+  formSubmissionRateLimiter,
+  publicChatRateLimiter,
+  publicBrowseRateLimiter,
+  productListRateLimiter,
+  generateDescriptionRateLimiter,
+  adminWriteRateLimiter,
+  limitPostOnly,
+} from "./utils/rateLimit.js";
 
 // Log startup information
 console.log("=== Server Startup ===");
@@ -55,6 +67,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
+
+app.set("trust proxy", 1);
 
 app.use(
   cors({
@@ -101,6 +115,13 @@ app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
 });
+
+const RATE_LIMIT_SKIP_PATHS = new Set(["/health", "/test", "/"]);
+app.use((req, res, next) => {
+  if (RATE_LIMIT_SKIP_PATHS.has(req.path)) return next();
+  return globalPublicRateLimiter(req, res, next);
+});
+app.use(writeMethodRateLimiter);
 
 // Serve uploaded files
 app.use(
@@ -165,34 +186,34 @@ app.get("/health", async (req, res) => {
   }
 });
 
-app.use("/products", productRoutes);
-app.use("/categories", categoryRoutes);
-app.use("/orders", orderRoutes);
-app.use("/auth", authRoutes);
-app.use("/contact", contactRoutes);
-app.use("/cart", cartRoutes);
-app.use("/reels", reelRoutes);
-app.use("/seasonal", seasonalRoutes);
-app.use("/banners", bannerRoutes);
-app.use("/baskets", basketRoutes);
-app.use("/saved-fruit-baskets", savedFruitBasketRoutes);
-app.use("/home", homeRoutes);
-app.use("/recommendations", recommendationRoutes);
-app.use("/size-options", sizeOptionRoutes);
-app.use("/generate-description", generateDescriptionRoutes);
-app.use("/chat", chatRoutes);
-app.use("/addresses", addressRoutes);
-app.use("/payments", paymentRoutes);
-app.use("/admin/orders", adminOrderRoutes);
-app.use("/admin/analytics", adminAnalyticsRoutes);
-app.use("/admin/products", adminProductsRoutes);
-app.use("/admin/inventory", adminInventoryRoutes);
-app.use("/admin/reviews", adminReviewRoutes);
-app.use("/admin/drivers", adminDriverRoutes);
-app.use("/driver", driverRoutes);
-app.use("/wishlist", wishlistRoutes);
-app.use("/reviews", reviewRoutes);
-app.use("/delivery", deliveryRoutes);
+app.use("/products", productListRateLimiter, productRoutes);
+app.use("/categories", publicBrowseRateLimiter, categoryRoutes);
+app.use("/orders", publicBrowseRateLimiter, orderRoutes);
+app.use("/auth", authRateLimiter, authRoutes);
+app.use("/contact", limitPostOnly(formSubmissionRateLimiter), contactRoutes);
+app.use("/cart", publicBrowseRateLimiter, cartRoutes);
+app.use("/reels", publicBrowseRateLimiter, reelRoutes);
+app.use("/seasonal", publicBrowseRateLimiter, seasonalRoutes);
+app.use("/banners", publicBrowseRateLimiter, bannerRoutes);
+app.use("/baskets", publicBrowseRateLimiter, basketRoutes);
+app.use("/saved-fruit-baskets", publicBrowseRateLimiter, savedFruitBasketRoutes);
+app.use("/home", publicBrowseRateLimiter, homeRoutes);
+app.use("/recommendations", publicBrowseRateLimiter, recommendationRoutes);
+app.use("/size-options", publicBrowseRateLimiter, sizeOptionRoutes);
+app.use("/generate-description", generateDescriptionRateLimiter, generateDescriptionRoutes);
+app.use("/chat", publicChatRateLimiter, chatRoutes);
+app.use("/addresses", publicBrowseRateLimiter, addressRoutes);
+app.use("/payments", publicBrowseRateLimiter, paymentRoutes);
+app.use("/admin/orders", adminWriteRateLimiter, adminOrderRoutes);
+app.use("/admin/analytics", adminWriteRateLimiter, adminAnalyticsRoutes);
+app.use("/admin/products", adminWriteRateLimiter, adminProductsRoutes);
+app.use("/admin/inventory", adminWriteRateLimiter, adminInventoryRoutes);
+app.use("/admin/reviews", adminWriteRateLimiter, adminReviewRoutes);
+app.use("/admin/drivers", adminWriteRateLimiter, adminDriverRoutes);
+app.use("/driver", publicBrowseRateLimiter, driverRoutes);
+app.use("/wishlist", publicBrowseRateLimiter, wishlistRoutes);
+app.use("/reviews", publicBrowseRateLimiter, reviewRoutes);
+app.use("/delivery", publicBrowseRateLimiter, deliveryRoutes);
 
 // Global error handling middleware (must be after all routes)
 app.use((err, req, res, next) => {
