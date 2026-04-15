@@ -112,7 +112,7 @@ export default function Footer() {
               <p className="flex items-center gap-2">
                 <span>📱</span>
                 <a 
-                  href="tel:+917976948872" 
+                  href="tel:+919116546255" 
                   className="hover:underline transition-all duration-300 text-design-foreground hover:opacity-80"
                 >
                   

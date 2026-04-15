@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { API } from "../api";
 import ProductCard from "./ProductCard";
 
-const WHATSAPP_LINK = "https://wa.me/917976948872?text=" + encodeURIComponent("Hello! I need assistance with GiftChoice.");
+const WHATSAPP_LINK = "https://wa.me/919116546255?text=" + encodeURIComponent("Hello! I need assistance with GiftChoice.");
 
 const WELCOME_MESSAGE = {
   id: "welcome",

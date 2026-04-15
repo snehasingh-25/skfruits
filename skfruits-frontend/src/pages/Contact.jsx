@@ -277,7 +277,7 @@ export default function Contact() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <a
-              href="tel:+917976948872"
+              href="tel:+919116546255"
               className="rounded-xl shadow-lg p-8 text-center hover:shadow-xl transition-all duration-300 group"
               style={{ backgroundColor: "var(--card-white)" }}
             >

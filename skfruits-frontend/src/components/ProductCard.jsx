@@ -247,7 +247,7 @@ function ProductCard({ product, compact = false }) {
   };
 
   const handleWhatsAppOrder = () => {
-    const phone = "917976948872";
+    const phone = "919116546255";
     const priceText = displayPrice != null ? `Price: ₹${Number(displayPrice).toLocaleString("en-IN")}` : "Price: varies by weight/size";
     const msg = `Hi! I want to order ${product?.name || "this product"}. ${priceText}. Please share available options and delivery details.`;
 
