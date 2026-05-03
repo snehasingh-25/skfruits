@@ -30,10 +30,13 @@ import adminProductsRoutes from "./routes/admin-products.js";
 import adminInventoryRoutes from "./routes/admin-inventory.js";
 import adminReviewRoutes from "./routes/admin-reviews.js";
 import adminDriverRoutes from "./routes/admin-drivers.js";
+import adminDeliveryRoutes from "./routes/admin-delivery.js";
 import driverRoutes from "./routes/driver.js";
 import wishlistRoutes from "./routes/wishlist.js";
 import reviewRoutes from "./routes/reviews.js";
 import deliveryRoutes from "./routes/delivery.js";
+import driverTrackingRoutes from "./routes/driver-tracking.js";
+import trackingRoutes from "./routes/tracking.js";
 import cache from "./utils/cache.js";
 import { ensureAdminUser } from "./utils/ensureAdminUser.js";
 import { getFruitBasketPackagingProductId } from "./utils/fruitBasketPackagingProduct.js";
@@ -210,10 +213,13 @@ app.use("/admin/products", adminWriteRateLimiter, adminProductsRoutes);
 app.use("/admin/inventory", adminWriteRateLimiter, adminInventoryRoutes);
 app.use("/admin/reviews", adminWriteRateLimiter, adminReviewRoutes);
 app.use("/admin/drivers", adminWriteRateLimiter, adminDriverRoutes);
+app.use("/admin/delivery", adminWriteRateLimiter, adminDeliveryRoutes);
 app.use("/driver", publicBrowseRateLimiter, driverRoutes);
+app.use("/driver/tracking", publicBrowseRateLimiter, driverTrackingRoutes);
 app.use("/wishlist", publicBrowseRateLimiter, wishlistRoutes);
 app.use("/reviews", publicBrowseRateLimiter, reviewRoutes);
 app.use("/delivery", publicBrowseRateLimiter, deliveryRoutes);
+app.use("/tracking", publicBrowseRateLimiter, trackingRoutes);
 
 // Global error handling middleware (must be after all routes)
 app.use((err, req, res, next) => {
