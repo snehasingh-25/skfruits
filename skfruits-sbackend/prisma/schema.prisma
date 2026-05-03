@@ -13,24 +13,32 @@ enum UserRole {
   driver
 }
 
+enum DriverAvailability {
+  available
+  busy
+  offline
+}
+
 model User {
-  id            Int           @id @default(autoincrement())
-  name          String
-  email         String        @unique
-  phone         String?
-  password      String        // bcrypt hashed
-  googleId      String?       @unique // for Google OAuth users
-  role          UserRole      @default(customer)
-  driverStatus  DriverStatus? // used when role = driver (available | busy | offline)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  carts          Cart[]
-  addresses      Address[]
-  orders         Order[]       @relation("OrderCustomer")
-  ordersAsDriver Order[]       @relation("OrderDriver") // orders assigned when role = driver
-  wishlists         Wishlist[]
-  reviews           Review[]
-  savedFruitBaskets SavedFruitBasket[]
+  id                Int               @id @default(autoincrement())
+  name              String
+  email             String            @unique
+  phone             String?
+  password          String            // bcrypt hashed
+  googleId          String?           @unique // for Google OAuth users
+  role              UserRole          @default(customer)
+  driverAvailability DriverAvailability? // used when role = driver (available | busy | offline)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  carts              Cart[]
+  addresses          Address[]
+  orders             Order[]           @relation("OrderCustomer")
+  ordersAsDriver     Order[]           @relation("OrderDriver") // orders assigned when role = driver
+  wishlists          Wishlist[]
+  reviews            Review[]
+  savedFruitBaskets  SavedFruitBasket[]
+  trackingEvents     DriverTrackingEvent[]
+  driverLiveStatus   DriverLiveStatus?
 }
 
 model Address {
@@ -148,21 +156,21 @@ model DeliverySlot {
 }
 
 model Order {
-  id                     Int           @id @default(autoincrement())
-  customer               String
-  phone                  String?       @db.Text
-  email                  String?
-  address                String?       @db.Text
-  addressLatitude        Float?
-  addressLongitude      Float?
-  total                  Float
-  status                 String        @default("pending")
-  notes                  String?       @db.Text
-  paymentMethod          String        @default("online") // "online" | "cod"
-  razorpayOrderId        String?       // Set when payment is online (for idempotency/audit)
-  razorpayPaymentId      String?       @unique // Set after verification; prevents duplicate orders
-  userId                 Int?          // Set when order is placed by logged-in user
-  deliveryFee            Float         @default(0)
+  id                       Int           @id @default(autoincrement())
+  customer                 String
+  phone                    String?       @db.Text
+  email                    String?
+  address                  String?       @db.Text
+  addressLatitude          Float?
+  addressLongitude         Float?
+  total                    Float
+  status                   String        @default("pending")
+  notes                    String?       @db.Text
+  paymentMethod            String        @default("online") // "online" | "cod"
+  razorpayOrderId          String?       // Set when payment is online (for idempotency/audit)
+  razorpayPaymentId        String?       @unique // Set after verification; prevents duplicate orders
+  userId                   Int?          // Set when order is placed by logged-in user
+  deliveryFee              Float         @default(0)
   estimatedDeliveryDate    DateTime?     @db.Date
   estimatedDeliveryTime    DateTime?     // Time window or exact ETA (nullable)
   estimatedDeliveryMinutes Int?          // "Delivery in X mins" — calculated at order creation
@@ -170,15 +178,27 @@ model Order {
   distanceKm               Float?        // Distance from nearest shop to customer (km)
   driverAvailable          Boolean?      // Was a driver available when order was placed?
   deliverySlotId           Int?
-  driverId              Int?          // Legacy: optional assigned driver (Driver table)
-  driverUserId          Int?          // Assigned driver (User with role = driver)
-  createdAt              DateTime      @default(now())
-  updatedAt              DateTime      @updatedAt
-  items                  OrderItem[]
-  user                   User?         @relation("OrderCustomer", fields: [userId], references: [id], onDelete: SetNull)
-  deliverySlot           DeliverySlot?  @relation(fields: [deliverySlotId], references: [id], onDelete: SetNull)
-  driver                 Driver?       @relation(fields: [driverId], references: [id], onDelete: SetNull)
-  driverUser             User?         @relation("OrderDriver", fields: [driverUserId], references: [id], onDelete: SetNull)
+  driverId                 Int?          // Legacy: optional assigned driver (Driver table)
+  driverUserId             Int?          // Assigned driver (User with role = driver)
+  
+  // Tracking fields
+  trackingStatus           String?       // "not_started" | "picked_up" | "in_transit" | "reached" | "delivered"
+  driverLastLocation       String?       // JSON: {lat, lng, timestamp}
+  driverLastLocationTime   DateTime?     // When last event was recorded
+  driverPredictedLocation  String?       // JSON: {lat, lng, isEstimated}
+  customerCanTrack         Boolean       @default(false) // Set to true when driver picks up
+  routePolyline           String?       @db.LongText // JSON: {polyline, steps, bounds} from Google Maps - for rendering actual road path
+  
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime      @updatedAt
+  
+  items                    OrderItem[]
+  trackingEvents           DriverTrackingEvent[]
+  user                     User?         @relation("OrderCustomer", fields: [userId], references: [id], onDelete: SetNull)
+  deliverySlot             DeliverySlot?  @relation(fields: [deliverySlotId], references: [id], onDelete: SetNull)
+  driver                   Driver?       @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  driverUser               User?         @relation("OrderDriver", fields: [driverUserId], references: [id], onDelete: SetNull)
+  driverLiveStatus         DriverLiveStatus?
 
   @@index([razorpayPaymentId])
   @@index([razorpayOrderId])
@@ -186,6 +206,8 @@ model Order {
   @@index([deliverySlotId])
   @@index([driverId])
   @@index([driverUserId])
+  @@index([trackingStatus])
+  @@index([customerCanTrack])
 }
 
 model OrderItem {
@@ -381,42 +403,97 @@ model SavedFruitBasket {
   @@index([userId, updatedAt])
 }
 
-enum DriverStatus {
-  available
-  busy
-  offline
-}
-
 model Driver {
-  id         Int          @id @default(autoincrement())
+  id         Int                @id @default(autoincrement())
   name       String
   phone      String
-  status     DriverStatus @default(available)
+  status     DriverAvailability @default(available)
   currentLat Float?
   currentLng Float?
-  createdAt  DateTime     @default(now())
+  createdAt  DateTime           @default(now())
   orders     Order[]
 }
 
-// Two physical shop locations — system picks nearest one for delivery time calc
-model ShopLocation {
-  id                    Int      @id @default(autoincrement())
-  name                  String                       // e.g. "SK Fruits - Malviya Nagar"
-  latitude              Float
-  longitude             Float
-  isActive              Boolean  @default(true)
-  processingTimeMinutes Int      @default(10)         // order packing time at this shop
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+// ============================================================================
+// DRIVER TRACKING MODELS
+// ============================================================================
+
+// Real-time tracking events from driver (GPS + status changes)
+model DriverTrackingEvent {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  driverId  Int
+  eventType String   // "started" | "picked_up" | "reached" | "delivered" | "ping" | "beacon"
+  latitude  Float
+  longitude Float
+  accuracy  Float?   // GPS accuracy in meters
+  timestamp DateTime @default(now())
+
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  driver    User     @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([driverId])
+  @@index([timestamp])
+  @@index([eventType])
+  @@index([orderId, eventType])
 }
 
-// Single-row config — admin-tunable constants for delivery time calculation
+// Live driver status cache for quick lookups during tracking
+model DriverLiveStatus {
+  id                Int       @id @default(autoincrement())
+  driverId          Int       @unique
+  currentOrderId    Int?      @unique // One order at a time
+  lastLatitude      Float?
+  lastLongitude     Float?
+  lastLocationTime  DateTime?
+  lastPingTime      DateTime?
+  isActive          Boolean   @default(false)
+  updatedAt         DateTime  @updatedAt
+
+  driver            User      @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  order             Order?    @relation(fields: [currentOrderId], references: [id], onDelete: SetNull)
+
+  @@index([driverId])
+  @@index([currentOrderId])
+  @@index([isActive])
+}
+
+// Shop locations (can have multiple branches)
+// Initial setup: Bhilwara (admin can add/update via endpoints)
+model ShopLocation {
+  id                    Int      @id @default(autoincrement())
+  name                  String   // e.g. \"Bhilwara Railway Station\", \"Bhilwara Main Market\", etc.
+  latitude              Float    // Shop location latitude
+  longitude             Float    // Shop location longitude
+  serviceRadiusKm       Float    @default(10)         // Service radius in km
+  isActive              Boolean  @default(true)
+  processingTimeMinutes Int      @default(10)         // Order packing time at this shop
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  @@index([isActive])
+}
+
+// Single-row config — delivery time calculation & service rules (managed by admin)
+// All fields are configurable via admin endpoints
 model DeliveryTimeConfig {
   id                    Int      @id @default(autoincrement())
-  averageSpeedKmph      Float    @default(25)         // avg bike/scooter speed in city
-  baseProcessingMinutes Int      @default(10)         // base order prep time
+  
+  // Speed & timing configuration
+  averageSpeedKmph      Float    @default(20)         // avg delivery speed (km/h)
+  baseProcessingMinutes Int      @default(10)         // order prep time
   bufferMinutes         Int      @default(5)          // safety padding
-  maxDeliverableKm      Float    @default(15)         // beyond this → "Not serviceable"
+  
+  // Service area configuration
+  maxDeliverableKm      Float    @default(10)         // max service radius (km)
   noDriverExtraMinutes  Int      @default(15)         // extra wait when no driver available
+  
+  // Delivery window & cutoff rules
+  deliveryWindowStart   Int      @default(8)          // Delivery window starts at hour (8 = 8 AM)
+  deliveryWindowEnd     Int      @default(9)          // Delivery window ends at hour (9 = 9 AM)
+  orderCutoffHour       Int      @default(19)         // Cutoff hour for same-day (19 = 7 PM)
+  minDeliveryHour       Int      @default(8)          // Minimum delivery hour (8 = 8 AM)
+  
   updatedAt             DateTime @updatedAt
 }
