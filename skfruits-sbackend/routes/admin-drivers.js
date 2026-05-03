@@ -63,7 +63,7 @@ router.post("/add", requireRole("admin"), async (req, res) => {
         phone: phoneStr,
         password: hashedPassword,
         role: "driver",
-        driverStatus: "available",
+        driverAvailability: "available",
       },
     });
 
@@ -73,7 +73,7 @@ router.post("/add", requireRole("admin"), async (req, res) => {
       name: user.name,
       phone: user.phone,
       email: user.email,
-      status: user.driverStatus ?? "available",
+      status: user.driverAvailability ?? "available",
       createdAt: user.createdAt,
     });
   } catch (error) {
@@ -87,26 +87,70 @@ router.post("/add", requireRole("admin"), async (req, res) => {
 
 /**
  * GET /admin/drivers
- * Returns all drivers (Users with role = driver) and their status.
+ * Returns all drivers with their status, current order (if busy), and orders completed count
  */
 router.get("/", requireRole("admin"), async (req, res) => {
   try {
     const drivers = await prisma.user.findMany({
       where: { role: "driver" },
       orderBy: { createdAt: "desc" },
-      select: { id: true, name: true, email: true, phone: true, driverStatus: true, createdAt: true },
+      select: { 
+        id: true, 
+        name: true, 
+        email: true, 
+        phone: true, 
+        driverAvailability: true, 
+        createdAt: true,
+        ordersAsDriver: {
+          where: { status: { notIn: ["delivered", "cancelled"] } },
+          select: { 
+            id: true, 
+            customer: true, 
+            address: true,
+            trackingStatus: true,
+            status: true,
+            createdAt: true
+          },
+          orderBy: { createdAt: "desc" },
+          take: 1  // Get most recent active order
+        }
+      }
     });
-    res.json(
-      drivers.map((d) => ({
-        id: d.id,
-        userId: d.id,
-        name: d.name,
-        phone: d.phone,
-        email: d.email,
-        status: d.driverStatus ?? "available",
-        createdAt: d.createdAt,
-      }))
+
+    const list = await Promise.all(
+      drivers.map(async (d) => {
+        // Count completed deliveries
+        const completedCount = await prisma.order.count({
+          where: {
+            driverUserId: d.id,
+            status: "delivered"
+          }
+        });
+
+        const currentOrder = d.ordersAsDriver[0] || null;
+        
+        return {
+          id: d.id,
+          userId: d.id,
+          name: d.name,
+          phone: d.phone,
+          email: d.email,
+          status: d.driverAvailability || "available",  // available | busy | offline
+          ordersCompleted: completedCount,
+          currentOrder: currentOrder ? {
+            id: currentOrder.id,
+            customer: currentOrder.customer,
+            address: currentOrder.address,
+            trackingStatus: currentOrder.trackingStatus,
+            status: currentOrder.status,
+            createdAt: currentOrder.createdAt
+          } : null,
+          createdAt: d.createdAt
+        };
+      })
     );
+
+    res.json(list);
   } catch (error) {
     console.error("Admin list drivers error:", error);
     res.status(500).json({ error: error.message || "Failed to fetch drivers" });
@@ -116,7 +160,7 @@ router.get("/", requireRole("admin"), async (req, res) => {
 /**
  * PUT /admin/drivers/update-status/:id
  * Body: { status }
- * :id = userId. Updates driver status (User.driverStatus) for User with role = driver.
+ * :id = userId. Updates driver availability (User.driverAvailability) for User with role = driver.
  */
 router.put("/update-status/:id", requireRole("admin"), async (req, res) => {
   try {
@@ -139,8 +183,8 @@ router.put("/update-status/:id", requireRole("admin"), async (req, res) => {
 
     const updated = await prisma.user.update({
       where: { id },
-      data: { driverStatus: status },
-      select: { id: true, name: true, email: true, phone: true, driverStatus: true, createdAt: true },
+      data: { driverAvailability: status },
+      select: { id: true, name: true, email: true, phone: true, driverAvailability: true, createdAt: true },
     });
 
     res.json({
@@ -149,7 +193,7 @@ router.put("/update-status/:id", requireRole("admin"), async (req, res) => {
       name: updated.name,
       phone: updated.phone,
       email: updated.email,
-      status: updated.driverStatus ?? "available",
+      status: updated.driverAvailability ?? "available",
       createdAt: updated.createdAt,
     });
   } catch (error) {
