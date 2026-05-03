@@ -1,7 +1,7 @@
 /**
- * Tries to assign one available driver (User with role = driver, driverStatus = available) to the order.
+ * Tries to assign one available driver (User with role = driver, driverAvailability = available) to the order.
  * Uses atomic raw SQL with FOR UPDATE SKIP LOCKED to avoid race conditions.
- * Sets User.driverStatus = 'busy' and Order.driverUserId.
+ * Sets User.driverAvailability = 'busy' and Order.driverUserId.
  * If no available driver, order remains unassigned.
  * @param {import('@prisma/client').Prisma.TransactionClient} tx - Prisma transaction client
  * @param {number} orderId - Order id to assign a driver to
@@ -19,7 +19,7 @@ export async function tryAssignDriverToOrder(tx, orderId) {
   const maxAttempts = 3;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const candidate = await tx.user.findFirst({
-      where: { role: "driver", driverStatus: "available" },
+      where: { role: "driver", driverAvailability: "available" },
       orderBy: { id: "asc" },
       select: { id: true },
     });
@@ -27,8 +27,8 @@ export async function tryAssignDriverToOrder(tx, orderId) {
     if (!candidate) return;
 
     const updated = await tx.user.updateMany({
-      where: { id: candidate.id, driverStatus: "available" },
-      data: { driverStatus: "busy" },
+      where: { id: candidate.id, driverAvailability: "available" },
+      data: { driverAvailability: "busy" },
     });
 
     if (updated.count === 1) {
@@ -45,7 +45,7 @@ export async function tryAssignDriverToOrder(tx, orderId) {
 
 /**
  * Releases the driver when an order is marked delivered.
- * - If order has driverUserId: sets User.driverStatus = 'available'.
+ * - If order has driverUserId: sets User.driverAvailability = 'available'.
  * - If order has driverId (legacy): sets Driver.status = 'available' for backward compatibility.
  * @param {import('@prisma/client').PrismaClient} prisma - Prisma client
  * @param {{ driverUserId?: number | null; driverId?: number | null }} options - Order's assigned driver(s)
@@ -55,7 +55,7 @@ export async function releaseDriverIfAssigned(prisma, options = {}) {
   if (driverUserId != null && Number.isInteger(Number(driverUserId))) {
     await prisma.user.updateMany({
       where: { id: Number(driverUserId), role: "driver" },
-      data: { driverStatus: "available" },
+      data: { driverAvailability: "available" },
     });
   }
   if (driverId != null && Number.isInteger(Number(driverId))) {
