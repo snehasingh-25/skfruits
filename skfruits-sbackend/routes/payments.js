@@ -5,7 +5,8 @@ import prisma from "../prisma.js";
 import { getCartItemsForOrder } from "./cart.js";
 import { optionalCustomerAuth } from "../utils/auth.js";
 import { validateStockForItems, deductStockForOrder } from "../utils/stock.js";
-import { calculateDeliveryCharges, getEstimatedDeliveryForOrder } from "./delivery.js";
+import { calculateDeliveryCharges } from "./delivery.js";
+import { getEstimatedDeliveryForOrder } from "../utils/deliveryEstimate.js";
 import { tryAssignDriverToOrder } from "../utils/driverAssignment.js";
 
 const router = express.Router();
