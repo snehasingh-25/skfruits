@@ -4,6 +4,7 @@ import { useUserAuth } from "../context/UserAuthContext";
 import { useToast } from "../context/ToastContext";
 import { API } from "../api";
 import DeliveryMapCard from "../components/DeliveryMapCard";
+import { useDriverGPS } from "../hooks/useDriverGPS";
 
 function formatDate(iso) {
   try {
@@ -29,6 +30,10 @@ export default function DriverDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updatingOrderId, setUpdatingOrderId] = useState(null);
+
+  // GPS Tracking
+  const { isTracking, currentLocation, error: gpsError, startTracking, stopTracking, sendEvent } = useDriverGPS(getAuthHeaders);
+  const [trackingOrderId, setTrackingOrderId] = useState(null);
 
   const fetchOrders = useCallback(() => {
     const headers = getAuthHeaders();
@@ -67,27 +72,77 @@ export default function DriverDashboard() {
     fetchOrders();
   }, [getAuthHeaders, fetchOrders]);
 
-  const updateOrderStatus = async (orderId, newStatus) => {
+  // Pickup: calls backend + starts GPS tracking
+  const handlePickup = async (orderId) => {
     setUpdatingOrderId(orderId);
     try {
+      const res = await fetch(`${API}/driver/orders/${orderId}/pickup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Failed to pick up order");
+        return;
+      }
+      toast.success("Order picked up — tracking started");
+      startTracking(orderId);
+      setTrackingOrderId(orderId);
+      // Send picked_up event after GPS gets first fix (small delay)
+      setTimeout(() => sendEvent(orderId, "picked_up"), 2000);
+      fetchOrders();
+    } catch {
+      toast.error("Could not pick up order");
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
+
+  // Reached: sends tracking event + updates status
+  const handleReached = async (orderId) => {
+    setUpdatingOrderId(orderId);
+    try {
+      await sendEvent(orderId, "reached");
       const res = await fetch(`${API}/driver/orders/${orderId}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status: "out_for_delivery" }),
       });
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.error || "Failed to update status");
         return;
       }
-      toast.success(
-        newStatus === "out_for_delivery"
-          ? "Marked as out for delivery"
-          : "Order marked as delivered"
-      );
+      toast.success("Marked as reached destination");
       fetchOrders();
-    } catch (err) {
-      toast.error("Could not update order status");
+    } catch {
+      toast.error("Could not update status");
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
+
+  // Delivered: sends tracking event + updates status + stops GPS
+  const handleDelivered = async (orderId) => {
+    setUpdatingOrderId(orderId);
+    try {
+      await sendEvent(orderId, "delivered");
+      const res = await fetch(`${API}/driver/orders/${orderId}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        body: JSON.stringify({ status: "delivered" }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Failed to mark delivered");
+        return;
+      }
+      toast.success("Order delivered!");
+      stopTracking();
+      setTrackingOrderId(null);
+      fetchOrders();
+    } catch {
+      toast.error("Could not mark as delivered");
     } finally {
       setUpdatingOrderId(null);
     }
@@ -345,43 +400,89 @@ export default function DriverDashboard() {
                   </p>
                 )}
 
-                {/* Status actions: shipped -> out_for_delivery; out_for_delivery -> delivered */}
+                {/* GPS tracking indicator */}
+                {isTracking && trackingOrderId === order.id && (
+                  <div
+                    className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg text-sm"
+                    style={{ background: "var(--green-bg-soft)", color: "var(--green-accent)" }}
+                  >
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span
+                        className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping"
+                        style={{ background: "var(--green-accent)" }}
+                      />
+                      <span
+                        className="relative inline-flex rounded-full h-2.5 w-2.5"
+                        style={{ background: "var(--green-accent)" }}
+                      />
+                    </span>
+                    <span className="font-medium">📍 Sharing location…</span>
+                    {currentLocation && (
+                      <span className="text-xs opacity-70">
+                        ({currentLocation.lat.toFixed(4)}, {currentLocation.lng.toFixed(4)})
+                      </span>
+                    )}
+                  </div>
+                )}
+                {gpsError && trackingOrderId === order.id && (
+                  <p className="text-xs mt-2" style={{ color: "var(--destructive)" }}>
+                    ⚠ {gpsError}
+                  </p>
+                )}
+
+                {/* Status actions with GPS tracking */}
                 <div className="mt-4 flex flex-wrap gap-2">
+                  {/* Pickup: shipped → out_for_delivery + start GPS */}
                   {order.status === "shipped" && (
                     <button
                       type="button"
                       disabled={updatingOrderId === order.id}
-                      onClick={() =>
-                        updateOrderStatus(order.id, "out_for_delivery")
-                      }
-                      className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-60"
+                      onClick={() => handlePickup(order.id)}
+                      className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-60 flex items-center gap-2"
                       style={{
                         background: "var(--primary)",
                         color: "var(--primary-foreground)",
                       }}
                     >
                       {updatingOrderId === order.id
-                        ? "Updating…"
-                        : "Out for Delivery"}
+                        ? "Picking up…"
+                        : "🚀 Pick Up & Start Tracking"}
                     </button>
                   )}
+                  {/* Reached: out_for_delivery */}
                   {order.status === "out_for_delivery" && (
-                    <button
-                      type="button"
-                      disabled={updatingOrderId === order.id}
-                      onClick={() =>
-                        updateOrderStatus(order.id, "delivered")
-                      }
-                      className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-60"
-                      style={{
-                        background: "var(--primary)",
-                        color: "var(--primary-foreground)",
-                      }}
-                    >
-                      {updatingOrderId === order.id
-                        ? "Updating…"
-                        : "Mark delivered"}
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        disabled={updatingOrderId === order.id}
+                        onClick={() => handleDelivered(order.id)}
+                        className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-60"
+                        style={{
+                          background: "var(--primary)",
+                          color: "var(--primary-foreground)",
+                        }}
+                      >
+                        {updatingOrderId === order.id
+                          ? "Updating…"
+                          : "✅ Mark Delivered"}
+                      </button>
+                      {/* Navigate button */}
+                      {order.addressLatitude && order.addressLongitude && (
+                        <a
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${order.addressLatitude},${order.addressLongitude}&travelmode=driving`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 rounded-lg text-sm font-medium border flex items-center gap-1.5"
+                          style={{
+                            borderColor: "var(--border)",
+                            color: "var(--foreground)",
+                            background: "var(--card-white)",
+                          }}
+                        >
+                          🗺️ Navigate
+                        </a>
+                      )}
+                    </>
                   )}
                 </div>
               </li>
