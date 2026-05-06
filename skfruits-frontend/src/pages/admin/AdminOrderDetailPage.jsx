@@ -311,6 +311,48 @@ export default function AdminOrderDetailPage() {
           </div>
         </section>
 
+        {/* Delivery Tracking Info */}
+        {order.trackingStatus && order.trackingStatus !== "none" && (
+          <section className="rounded-xl border p-6" style={{ borderColor: "var(--border)", background: "var(--background)" }}>
+            <h2 className="text-sm font-semibold uppercase tracking-wide mb-4 text-muted">Delivery tracking</h2>
+            <div className="space-y-3">
+              {/* Tracking status */}
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium" style={{ color: "var(--text-muted)" }}>Status:</span>
+                <span
+                  className="inline-block text-xs font-semibold px-2.5 py-1 rounded-full"
+                  style={{
+                    background: order.trackingStatus === "delivered" ? "var(--success)" :
+                      order.trackingStatus === "picked_up" ? "var(--accent)" : "var(--muted)",
+                    color: order.trackingStatus === "delivered" ? "white" : "var(--foreground)",
+                  }}
+                >
+                  {order.trackingStatus.replace(/_/g, " ")}
+                </span>
+              </div>
+              {/* Route info from Google Maps (stored at assignment time) */}
+              {order.routeDistanceKm != null && (
+                <div className="flex flex-wrap items-center gap-4 text-sm">
+                  <span style={{ color: "var(--foreground)" }}>
+                    📏 <strong>{Number(order.routeDistanceKm).toFixed(1)} km</strong>
+                  </span>
+                  {order.routeDurationMinutes != null && (
+                    <span style={{ color: "var(--foreground)" }}>
+                      ⏱ <strong>{order.routeDurationMinutes} min</strong>
+                    </span>
+                  )}
+                </div>
+              )}
+              {/* ETA from assignment */}
+              {order.estimatedDeliveryMinutes != null && (
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                  Estimated delivery: ~{order.estimatedDeliveryMinutes} mins from order
+                </p>
+              )}
+            </div>
+          </section>
+        )}
+
         <section className="rounded-xl border p-6" style={{ borderColor: "var(--border)", background: "var(--background)" }}>
           <h2 className="text-sm font-semibold uppercase tracking-wide mb-3 text-muted">Customer</h2>
           <p className="font-medium" style={{ color: "var(--foreground)" }}>{order.customerDetails?.name}</p>

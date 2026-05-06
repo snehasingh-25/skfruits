@@ -266,6 +266,31 @@ export default function OrderDetails() {
           </div>
         )}
 
+        {/* Live Tracking CTA */}
+        {["shipped", "out_for_delivery"].includes(String(order.status).toLowerCase()) && (
+          <Link
+            to={`/orders/${order.id}/track`}
+            className="flex items-center justify-center gap-3 w-full py-4 rounded-xl font-semibold text-base mb-8 transition-all hover:shadow-lg"
+            style={{
+              background: "var(--primary)",
+              color: "var(--primary-foreground)",
+              borderRadius: "var(--radius-lg)",
+            }}
+          >
+            <span className="relative flex h-3 w-3">
+              <span
+                className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping"
+                style={{ background: "var(--green-accent)" }}
+              />
+              <span className="relative inline-flex rounded-full h-3 w-3" style={{ background: "var(--green-accent)" }} />
+            </span>
+            Track your order live
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        )}
+
         {/* Address */}
         <div className="rounded-xl border p-6 mb-8" style={{ borderColor: "var(--border)", background: "var(--background)" }}>
           <h2 className="text-sm font-semibold uppercase tracking-wide mb-3" style={{ color: "var(--text-muted)" }}>Delivery address</h2>

@@ -47,6 +47,7 @@ import FruitBasketLanding from "./pages/FruitBasketLanding";
 import FruitBasketCreate from "./pages/FruitBasketCreate";
 import FruitBasketFruits from "./pages/FruitBasketFruits";
 import FruitBasketReview from "./pages/FruitBasketReview";
+import OrderTracking from "./pages/OrderTracking";
 
 function PublicLayout() {
   return (
@@ -73,6 +74,7 @@ function PublicLayout() {
           <Route path="/profile/orders" element={<MyOrders />} />
           <Route path="/profile/wishlist" element={<Wishlist />} />
           <Route path="/orders/:id" element={<OrderDetails />} />
+          <Route path="/orders/:id/track" element={<OrderTracking />} />
           <Route path="/driver" element={<DriverProtectedRoute><DriverDashboard /></DriverProtectedRoute>} />
           <Route path="/search" element={<Search />} />
           <Route path="/fruit-basket" element={<FruitBasketLanding />} />
