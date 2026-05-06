@@ -309,6 +309,12 @@ export default function AdminDriversPage() {
                     Status
                   </th>
                   <th className="px-4 py-3 text-left font-semibold" style={{ color: "var(--foreground)" }}>
+                    Current Order
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold" style={{ color: "var(--foreground)" }}>
+                    Completed
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold" style={{ color: "var(--foreground)" }}>
                     Actions
                   </th>
                 </tr>
@@ -324,6 +330,27 @@ export default function AdminDriversPage() {
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge status={driver.status} />
+                    </td>
+                    <td className="px-4 py-3">
+                      {driver.currentOrder ? (
+                        <a
+                          href={`/admin/orders/${driver.currentOrder.id}`}
+                          className="text-sm font-medium underline hover:no-underline"
+                          style={{ color: "var(--primary)" }}
+                        >
+                          #{driver.currentOrder.id}
+                          <span className="text-xs ml-1" style={{ color: "var(--text-muted)" }}>
+                            {driver.currentOrder.customer}
+                          </span>
+                        </a>
+                      ) : (
+                        <span className="text-xs" style={{ color: "var(--text-muted)" }}>None</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+                        {driver.ordersCompleted ?? 0}
+                      </span>
                     </td>
                     <td className="px-4 py-3">
                       {updatingId === driver.id ? (
