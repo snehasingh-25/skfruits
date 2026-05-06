@@ -120,6 +120,19 @@ router.get("/:id", requireRole("admin"), async (req, res) => {
       },
     });
     if (!order) return res.status(404).json({ error: "Order not found" });
+    // Parse route data from routePolyline JSON (if available)
+    let routeDistanceKm = null;
+    let routeDurationMinutes = null;
+    if (order.routePolyline) {
+      try {
+        const routeData = JSON.parse(order.routePolyline);
+        routeDistanceKm = routeData.distanceKm ?? null;
+        routeDurationMinutes = routeData.durationSeconds ? Math.ceil(routeData.durationSeconds / 60) : null;
+      } catch {
+        // Malformed routePolyline — ignore
+      }
+    }
+
     res.json({
       id: order.id,
       createdAt: order.createdAt,
@@ -138,6 +151,10 @@ router.get("/:id", requireRole("admin"), async (req, res) => {
       paymentStatus: paymentStatus(order),
       orderStatus: orderStatusDisplay(order.status),
       status: order.status,
+      trackingStatus: order.trackingStatus ?? null,
+      estimatedDeliveryMinutes: order.estimatedDeliveryMinutes ?? null,
+      routeDistanceKm,
+      routeDurationMinutes,
       paymentMethod: order.paymentMethod,
       razorpayOrderId: order.razorpayOrderId,
       razorpayPaymentId: order.razorpayPaymentId,
