@@ -2,6 +2,7 @@ import express from "express";
 import { requireRole } from "../utils/auth.js";
 import prisma from "../prisma.js";
 import { releaseDriverIfAssigned } from "../utils/driverAssignment.js";
+import { getGoogleMapsRoute } from "../utils/googleMapsService.js";
 
 const router = express.Router();
 
@@ -176,15 +177,58 @@ router.put("/:id/assign-driver", requireRole("admin"), async (req, res) => {
 
     await releaseDriverIfAssigned(prisma, { driverUserId: previousDriverUserId });
 
+    // Fetch Google Maps route when assigning driver (for accurate tracking)
+    let routePolylineData = null;
+    if (driverUserId != null && order.nearestShopName && order.addressLatitude && order.addressLongitude) {
+      try {
+        const shop = await prisma.shopLocation.findFirst({
+          where: { name: order.nearestShopName, isActive: true }
+        });
+
+        if (shop) {
+          console.log(`[Admin] Fetching route: Shop (${shop.latitude}, ${shop.longitude}) → Customer (${order.addressLatitude}, ${order.addressLongitude})`);
+          
+          const routeData = await getGoogleMapsRoute(
+            shop.latitude,
+            shop.longitude,
+            order.addressLatitude,
+            order.addressLongitude
+          );
+
+          // Prepare route data for storage
+          routePolylineData = JSON.stringify({
+            polyline: routeData.polyline,
+            distanceKm: routeData.distanceKm,
+            durationSeconds: routeData.durationSeconds,  // Use raw seconds from Google Maps (not rounded minutes * 60)
+            distanceText: routeData.distanceText,
+            durationText: routeData.durationText,
+            bounds: routeData.bounds,
+            steps: routeData.steps,
+            source: routeData.source
+          });
+
+          console.log(`[Admin] Route fetched: ${routeData.distanceKm}km in ${routeData.durationMinutes} mins`);
+        } else {
+          console.warn(`[Admin] Shop location not found: ${order.nearestShopName}`);
+        }
+      } catch (routeError) {
+        console.error(`[Admin] Failed to fetch route: ${routeError.message}`);
+        // Continue without route data - tracking will use fallback ETA
+      }
+    }
+
     const updated = await prisma.order.update({
       where: { id },
-      data: { driverUserId: driverUserId || null },
+      data: { 
+        driverUserId: driverUserId || null,
+        ...(routePolylineData && { routePolyline: routePolylineData })
+      },
     });
 
     if (driverUserId != null) {
       await prisma.user.updateMany({
         where: { id: driverUserId, role: "driver" },
-        data: { driverStatus: "busy" },
+        data: { driverAvailability: "busy" },  // Note: Changed from driverStatus to driverAvailability
       });
     }
 
@@ -198,6 +242,7 @@ router.put("/:id/assign-driver", requireRole("admin"), async (req, res) => {
       id: updated.id,
       driverUserId: updated.driverUserId,
       driver: driverUser ? { id: driverUser.id, name: driverUser.name, email: driverUser.email, phone: driverUser.phone } : null,
+      routePolyline: routePolylineData ? JSON.parse(routePolylineData) : null
     });
   } catch (error) {
     console.error("Admin assign driver error:", error);

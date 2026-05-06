@@ -124,4 +124,41 @@ router.put("/orders/:id/status", requireRole("driver"), async (req, res) => {
   }
 });
 
+/**
+ * POST /driver/orders/:id/pickup
+ * Driver marks order as picked up (enables customer tracking, sets customerCanTrack = true)
+ */
+router.post("/orders/:id/pickup", requireRole("driver"), async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!id || Number.isNaN(id)) return res.status(400).json({ error: "Invalid order id" });
+
+    const order = await prisma.order.findFirst({
+      where: { id, driverUserId: req.userId },
+    });
+    if (!order) return res.status(404).json({ error: "Order not found or not assigned to you" });
+
+    // Mark as picked_up and enable customer tracking
+    const updated = await prisma.order.update({
+      where: { id },
+      data: { 
+        trackingStatus: "picked_up",
+        customerCanTrack: true,  // ← Enable real-time tracking for customer
+        status: "shipped"  // Move to shipped status when picked up
+      },
+    });
+
+    res.json({
+      id: updated.id,
+      trackingStatus: updated.trackingStatus,
+      status: updated.status,
+      orderStatus: orderStatusDisplay(updated.status),
+      message: "Order picked up! Customer can now track your delivery."
+    });
+  } catch (error) {
+    console.error("Driver pickup order error:", error);
+    res.status(500).json({ error: error.message || "Failed to mark order as picked up" });
+  }
+});
+
 export default router;

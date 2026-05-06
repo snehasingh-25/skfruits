@@ -3,7 +3,8 @@ import { requireRole, requireCustomerAuth, optionalCustomerAuth } from "../utils
 import prisma from "../prisma.js";
 import { getCartItemsForOrder } from "./cart.js";
 import { validateStockForItems, deductStockForOrder } from "../utils/stock.js";
-import { calculateDeliveryCharges, getEstimatedDeliveryForOrder, estimateDeliveryTime } from "./delivery.js";
+import { calculateDeliveryCharges } from "./delivery.js";
+import { getEstimatedDeliveryForOrder, estimateDeliveryTime } from "../utils/deliveryEstimate.js";
 import { tryAssignDriverToOrder, releaseDriverIfAssigned } from "../utils/driverAssignment.js";
 
 const router = express.Router();
