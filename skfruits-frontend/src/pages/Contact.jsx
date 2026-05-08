@@ -473,41 +473,31 @@ export default function Contact() {
               href="https://maps.google.com/?q=Sewa+Sadan+Rd+near+Sitaram+Ji+Ki+Bawri+Bhopal+Ganj+Bhilwara+Rajasthan+311001"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex flex-col rounded-[var(--radius-lg)] border bg-[var(--cf-white)] p-6 shadow-sm transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-lg"
-              style={{ borderColor: "var(--cf-line)" }}
+              className="rounded-xl shadow-lg p-8 text-center hover:shadow-xl transition-all duration-300 group"
+              style={{ backgroundColor: "var(--card-white)" }}
             >
-              <div className="mb-4 flex items-center gap-3">
-                {s.gradient ? (
-                  <span
-                    className="flex h-12 w-12 items-center justify-center rounded-xl text-white shadow-inner"
-                    style={{
-                      background: "linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)",
-                    }}
-                  >
-                    <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <rect x="2" y="2" width="20" height="20" rx="5" />
-                      <circle cx="12" cy="12" r="4" />
-                      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-                    </svg>
-                  </span>
-                ) : (
-                  <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#1877F2] text-white">
-                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                    </svg>
-                  </span>
-                )}
-                <div>
-                  <p className="font-bold text-[var(--cf-green)]">{s.name}</p>
-                  <p className="text-sm text-[var(--cf-muted)]">{s.handle}</p>
-                </div>
-              </div>
-              <p className="text-sm text-[var(--cf-text)]">{s.cta}</p>
-              <span className="mt-4 text-sm font-semibold text-[var(--cf-orange)]">Open profile →</span>
+              <div className="text-5xl mb-4">📍</div>
+              <h3 className="text-xl font-bold mb-3" style={{ color: "var(--foreground)" }}>
+                Visit Our Location
+              </h3>
+              <p className="text-sm mb-4" style={{ color: "var(--foreground-muted)" }}>
+                Get directions and find our store location on Google Maps
+              </p>
+              <button
+                className="px-6 py-2 rounded-lg font-semibold transition-all duration-300"
+                style={{
+                  backgroundColor: "var(--secondary)",
+                  color: "var(--foreground)",
+                }}
+                onMouseEnter={(e) => (e.target.style.backgroundColor = "var(--muted)")}
+                onMouseLeave={(e) => (e.target.style.backgroundColor = "var(--secondary)")}
+              >
+                Get Directions
+              </button>
             </a>
-          ))}
         </div>
-      </section>
+      </div>
+    </div>
     </div>
   );
 }
