@@ -440,3 +440,138 @@ a, button, input, textarea, select {
 .add-success-pop {
   animation: addSuccessPop 520ms var(--ease-out) both;
 }
+
+/* About page — scroll reveal (respects reduced motion via global rule) */
+.about-reveal {
+  opacity: 0;
+  transform: translateY(1.25rem);
+  transition:
+    opacity 0.65s var(--ease-out),
+    transform 0.65s var(--ease-out);
+}
+
+.about-reveal.about-reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.about-hero-enter {
+  animation: aboutHeroEnter 0.9s var(--ease-out) both;
+}
+
+.about-hero-enter-delay {
+  animation: aboutHeroEnter 0.9s var(--ease-out) 0.12s both;
+}
+
+@keyframes aboutHeroEnter {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* About page — Dil Se SK Fruits mockup palette (scoped) */
+.about-page {
+  --ab-green: #2d5a27;
+  --ab-green-dark: #1e3d1a;
+  --ab-orange: #f58220;
+  --ab-cream: #f7f5f0;
+  --ab-white: #ffffff;
+  --ab-text: #1a1a1a;
+  --ab-muted: #4a4a4a;
+  --ab-line: rgba(45, 90, 39, 0.15);
+  background: var(--ab-cream);
+  color: var(--ab-text);
+}
+
+.about-page .about-script {
+  font-family: "Dancing Script", cursive;
+  color: var(--ab-orange);
+}
+
+.about-page .about-display {
+  font-family: "Fraunces", "Georgia", serif;
+  color: var(--ab-green);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.about-page .about-body {
+  font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+.about-timeline-track {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 3.5rem;
+  height: 0;
+  border-top: 2px dashed var(--ab-orange);
+  pointer-events: none;
+}
+
+@media (max-width: 1023px) {
+  .about-timeline-track {
+    display: none;
+  }
+}
+
+.about-decor-slices {
+  pointer-events: none;
+  position: absolute;
+  right: -0.5rem;
+  top: 10%;
+  bottom: 10%;
+  width: 4rem;
+  opacity: 0.85;
+}
+
+@media (max-width: 1279px) {
+  .about-decor-slices {
+    display: none;
+  }
+}
+
+/* Contact page — mockup palette (scoped) */
+.contact-mockup {
+  --cf-green: #2d5a27;
+  --cf-green-hover: #234620;
+  --cf-orange: #f58220;
+  --cf-cream: #f7f5f0;
+  --cf-beige: #f0ebe3;
+  --cf-white: #ffffff;
+  --cf-banner: #fff4d4;
+  --cf-text: #1a1a1a;
+  --cf-muted: #4d4d4d;
+  --cf-line: rgba(45, 90, 39, 0.2);
+  font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  background: var(--cf-cream);
+  color: var(--cf-text);
+}
+
+.contact-mockup .cf-script {
+  font-family: "Dancing Script", cursive;
+  color: var(--cf-orange);
+}
+
+.contact-mockup .cf-display {
+  font-family: "Fraunces", "Georgia", serif;
+  color: var(--cf-green);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.contact-mockup .cf-field {
+  background: var(--cf-beige);
+  border: 1px solid var(--cf-line);
+  border-radius: var(--radius-md);
+}
+
+.contact-mockup .cf-field:focus-within {
+  border-color: var(--cf-green);
+  box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.12);
+}
