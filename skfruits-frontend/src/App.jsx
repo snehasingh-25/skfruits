@@ -19,7 +19,6 @@ import ToastViewport from "./components/ToastViewport";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
-import Seasonal from "./pages/Seasonal";
 import CategoriesPage from "./pages/CategoriesPage";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
@@ -59,8 +58,6 @@ function PublicLayout() {
           <Route path="/shop" element={<Home />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/category/:slug" element={<CategoriesPage />} />
-          <Route path="/seasonal" element={<Seasonal />} />
-          <Route path="/seasonal/:slug" element={<Seasonal />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/product/:id" element={<ProductDetail />} />

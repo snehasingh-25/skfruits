@@ -263,21 +263,6 @@ model Reel {
   @@index([isFeatured])
 }
 
-model Seasonal {
-  id          Int       @id @default(autoincrement())
-  name        String
-  slug        String    @unique
-  description String?   @db.Text
-  imageUrl    String?   @db.Text
-  isActive    Boolean   @default(true)
-  order       Int       @default(0)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@index([order])
-  @@index([isActive])
-}
-
 model ProductCategory {
   id         Int      @id @default(autoincrement())
   productId  Int
