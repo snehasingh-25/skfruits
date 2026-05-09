@@ -318,7 +318,7 @@ export default function About() {
 
       {/* Our Journey */}
       <section className="py-16 sm:py-20" style={{ background: "var(--ab-cream)" }}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl  px-2 sm:px-4 lg:px-6">
           <Reveal>
             <div className="mb-12 text-center">
               <h2 className="about-display text-2xl sm:text-3xl">OUR JOURNEY</h2>

@@ -52,7 +52,7 @@ export default function Footer() {
 
     return (
     <footer className="mt-20 bg-design-secondary border-t border-design">
-      <div className="  px-4 sm:px-6 lg:px-8 py-8">
+      <div className="   px-2 sm:px-4 lg:px-6 py-8">
 
         {/* Brand Section - Left Side */}
         <div className="mb-6">

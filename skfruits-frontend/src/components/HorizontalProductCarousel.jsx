@@ -50,7 +50,7 @@ function HorizontalProductCarouselInner({
   cardWrapperClassName = "shrink-0 basis-[calc((100%-0.5rem)/2)] lg:basis-[calc((100%-2rem)/5)] overflow-hidden",
   skeletonCount = 4,
   containerClassName = "",
-  sectionClassName = "mt-10 px-4 sm:px-6 lg:px-8",
+  sectionClassName = "mt-10  px-2 sm:px-4 lg:px-6",
   titleClassName = "text-xl font-bold font-display text-[var(--foreground)]",
   subtitleClassName = "text-sm mt-1 text-[#474747]",
   loadingSkeletonClassName = "shrink-0 basis-[calc((100%-0.5rem)/2)] lg:basis-[calc((100%-2rem)/5)] rounded-lg animate-pulse",

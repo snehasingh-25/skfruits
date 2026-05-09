@@ -36,7 +36,7 @@ export default function Cart() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen py-6 px-4 sm:px-6 lg:px-8" style={{ background: "var(--background)" }}>
+      <div className="min-h-screen py-6  px-2 sm:px-4 lg:px-6" style={{ background: "var(--background)" }}>
         <div className="max-w-6xl mx-auto">
           <div className="h-10 w-48 rounded-lg animate-pulse mb-8" style={{ background: "var(--muted)" }} />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -67,7 +67,7 @@ export default function Cart() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen py-6 px-4 sm:px-6 lg:px-8" style={{ background: "var(--background)" }}>
+      <div className="min-h-screen py-6  px-2 sm:px-4 lg:px-6" style={{ background: "var(--background)" }}>
         <div className="max-w-4xl mx-auto">
           <div className="rounded-2xl shadow-lg p-12 text-center" style={{ background: "var(--background)", border: "1px solid var(--border)" }}>
             <img src="/logo.png" alt="SK Fruits" className="w-20 h-20 mx-auto mb-6 object-contain opacity-50" />
@@ -91,7 +91,7 @@ export default function Cart() {
   }
 
   return (
-    <div className="min-h-screen py-6 px-4 sm:px-6 lg:px-8" style={{ background: "var(--background)" }}>
+    <div className="min-h-screen py-6  px-2 sm:px-4 lg:px-6" style={{ background: "var(--background)" }}>
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold mb-8 font-display" style={{ color: "var(--foreground)" }}>Shopping Cart</h1>
 
@@ -258,7 +258,7 @@ export default function Cart() {
 
         {/* Optional: Recently Viewed */}
         {recentIds.length > 0 && (
-          <HorizontalProductCarousel title="Recently Viewed" productIds={recentIds} sectionClassName="mt-12 px-4 sm:px-6 lg:px-8" />
+          <HorizontalProductCarousel title="Recently Viewed" productIds={recentIds} sectionClassName="mt-12  px-2 sm:px-4 lg:px-6" />
         )}
       </div>
     </div>

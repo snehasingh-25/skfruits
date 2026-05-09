@@ -27,7 +27,7 @@ export default function OrderSuccess() {
   }, [orderId, isAuthenticated, getAuthHeaders]);
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center" style={{ background: "var(--background)" }}>
+    <div className="min-h-screen py-12  px-2 sm:px-4 lg:px-6 flex items-center justify-center" style={{ background: "var(--background)" }}>
       <div
         className="max-w-md w-full rounded-2xl shadow-lg p-8 sm:p-10 text-center border"
         style={{ background: "var(--background)", borderColor: "var(--border)", boxShadow: "var(--shadow-soft)" }}

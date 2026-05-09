@@ -70,7 +70,7 @@ export default function Wishlist() {
 
   if (authLoading || (isAuthenticated && wishlistLoading && wishlistItems.length === 0)) {
     return (
-      <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8" style={{ background: "var(--background)" }}>
+      <div className="min-h-screen py-8  px-2 sm:px-4 lg:px-6" style={{ background: "var(--background)" }}>
         <div className="max-w-6xl mx-auto">
           <div className="h-9 w-40 rounded-lg animate-pulse mb-8" style={{ background: "var(--muted)" }} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -87,7 +87,7 @@ export default function Wishlist() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8" style={{ background: "var(--background)" }}>
+    <div className="min-h-screen py-8  px-2 sm:px-4 lg:px-6" style={{ background: "var(--background)" }}>
       <div className="max-w-6xl mx-auto">
         <h1 className="text-xl font-bold font-display mb-8" style={{ color: "var(--foreground)" }}>
           Wishlist

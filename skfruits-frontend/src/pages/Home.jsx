@@ -176,7 +176,7 @@ export default function Home() {
     <div className="min-h-screen fade-in" style={{ backgroundColor: 'var(--background)' }}>
       <>
           {/* Hero Banner Section */}
-          <section className="hidden md:block max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6" aria-label="Homepage hero banner">
+          <section className="hidden md:block max-w-[1600px] mx-auto  px-2 sm:px-4 lg:px-6 py-6" aria-label="Homepage hero banner">
             <div
               className="relative w-full h-[280px] md:h-[300px] rounded-lg overflow-hidden flex items-center"
               style={{
@@ -191,7 +191,7 @@ export default function Home() {
               />
 
               <div className="relative z-10 w-full flex flex-row items-center justify-between gap-3 md:gap-4 px-6 sm:px-10 md:px-14 py-3 h-full">
-                <div className="flex flex-1 min-w-0 flex-col gap-2.5 pr-1 md:pr-2">
+                <div className="flex flex-1 min-w-0 flex-col gap-1.5 pr-1 md:pr-2">
                   <div
                     className="inline-block px-3 py-1 rounded w-fit text-[9px] tracking-[0.2em] uppercase font-bold"
                     style={{ border: "1px solid rgba(210,180,140,0.9)", color: "var(--primary)" }}
@@ -281,7 +281,7 @@ export default function Home() {
 
           {/* Shop By Category Section */}
       {categories.length > 0 ? (
-        <div className="  px-4 sm:px-6 lg:px-8 py-6">
+        <div className="   px-2 sm:px-4 lg:px-6 py-6">
           <div
             className="relative overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--border)]"
             style={{
@@ -331,7 +331,7 @@ export default function Home() {
                 <h2 className="font-display text-xl font-extrabold text-design-foreground">Shop By Category</h2>
                 <Link
                   to="/categories"
-                  className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group text-design-foreground hover:opacity-80"
+                  className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-1 group text-design-foreground hover:opacity-80"
                 >
                   View All
                   <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -431,7 +431,7 @@ export default function Home() {
       ) : null}
 
           {/* Phase 5: Fruit basket discovery strip */}
-          <section className="  px-4 sm:px-6 lg:px-8 pt-4 pb-2" aria-label="Personalized fruit baskets">
+          <section className="   px-2 sm:px-4 lg:px-6 pt-4 pb-2" aria-label="Personalized fruit baskets">
             <Link
               to="/fruit-basket"
               className="flex flex-row items-center justify-between gap-3 sm:gap-4 rounded-[var(--radius-xl)] border px-5 py-4 sm:px-8 sm:py-2 transition-all hover:shadow-md"
@@ -455,7 +455,7 @@ export default function Home() {
                 Create →
               </span>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-1 flex-shrink-0">
                 <img src="/basket2filled.webp" alt="Basket" className="w-30 h-30 sm:w-44 sm:h-44 object-contain rounded-lg" />
                 <img src="/basket1filled.png" alt="" className="w-30 h-30 sm:w-44 sm:h-44 object-contain rounded-lg hidden sm:block" aria-hidden />
                 <img src="/basket3filled.jpg" alt="" className="w-30 h-30 sm:w-44 sm:h-44 object-contain rounded-lg hidden sm:block" aria-hidden />
@@ -466,12 +466,12 @@ export default function Home() {
 
       {/* Popular Fruits */}
       {(loading.products || popularProducts.length > 0) && (
-        <div className="px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: "var(--background)" }}>
+        <div className=" px-2 sm:px-4 lg:px-6 py-6" style={{ backgroundColor: "var(--background)" }}>
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-display text-xl font-bold text-design-foreground">Popular Fruits</h2>
             <Link
               to="/categories"
-              className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group text-design-foreground hover:opacity-80"
+              className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-1 group text-design-foreground hover:opacity-80"
             >
               View All
               <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -486,8 +486,8 @@ export default function Home() {
             shuffleFetched={false}
             sectionClassName="mt-0 px-0"
             skeletonCount={6}
-            renderTrackClassName="flex gap-5 overflow-x-auto scroll-smooth scrollbar-thin pb-4 px-1 snap-x snap-mandatory"
-            loadingTrackClassName="flex gap-5 overflow-x-auto scroll-smooth scrollbar-thin pb-4 px-1 snap-x snap-mandatory"
+            renderTrackClassName="flex gap-1 overflow-x-auto scroll-smooth scrollbar-thin pb-4 px-1 snap-x snap-mandatory"
+            loadingTrackClassName="flex gap-1 overflow-x-auto scroll-smooth scrollbar-thin pb-4 px-1 snap-x snap-mandatory"
             cardWrapperClassName="shrink-0 snap-start basis-[calc((100%-1.25rem)/2)] lg:basis-[calc((100%-5rem)/5)] overflow-hidden"
           />
         </div>
@@ -504,7 +504,7 @@ export default function Home() {
       )}
 
       {/* Delivery in 30 mins banner */}
-      <div className="  px-4 sm:px-6 lg:px-8 py-6">
+      <div className="   px-2 sm:px-4 lg:px-6 py-6">
         {/* <img
           src="/mins.png"
           alt=""
@@ -514,7 +514,7 @@ export default function Home() {
           style={{ aspectRatio: "752 / 332" }}
         /> */}
         <div
-          className="relative overflow-hidden rounded-2xl p-6 sm:p-8 flex items-center gap-5 shadow-lg"
+          className="relative overflow-hidden rounded-2xl p-6 sm:p-8 flex items-center gap-1 shadow-lg"
           style={{ background: "linear-gradient(135deg, #16a34a 0%, #059669 100%)" }}
         >
           {/* Decorative circles */}
@@ -543,13 +543,13 @@ export default function Home() {
       )}
 
       {/* Our Products */}
-      <div className="px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: "var(--background)" }}>
+      <div className=" px-2 sm:px-4 lg:px-6 py-6" style={{ backgroundColor: "var(--background)" }}>
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-display text-xl font-bold text-design-foreground">Our Products</h2>
           {products.length > 0 && (
             <Link
               to="/shop"
-              className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group text-design-foreground hover:opacity-80"
+              className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-1 group text-design-foreground hover:opacity-80"
             >
               View All
               <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -566,8 +566,8 @@ export default function Home() {
             shuffleFetched={false}
             sectionClassName="mt-0 px-0"
             skeletonCount={10}
-            renderTrackClassName="flex gap-6 overflow-x-auto scroll-smooth scrollbar-hide pb-4"
-            loadingTrackClassName="flex gap-6 overflow-x-auto scroll-smooth scrollbar-hide pb-4"
+            renderTrackClassName="flex gap-1 overflow-x-auto scroll-smooth scrollbar-hide pb-4"
+            loadingTrackClassName="flex gap-1 overflow-x-auto scroll-smooth scrollbar-hide pb-4"
             cardWrapperClassName="shrink-0 basis-[calc((100%-1.5rem)/2)] lg:basis-[calc((100%-6rem)/5)] overflow-hidden"
           />
         ) : visibleProducts.length > 0 ? (
@@ -576,8 +576,8 @@ export default function Home() {
             products={visibleProducts}
             shuffleFetched={false}
             sectionClassName="mt-0 px-0"
-            renderTrackClassName="flex gap-6 overflow-x-auto scroll-smooth scrollbar-hide pb-4"
-            loadingTrackClassName="flex gap-6 overflow-x-auto scroll-smooth scrollbar-hide pb-4"
+            renderTrackClassName="flex gap-1 overflow-x-auto scroll-smooth scrollbar-hide pb-4"
+            loadingTrackClassName="flex gap-1 overflow-x-auto scroll-smooth scrollbar-hide pb-4"
             cardWrapperClassName="shrink-0 basis-[calc((100%-1.5rem)/2)] lg:basis-[calc((100%-6rem)/5)] overflow-hidden"
           />
         ) : (
@@ -592,7 +592,7 @@ export default function Home() {
       </div>
 
       {/* Why Choose Us (trust section) */}
-      <div className="  px-4 sm:px-6 lg:px-8 py-6">
+      <div className="   px-2 sm:px-4 lg:px-6 py-6">
         {/* Store Experience Section */}
         <div className="mb-10 sm:mb-12" style={{ backgroundColor: "transparent" }}>
           <section
@@ -727,7 +727,7 @@ export default function Home() {
           <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 70% 10%, rgba(255,213,128,0.12), transparent 50%)" }} />
 
           <div className="relative px-5 sm:px-8 py-6 sm:py-8">
-            <div className="flex items-end justify-between gap-6 mb-6">
+            <div className="flex items-end justify-between gap-1 mb-6">
               <div>
                 <h2 className="font-display text-xl font-bold text-design-foreground">Why Choose Us</h2>
                 <p className="mt-2 text-sm sm:text-base text-design-muted">
@@ -800,7 +800,7 @@ export default function Home() {
 
       {/* Reels Section */}
       {reels.length > 0 && (
-          <div className="  px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
+          <div className="   px-2 sm:px-4 lg:px-6 py-6" style={{ backgroundColor: 'var(--background)' }}>
             <h2 className="font-display text-xl font-bold mb-8 text-center text-design-foreground">
               Follow Us{" "}
               <a

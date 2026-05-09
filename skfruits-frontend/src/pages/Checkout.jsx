@@ -460,7 +460,7 @@ export default function Checkout() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8" style={{ background: "var(--background)" }}>
+      <div className="min-h-screen py-8  px-2 sm:px-4 lg:px-6" style={{ background: "var(--background)" }}>
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="h-10 w-56 rounded-lg animate-pulse" style={{ background: "var(--muted)" }} />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -487,7 +487,7 @@ export default function Checkout() {
   const total = deliverySummary ? deliverySummary.total : Math.max(0, fallbackSubtotal + 0);
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8" style={{ background: "var(--background)" }}>
+    <div className="min-h-screen py-8  px-2 sm:px-4 lg:px-6" style={{ background: "var(--background)" }}>
       <div className="max-w-5xl mx-auto">
         <h1 className="text-xl font-bold font-display mb-8" style={{ color: "var(--foreground)" }}>
           Checkout

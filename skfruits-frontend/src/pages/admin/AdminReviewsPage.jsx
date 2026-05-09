@@ -73,7 +73,7 @@ export default function AdminReviewsPage() {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-5xl mx-auto  px-2 sm:px-4 lg:px-6 py-6">
         <div className="h-8 w-48 rounded animate-pulse mb-6" style={{ background: "var(--muted)" }} />
         <div className="space-y-4">
           {[1, 2, 3, 4, 5].map((i) => (
@@ -85,7 +85,7 @@ export default function AdminReviewsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="max-w-5xl mx-auto  px-2 sm:px-4 lg:px-6 py-6">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <h1 className="text-xl font-bold font-display" style={{ color: "var(--foreground)" }}>
           Reviews

@@ -176,7 +176,7 @@ export default function Navbar() {
       className="sticky top-0 z-50 bg-[var(--background)]/95 backdrop-blur-sm border-b transition-all"
       style={{ borderColor: "var(--border)" }}
     >
-      <div className="  px-4 sm:px-6 lg:px-8">
+      <div className="   px-2 sm:px-4 lg:px-6">
         <div className="flex items-center justify-between h-16 md:h-20">
           <div className="flex items-center gap-3 lg:gap-3 min-w-0 flex-1">
             {/* Logo */}

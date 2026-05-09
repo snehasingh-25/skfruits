@@ -97,7 +97,7 @@ export default function MyOrders() {
 
   if (authLoading || (isAuthenticated && loading)) {
     return (
-      <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8" style={{ background: "var(--background)" }}>
+      <div className="min-h-screen py-8  px-2 sm:px-4 lg:px-6" style={{ background: "var(--background)" }}>
         <div className="max-w-3xl mx-auto">
           <div className="h-9 w-48 rounded-lg animate-pulse mb-8" style={{ background: "var(--muted)" }} />
           <div className="space-y-6">
@@ -113,7 +113,7 @@ export default function MyOrders() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8" style={{ background: "var(--background)" }}>
+    <div className="min-h-screen py-8  px-2 sm:px-4 lg:px-6" style={{ background: "var(--background)" }}>
       <div className="max-w-3xl mx-auto">
         <h1 className="text-xl font-bold font-display mb-8" style={{ color: "var(--foreground)" }}>
           My Orders

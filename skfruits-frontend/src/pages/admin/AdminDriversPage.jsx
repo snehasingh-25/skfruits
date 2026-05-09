@@ -167,7 +167,7 @@ export default function AdminDriversPage() {
   };
 
   return (
-    <div className="  px-4 sm:px-6 lg:px-8 py-6">
+    <div className="   px-2 sm:px-4 lg:px-6 py-6">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <h1 className="text-xl font-display font-bold" style={{ color: "var(--foreground)" }}>
           Drivers

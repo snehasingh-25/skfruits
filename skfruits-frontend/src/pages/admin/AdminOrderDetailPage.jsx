@@ -194,7 +194,7 @@ export default function AdminOrderDetailPage() {
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
       <header className="sticky top-0 z-40 border-b bg-[var(--background)]/95 backdrop-blur-sm" style={{ borderColor: "var(--border)" }}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto  px-2 sm:px-4 lg:px-6">
           <div className="flex items-center justify-between gap-4 h-16">
             <div className="flex items-center gap-4">
               <Link to="/admin/orders" className="p-2 rounded-lg transition" style={{ color: "var(--foreground)" }} aria-label="Back to orders">
@@ -208,7 +208,7 @@ export default function AdminOrderDetailPage() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <main className="max-w-4xl mx-auto  px-2 sm:px-4 lg:px-6 py-6 space-y-6">
         <div className="flex flex-wrap gap-2">
           <StatusBadge status={order.paymentStatus} />
           <StatusBadge status={order.orderStatus} />

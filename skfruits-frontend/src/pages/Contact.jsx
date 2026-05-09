@@ -408,7 +408,7 @@ export default function Contact() {
 
       {/* Quick Contact Options */}
       <div className="py-16" style={{ backgroundColor: "var(--background)" }}>
-        <div className="  px-4 sm:px-6 lg:px-8">
+        <div className="   px-2 sm:px-4 lg:px-6">
           <div className="text-center mb-12">
             <h2 className="text-xl font-bold mb-4" style={{ color: "var(--foreground)" }}>
               Quick Contact Options

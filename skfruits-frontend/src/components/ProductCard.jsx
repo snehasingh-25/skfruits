@@ -255,7 +255,7 @@ function ProductCard({ product, compact = false }) {
 
   return (
     <div
-      className={`card-soft overflow-hidden group relative ${
+      className={`card-soft min-w-0 overflow-hidden group relative ${
         compact ? "flex gap-3" : ""
       } transition-all duration-300 hover:-translate-y-1 hover:shadow-lg`}
     >
@@ -263,8 +263,8 @@ function ProductCard({ product, compact = false }) {
       <Link to={`/product/${product.id}`} className={`${compact ? "shrink-0" : "block"} hover:opacity-95 transition-opacity duration-200`}>
         {/* Basket frame */}
         <div
-          className={`relative flex items-center justify-center cursor-pointer ${
-            compact ? "h-20 w-20 rounded-[var(--radius-md)] p-1.5" : "h-64 rounded-[var(--radius-lg)] p-1.5"
+          className={`relative flex items-center justify-center cursor-pointer overflow-hidden bg-white ${
+            compact ? "h-20 w-20 rounded-[var(--radius-md)] p-1.5" : "aspect-square w-full rounded-[var(--radius-lg)] p-1.5"
           }`}
           style={{
             background: `linear-gradient(145deg, rgba(107,62,38,0.95) 0%, rgba(107,62,38,0.75) 45%, rgba(244,196,48,0.14) 100%)`,
@@ -284,9 +284,8 @@ function ProductCard({ product, compact = false }) {
 
           {/* Basket liner */}
           <div
-            className={`relative overflow-hidden w-full h-full rounded-[var(--radius-md)]`}
+            className={`relative overflow-hidden w-full h-full rounded-[var(--radius-md)] bg-white`}
             style={{
-              backgroundColor: "var(--secondary)",
               boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.05)",
             }}
           >
@@ -294,8 +293,8 @@ function ProductCard({ product, compact = false }) {
               <img
                 src={images[0]}
                 alt={product.name}
-                className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
-                  compact ? "group-hover:scale-[1.04]" : ""
+                className={`w-full h-full transition-transform duration-300 group-hover:scale-105 ${
+                  compact ? "rounded-[var(--radius-md)] object-cover" : "object-contain"
                 }`}
                 loading="lazy"
                 decoding="async"
@@ -458,28 +457,30 @@ function ProductCard({ product, compact = false }) {
           </h3>
         </Link>
 
-        {/* Price - Amazon-style: MRP struck through, selling price bold, optional discount % */}
+        {/* Price - single line; ellipsis when narrow (e.g. carousel) */}
         {displayPrice != null && (
-          <div className={compact ? "mb-1.5 flex items-baseline gap-2" : "mb-3 flex flex-wrap items-baseline gap-2"}>
-            <span className={compact ? "text-sm font-bold" : "text-lg font-bold"} style={{ color: 'var(--foreground)' }}>
-              ₹{Number(displayPrice).toLocaleString('en-IN')}
-              {((!product.hasSinglePrice && product.sizes && product.sizes.length > 1) ||
-                (product.weightOptions && (Array.isArray(product.weightOptions) ? product.weightOptions : []).length > 1)) && (
-                <span className="text-sm font-normal ml-1 text-design-muted"></span>
-              )}
-            </span>
-            {displayMrp != null && displayMrp > displayPrice && (
-              <>
-                <span className="text-sm line-through text-design-muted">
-                  ₹{Number(displayMrp).toLocaleString('en-IN')}
-                </span>
-                {discountPct != null && discountPct > 0 && (
-                  <span className="text-xs font-semibold" style={{ color: 'var(--success)' }}>
-                    {discountPct}% OFF
-                  </span>
+          <div className={compact ? "mb-1.5 min-w-0" : "mb-3 min-w-0"}>
+            <div className="truncate text-[var(--foreground)]">
+              <span className={`align-baseline ${compact ? "text-sm font-bold" : "text-lg font-bold"}`}>
+                ₹{Number(displayPrice).toLocaleString("en-IN")}
+                {((!product.hasSinglePrice && product.sizes && product.sizes.length > 1) ||
+                  (product.weightOptions && (Array.isArray(product.weightOptions) ? product.weightOptions : []).length > 1)) && (
+                  <span className="text-sm font-normal ml-1 text-design-muted" />
                 )}
-              </>
-            )}
+              </span>
+              {displayMrp != null && displayMrp > displayPrice && (
+                <>
+                  <span className="text-sm line-through text-design-muted ml-2 align-baseline">
+                    ₹{Number(displayMrp).toLocaleString("en-IN")}
+                  </span>
+                  {discountPct != null && discountPct > 0 && (
+                    <span className="text-xs font-semibold ml-2 align-baseline" style={{ color: "var(--success)" }}>
+                      {discountPct}% OFF
+                    </span>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         )}
 
@@ -536,7 +537,7 @@ function ProductCard({ product, compact = false }) {
 export function ProductCardSkeleton({ compact = false }) {
   return (
     <div className={`card-soft overflow-hidden group relative ${compact ? "flex gap-3" : ""}`}>
-      <div className={`${compact ? "h-20 w-20 rounded-[var(--radius-md)] p-1.5" : "h-64 rounded-[var(--radius-lg)] p-1.5"} flex items-center justify-center`}>
+      <div className={`${compact ? "h-20 w-20 rounded-[var(--radius-md)] p-1.5" : "aspect-square w-full rounded-[var(--radius-lg)] p-1.5"} flex items-center justify-center`}>
         <div className="w-full h-full animate-pulse" style={{ background: "var(--muted)", borderRadius: "inherit" }} />
       </div>
 

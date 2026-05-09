@@ -367,7 +367,7 @@ export default function ProductDetail() {
       <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
       <div className=" ">
         {/* Top bar */}
-        <div className="px-4 sm:px-6 lg:px-8 pt-6">
+        <div className=" px-2 sm:px-4 lg:px-6 pt-6">
           <nav className="mb-5">
             <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:text-sm" style={{ color: "oklch(55% .02 340)" }}>
               <li>
@@ -408,7 +408,7 @@ export default function ProductDetail() {
           </nav>
         </div>
 
-        <div className="px-4 sm:px-6 lg:px-8 pb-28 lg:pb-16">
+        <div className=" px-2 sm:px-4 lg:px-6 pb-28 lg:pb-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
             {/* Left: Media gallery */}
             <section className="lg:col-span-7">
@@ -880,7 +880,7 @@ export default function ProductDetail() {
           </div>
 
           {/* Reviews Section */}
-          <section className="mt-12 px-4 sm:px-6 lg:px-8" aria-labelledby="reviews-heading">
+          <section className="mt-12  px-2 sm:px-4 lg:px-6" aria-labelledby="reviews-heading">
             <h2 id="reviews-heading" className="text-xl font-bold font-display mb-6" style={{ color: "var(--foreground)" }}>
               Reviews
             </h2>
@@ -1021,7 +1021,7 @@ export default function ProductDetail() {
 
           {/* Similar Products Section */}
           {similarProducts.length > 0 && (
-            <section className="mt-16 px-4 sm:px-6 lg:px-8">
+            <section className="mt-16  px-2 sm:px-4 lg:px-6">
               <h2 className="text-xl sm:text-xl font-extrabold mb-6" style={{ color: "oklch(20% .02 340)" }}>
                 Similar Products
               </h2>
@@ -1050,7 +1050,7 @@ export default function ProductDetail() {
             isLoading={loadingRecommendations}
             showCounter
             shuffleFetched={false}
-            sectionClassName="mt-12 px-4 sm:px-6 lg:px-8"
+            sectionClassName="mt-12  px-2 sm:px-4 lg:px-6"
             titleClassName="text-xl sm:text-xl font-extrabold text-[oklch(20%_0.02_340)]"
             subtitleClassName="text-sm mt-1 text-[oklch(55%_0.02_340)]"
           />
