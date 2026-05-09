@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { API } from "../api";
-import ProductCard, { ProductCardSkeleton } from "../components/ProductCard";
 import { Link } from "react-router-dom";
 import BannerSlider from "../components/BannerSlider";
 import { MemoReelCarousel as ReelCarousel } from "../components/ReelCarousel";
-import ProductCarouselSection from "../components/ProductCarouselSection";
+import HorizontalProductCarousel from "../components/HorizontalProductCarousel";
 import { useRecentlyViewed } from "../context/RecentlyViewedContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useUserAuth } from "../context/UserAuthContext";
@@ -466,22 +465,9 @@ export default function Home() {
           
 
       {/* Popular Fruits */}
-      {isInitialLoad ? (
-        <div className="  px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: "var(--background)" }}>
-          <div className="flex items-center justify-between mb-10">
-            <h2 className="font-display text-xl font-bold text-design-foreground">Popular Fruits</h2>
-          </div>
-          <div className="flex gap-5 overflow-x-auto pb-4 px-1 snap-x snap-mandatory scrollbar-thin">
-            {[...Array(6)].map((_, i) => (
-              <div key={`pop-skel-${i}`} className="shrink-0 snap-start w-[48%] lg:w-[20%]">
-                <ProductCardSkeleton />
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : popularProducts.length > 0 ? (
-        <div className="  px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
-          <div className="flex items-center justify-between mb-10">
+      {(loading.products || popularProducts.length > 0) && (
+        <div className="px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: "var(--background)" }}>
+          <div className="flex items-center justify-between mb-6">
             <h2 className="font-display text-xl font-bold text-design-foreground">Popular Fruits</h2>
             <Link
               to="/categories"
@@ -493,34 +479,28 @@ export default function Home() {
               </svg>
             </Link>
           </div>
-          <div
-            className="flex gap-5 overflow-x-auto pb-4 px-1 snap-x snap-mandatory scrollbar-thin"
-            style={{ WebkitOverflowScrolling: "touch" }}
-          >
-            {popularProducts.map((p) => (
-              <div
-                key={p.id}
-                className="shrink-0 snap-start w-[48%] lg:w-[20%]"
-              >
-                <ProductCard product={p} />
-              </div>
-            ))}
-          </div>
+          <HorizontalProductCarousel
+            hideHeader
+            products={popularProducts}
+            isLoading={loading.products}
+            shuffleFetched={false}
+            sectionClassName="mt-0 px-0"
+            skeletonCount={6}
+            renderTrackClassName="flex gap-5 overflow-x-auto scroll-smooth scrollbar-thin pb-4 px-1 snap-x snap-mandatory"
+            loadingTrackClassName="flex gap-5 overflow-x-auto scroll-smooth scrollbar-thin pb-4 px-1 snap-x snap-mandatory"
+            cardWrapperClassName="shrink-0 snap-start basis-[calc((100%-1.25rem)/2)] lg:basis-[calc((100%-5rem)/5)] overflow-hidden"
+          />
         </div>
-      ) : null}
+      )}
 
       {/* Top Rated */}
       {topRatedProducts.length > 0 && (
-        <div className=" ">
-          <ProductCarouselSection title="Top Rated" products={topRatedProducts} />
-        </div>
+        <HorizontalProductCarousel title="Top Rated" products={topRatedProducts} shuffleFetched={false} />
       )}
 
        {/* Personalized: Recently Viewed */}
        {recentIds.length > 0 && (
-        <div className=" ">
-          <ProductCarouselSection title="Recently Viewed" productIds={recentIds} />
-        </div>
+        <HorizontalProductCarousel title="Recently Viewed" productIds={recentIds} />
       )}
 
       {/* Delivery in 30 mins banner */}
@@ -559,47 +539,57 @@ export default function Home() {
 
       {/* Personalized: Buy Again */}
       {buyAgainIds.length > 0 && (
-        <div className=" ">
-          <ProductCarouselSection title="Buy Again" productIds={buyAgainIds} />
-        </div>
+        <HorizontalProductCarousel title="Buy Again" productIds={buyAgainIds} />
       )}
 
-      {/* Trending Gifts Section */}
-      <div className="  px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
-          <div className="flex items-center justify-between mb-10">
-            <h2 className="font-display text-xl font-bold text-design-foreground">Our Products</h2>
-            {products.length > 0 && (
-              <Link
-                to="/shop"
-                className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group text-design-foreground hover:opacity-80"
-              >
-                View All
-                <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-            )}
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-6">
-            {visibleProducts.length > 0 ? (
-              visibleProducts.map((p) => <ProductCard key={p.id} product={p} />)
-            ) : isInitialLoad ? (
-              Array.from({ length: 10 }).map((_, i) => (
-                <ProductCardSkeleton key={`our-skel-${i}`} />
-              ))
-            ) : (
-              <div className="col-span-full text-center py-16">
-                <div className="inline-block p-6 rounded-full mb-4 bg-design-secondary">
-                  <img src="/logo.png" alt="SK Fruits" className="w-16 h-16 object-contain" />
-                </div>
-                <h3 className="font-display text-xl font-bold mb-2 text-design-foreground">SK Fruits</h3>
-                <p className="font-medium text-design-muted">
-                  More amazing gifts coming soon!
-                </p>
-              </div>
-            )}
-          </div>
+      {/* Our Products */}
+      <div className="px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: "var(--background)" }}>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="font-display text-xl font-bold text-design-foreground">Our Products</h2>
+          {products.length > 0 && (
+            <Link
+              to="/shop"
+              className="text-sm font-semibold inline-flex items-center gap-1 transition-all duration-300 hover:gap-2 group text-design-foreground hover:opacity-80"
+            >
+              View All
+              <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          )}
         </div>
+        {loading.products ? (
+          <HorizontalProductCarousel
+            hideHeader
+            products={[]}
+            isLoading
+            shuffleFetched={false}
+            sectionClassName="mt-0 px-0"
+            skeletonCount={10}
+            renderTrackClassName="flex gap-6 overflow-x-auto scroll-smooth scrollbar-hide pb-4"
+            loadingTrackClassName="flex gap-6 overflow-x-auto scroll-smooth scrollbar-hide pb-4"
+            cardWrapperClassName="shrink-0 basis-[calc((100%-1.5rem)/2)] lg:basis-[calc((100%-6rem)/5)] overflow-hidden"
+          />
+        ) : visibleProducts.length > 0 ? (
+          <HorizontalProductCarousel
+            hideHeader
+            products={visibleProducts}
+            shuffleFetched={false}
+            sectionClassName="mt-0 px-0"
+            renderTrackClassName="flex gap-6 overflow-x-auto scroll-smooth scrollbar-hide pb-4"
+            loadingTrackClassName="flex gap-6 overflow-x-auto scroll-smooth scrollbar-hide pb-4"
+            cardWrapperClassName="shrink-0 basis-[calc((100%-1.5rem)/2)] lg:basis-[calc((100%-6rem)/5)] overflow-hidden"
+          />
+        ) : (
+          <div className="text-center py-16">
+            <div className="inline-block p-6 rounded-full mb-4 bg-design-secondary">
+              <img src="/logo.png" alt="SK Fruits" className="w-16 h-16 object-contain" />
+            </div>
+            <h3 className="font-display text-xl font-bold mb-2 text-design-foreground">SK Fruits</h3>
+            <p className="font-medium text-design-muted">More amazing gifts coming soon!</p>
+          </div>
+        )}
+      </div>
 
       {/* Why Choose Us (trust section) */}
       <div className="  px-4 sm:px-6 lg:px-8 py-6">
@@ -801,12 +791,11 @@ export default function Home() {
       
       {/* Personalized: From Your Wishlist */}
       {wishlistItems.length > 0 && (
-        <div className=" ">
-          <ProductCarouselSection
-            title="From Your Wishlist"
-            products={wishlistItems.map((item) => item.product).filter(Boolean)}
-          />
-        </div>
+        <HorizontalProductCarousel
+          title="From Your Wishlist"
+          products={wishlistItems.map((item) => item.product).filter(Boolean)}
+          shuffleFetched={false}
+        />
       )}
 
       {/* Reels Section */}

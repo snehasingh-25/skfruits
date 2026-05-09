@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useToast } from "../context/ToastContext";
 import { useRecentlyViewed } from "../context/RecentlyViewedContext";
-import ProductCarouselSection from "../components/ProductCarouselSection";
+import HorizontalProductCarousel from "../components/HorizontalProductCarousel";
 
 export default function Cart() {
   const { recentIds } = useRecentlyViewed();
@@ -258,9 +258,7 @@ export default function Cart() {
 
         {/* Optional: Recently Viewed */}
         {recentIds.length > 0 && (
-          <div className="mt-12">
-            <ProductCarouselSection title="Recently Viewed" productIds={recentIds} />
-          </div>
+          <HorizontalProductCarousel title="Recently Viewed" productIds={recentIds} sectionClassName="mt-12 px-4 sm:px-6 lg:px-8" />
         )}
       </div>
     </div>

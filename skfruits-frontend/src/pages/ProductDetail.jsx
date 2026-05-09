@@ -5,12 +5,11 @@ import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useToast } from "../context/ToastContext";
 import ProductCard from "../components/ProductCard";
-import RecommendationCarousel from "../components/RecommendationCarousel";
 import StarRating from "../components/StarRating";
 import { initializeInstagramEmbeds } from "../utils/instagramEmbed";
 import { useUserAuth } from "../context/UserAuthContext";
 import { useRecentlyViewed } from "../context/RecentlyViewedContext";
-import ProductCarouselSection from "../components/ProductCarouselSection";
+import HorizontalProductCarousel from "../components/HorizontalProductCarousel";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -1038,18 +1037,22 @@ export default function ProductDetail() {
 
           {/* Recently Viewed */}
           {recentIds.length > 0 && (
-            <ProductCarouselSection
+            <HorizontalProductCarousel
               title="Recently Viewed"
               productIds={recentIds}
               excludeProductId={product?.id}
             />
           )}
 
-          {/* Recommended for You */}
-          <RecommendationCarousel
+          <HorizontalProductCarousel
+            title="Recommended for You"
             products={recommendedProducts}
             isLoading={loadingRecommendations}
-            title="Recommended for You"
+            showCounter
+            shuffleFetched={false}
+            sectionClassName="mt-12 px-4 sm:px-6 lg:px-8"
+            titleClassName="text-xl sm:text-xl font-extrabold text-[oklch(20%_0.02_340)]"
+            subtitleClassName="text-sm mt-1 text-[oklch(55%_0.02_340)]"
           />
         </div>
 
