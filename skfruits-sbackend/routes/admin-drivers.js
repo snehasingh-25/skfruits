@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { requireRole } from "../middleware/auth.js";
 import prisma from "../prisma.js";
 import { normalizeEmail } from "../utils/normalizeEmail.js";
+import { orderDataClearDriverAndTracking } from "../utils/driverAssignment.js";
 
 const router = express.Router();
 
@@ -193,6 +194,37 @@ router.put("/update-status/:id", requireRole("admin"), async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: error.message || "Failed to update status" });
+  }
+});
+
+/**
+ * DELETE /admin/drivers/:id
+ * Permanently removes a driver user. Clears assignment and tracking on any orders they were assigned to.
+ * :id = User id (must have role = driver).
+ */
+router.delete("/:id", requireRole("admin"), async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id < 1) {
+      return res.status(400).json({ error: "Invalid driver id" });
+    }
+
+    const user = await prisma.user.findFirst({ where: { id, role: "driver" } });
+    if (!user) {
+      return res.status(404).json({ error: "Driver not found" });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.order.updateMany({
+        where: { driverUserId: id },
+        data: orderDataClearDriverAndTracking(),
+      });
+      await tx.user.delete({ where: { id } });
+    });
+
+    res.json({ ok: true, id });
+  } catch (error) {
+    res.status(500).json({ error: error.message || "Failed to delete driver" });
   }
 });
 

@@ -1,7 +1,7 @@
 import express from "express";
 import { requireRole } from "../middleware/auth.js";
 import prisma from "../prisma.js";
-import { releaseDriverIfAssigned } from "../utils/driverAssignment.js";
+import { releaseDriverIfAssigned, orderDataClearDriverAndTracking } from "../utils/driverAssignment.js";
 import { getGoogleMapsRoute } from "../utils/googleMapsService.js";
 import { parseProductImage } from "../utils/productSerialize.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -227,10 +227,13 @@ router.put(
 
     const updated = await prisma.order.update({
       where: { id },
-      data: { 
-        driverUserId: driverUserId || null,
-        ...(routePolylineData && { routePolyline: routePolylineData })
-      },
+      data:
+        driverUserId != null
+          ? {
+              driverUserId,
+              ...(routePolylineData && { routePolyline: routePolylineData }),
+            }
+          : orderDataClearDriverAndTracking(),
     });
 
     if (driverUserId != null) {

@@ -1,7 +1,11 @@
 import express from "express";
 import { requireRole } from "../middleware/auth.js";
 import prisma from "../prisma.js";
-import { releaseDriverIfAssigned } from "../utils/driverAssignment.js";
+import {
+  releaseDriverIfAssigned,
+  orderAllowsDriverSelfRelease,
+  orderDataClearDriverAndTracking,
+} from "../utils/driverAssignment.js";
 
 const router = express.Router();
 
@@ -58,6 +62,8 @@ router.get("/orders", requireRole("driver"), async (req, res) => {
       createdAt: order.createdAt,
       status: order.status,
       orderStatus: orderStatusDisplay(order.status),
+      customerCanTrack: order.customerCanTrack,
+      canReleaseAssignment: orderAllowsDriverSelfRelease(order),
       customer: order.customer,
       phone: order.phone,
       email: order.email,
@@ -126,6 +132,56 @@ router.put("/orders/:id/status", requireRole("driver"), async (req, res) => {
  * POST /driver/orders/:id/pickup
  * Driver marks order as picked up (enables customer tracking, sets customerCanTrack = true)
  */
+/**
+ * POST /driver/orders/:id/release
+ * Driver removes themselves from the order before pickup (pending / processing / confirmed only).
+ */
+router.post("/orders/:id/release", requireRole("driver"), async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!id || Number.isNaN(id)) return res.status(400).json({ error: "Invalid order id" });
+
+    const order = await prisma.order.findFirst({
+      where: { id, driverUserId: req.userId },
+    });
+    if (!order) return res.status(404).json({ error: "Order not found or not assigned to you" });
+
+    if (!orderAllowsDriverSelfRelease(order)) {
+      return res.status(400).json({
+        error:
+          "You can only leave an order before pickup. After pickup, contact admin if you cannot complete the delivery.",
+      });
+    }
+
+    await releaseDriverIfAssigned(prisma, { driverUserId: order.driverUserId, driverId: order.driverId });
+
+    await prisma.order.update({
+      where: { id },
+      data: orderDataClearDriverAndTracking(),
+    });
+
+    await prisma.driverLiveStatus.updateMany({
+      where: { driverId: req.userId, currentOrderId: id },
+      data: {
+        currentOrderId: null,
+        isActive: false,
+        lastLatitude: null,
+        lastLongitude: null,
+        lastLocationTime: null,
+        lastPingTime: null,
+      },
+    });
+
+    res.json({
+      id,
+      message: "You are no longer assigned to this order.",
+    });
+  } catch (error) {
+    console.error("Driver release order error:", error);
+    res.status(500).json({ error: error.message || "Failed to release order" });
+  }
+});
+
 router.post("/orders/:id/pickup", requireRole("driver"), async (req, res) => {
   try {
     const id = Number(req.params.id);

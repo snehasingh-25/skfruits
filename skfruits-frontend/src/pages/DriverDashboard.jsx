@@ -153,6 +153,38 @@ export default function DriverDashboard() {
     navigate("/", { replace: true });
   };
 
+  const handleReleaseOrder = async (orderId) => {
+    if (
+      !window.confirm(
+        "Remove yourself from this order? You will be available for other assignments; admin may assign another driver."
+      )
+    ) {
+      return;
+    }
+    setUpdatingOrderId(orderId);
+    try {
+      const res = await fetch(`${API}/driver/orders/${orderId}/release`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Could not remove assignment");
+        return;
+      }
+      toast.success(data.message || "You are no longer assigned to this order");
+      if (trackingOrderId === orderId) {
+        stopTracking();
+        setTrackingOrderId(null);
+      }
+      fetchOrders();
+    } catch {
+      toast.error("Could not remove assignment");
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -432,8 +464,30 @@ export default function DriverDashboard() {
 
                 {/* Status actions with GPS tracking */}
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {/* Pickup: shipped → out_for_delivery + start GPS */}
-                  {order.status === "shipped" && (
+                  {order.canReleaseAssignment && (
+                    <button
+                      type="button"
+                      disabled={updatingOrderId === order.id}
+                      onClick={() => handleReleaseOrder(order.id)}
+                      className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-60 border"
+                      style={{
+                        borderColor: "var(--border)",
+                        color: "var(--foreground)",
+                        background: "var(--card-white)",
+                      }}
+                    >
+                      {updatingOrderId === order.id ? "Updating…" : "Remove from order"}
+                    </button>
+                  )}
+                  {/* Pickup: before customer tracking — then status becomes shipped and tracking starts */}
+                  {(() => {
+                    const s = String(order.status ?? "")
+                      .toLowerCase()
+                      .replace(/\s+/g, "_");
+                    const canPickUp =
+                      !order.customerCanTrack &&
+                      !["out_for_delivery", "delivered", "cancelled"].includes(s);
+                    return canPickUp ? (
                     <button
                       type="button"
                       disabled={updatingOrderId === order.id}
@@ -448,7 +502,8 @@ export default function DriverDashboard() {
                         ? "Picking up…"
                         : "🚀 Pick Up & Start Tracking"}
                     </button>
-                  )}
+                    ) : null;
+                  })()}
                   {/* Reached: out_for_delivery */}
                   {order.status === "out_for_delivery" && (
                     <>

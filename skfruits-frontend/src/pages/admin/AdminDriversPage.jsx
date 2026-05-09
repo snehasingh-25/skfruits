@@ -36,6 +36,7 @@ export default function AdminDriversPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [addForm, setAddForm] = useState({ name: "", email: "", phone: "", password: "" });
   const [adding, setAdding] = useState(false);
@@ -100,6 +101,32 @@ export default function AdminDriversPage() {
     }
   };
 
+  const handleDeleteDriver = async (driver) => {
+    if (!driver?.id) return;
+    const msg = driver.currentOrder
+      ? `Delete driver "${driver.name}"? They have an active order #${driver.currentOrder.id} — it will be unassigned and tracking cleared. This cannot be undone.`
+      : `Delete driver "${driver.name}" permanently? This cannot be undone.`;
+    if (!window.confirm(msg)) return;
+    setDeletingId(driver.id);
+    try {
+      const res = await fetch(`${API}/admin/drivers/${driver.id}`, {
+        method: "DELETE",
+        headers: getHeaders(),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Failed to delete driver");
+        return;
+      }
+      toast.success("Driver deleted");
+      setDrivers((prev) => prev.filter((d) => d.id !== driver.id));
+    } catch {
+      toast.error("Failed to delete driver");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const handleAddDriver = async (e) => {
     e.preventDefault();
     const { name, phone, password, email } = addForm;
@@ -140,7 +167,7 @@ export default function AdminDriversPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="  px-4 sm:px-6 lg:px-8 py-6">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <h1 className="text-xl font-display font-bold" style={{ color: "var(--foreground)" }}>
           Drivers
@@ -353,35 +380,53 @@ export default function AdminDriversPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      {updatingId === driver.id ? (
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="h-6 w-6 rounded-full border-2 border-t-transparent animate-spin"
-                            style={{ borderColor: "var(--primary)" }}
-                          />
+                      <div className="flex flex-col gap-2 items-start">
+                        {updatingId === driver.id ? (
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="h-6 w-6 rounded-full border-2 border-t-transparent animate-spin"
+                              style={{ borderColor: "var(--primary)" }}
+                            />
+                            <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                              Updating…
+                            </span>
+                          </div>
+                        ) : (
+                          <select
+                            value={driver.status}
+                            onChange={(e) => handleStatusChange(driver.id, e.target.value)}
+                            disabled={deletingId === driver.id}
+                            className="px-3 py-2 rounded-lg border text-sm font-medium transition-all focus:outline-none focus:ring-2"
+                            style={{
+                              borderColor: "var(--border)",
+                              background: "var(--background)",
+                              color: "var(--foreground)",
+                            }}
+                            aria-label={`Update status for ${driver.name}`}
+                          >
+                            {STATUS_OPTIONS.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                        {deletingId === driver.id ? (
                           <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                            Updating…
+                            Deleting…
                           </span>
-                        </div>
-                      ) : (
-                        <select
-                          value={driver.status}
-                          onChange={(e) => handleStatusChange(driver.id, e.target.value)}
-                          className="px-3 py-2 rounded-lg border text-sm font-medium transition-all focus:outline-none focus:ring-2"
-                          style={{
-                            borderColor: "var(--border)",
-                            background: "var(--background)",
-                            color: "var(--foreground)",
-                          }}
-                          aria-label={`Update status for ${driver.name}`}
-                        >
-                          {STATUS_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
-                      )}
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteDriver(driver)}
+                            disabled={updatingId === driver.id}
+                            className="text-xs font-semibold underline hover:no-underline disabled:opacity-50"
+                            style={{ color: "var(--destructive)" }}
+                          >
+                            Delete driver
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

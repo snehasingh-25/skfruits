@@ -65,3 +65,33 @@ export async function releaseDriverIfAssigned(prisma, options = {}) {
     });
   }
 }
+
+/** Statuses where the assigned driver may remove themselves (before pickup / tracking). */
+const DRIVER_SELF_RELEASE_STATUSES = new Set(["pending", "processing", "confirmed"]);
+
+/**
+ * @param {{ status: string; customerCanTrack?: boolean }} order
+ * @returns {boolean}
+ */
+export function orderAllowsDriverSelfRelease(order) {
+  const s = String(order.status ?? "")
+    .toLowerCase()
+    .replace(/\s+/g, "_");
+  if (!DRIVER_SELF_RELEASE_STATUSES.has(s)) return false;
+  if (order.customerCanTrack === true) return false;
+  return true;
+}
+
+/** Prisma update payload: clear driver assignment and delivery tracking fields. */
+export function orderDataClearDriverAndTracking() {
+  return {
+    driverUserId: null,
+    driverId: null,
+    trackingStatus: null,
+    customerCanTrack: false,
+    routePolyline: null,
+    driverLastLocation: null,
+    driverLastLocationTime: null,
+    driverPredictedLocation: null,
+  };
+}
