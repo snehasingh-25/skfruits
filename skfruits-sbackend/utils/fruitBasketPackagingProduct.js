@@ -32,12 +32,10 @@ export async function getFruitBasketPackagingProductId() {
         },
         select: { id: true },
       });
-      console.log(`fruitBasketPackaging: created packaging product id=${p.id}`);
     }
     cachedId = p.id;
     return cachedId;
   } catch (e) {
-    console.error("getFruitBasketPackagingProductId:", e.message);
     return null;
   }
 }

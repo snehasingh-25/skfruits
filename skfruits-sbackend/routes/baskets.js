@@ -1,5 +1,5 @@
 import express from "express";
-import { requireRole } from "../utils/auth.js";
+import { requireRole } from "../middleware/auth.js";
 import { uploadBasketImages, getImageUrl } from "../utils/upload.js";
 import prisma from "../prisma.js";
 import { cacheMiddleware, invalidateCache } from "../utils/cache.js";
@@ -88,7 +88,6 @@ router.post("/", requireRole("admin"), uploadBasketImages, async (req, res) => {
 
     res.json(basket);
   } catch (error) {
-    console.error("Create basket error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -138,7 +137,6 @@ router.put("/:id", requireRole("admin"), uploadBasketImages, async (req, res) =>
 
     res.json(basket);
   } catch (error) {
-    console.error("Update basket error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -165,7 +163,6 @@ router.post("/reorder", requireRole("admin"), async (req, res) => {
 
     res.json({ message: "Order updated successfully" });
   } catch (error) {
-    console.error("Reorder baskets error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -190,7 +187,6 @@ router.delete("/:id", requireRole("admin"), async (req, res) => {
 
     res.json({ message: "Basket deleted successfully" });
   } catch (error) {
-    console.error("Delete basket error:", error);
     res.status(500).json({ error: error.message });
   }
 });

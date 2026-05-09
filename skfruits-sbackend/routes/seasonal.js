@@ -1,5 +1,5 @@
 import express from "express";
-import { requireRole } from "../utils/auth.js";
+import { requireRole } from "../middleware/auth.js";
 import upload, { getImageUrl } from "../utils/upload.js";
 import prisma from "../prisma.js";
 import { cacheMiddleware, invalidateCache } from "../utils/cache.js";

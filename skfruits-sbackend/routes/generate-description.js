@@ -226,7 +226,6 @@ router.post("/", async (req, res) => {
       error: "GEMINI_API_KEY is not configured. Add it in your server environment variables.",
     });
   } catch (err) {
-    console.error("Generate description error:", err);
     const status = err.status === 401 ? 401 : err.status === 429 ? 429 : 500;
     const message =
       err.message ||

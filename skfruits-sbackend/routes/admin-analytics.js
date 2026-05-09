@@ -1,5 +1,5 @@
 import express from "express";
-import { requireRole } from "../utils/auth.js";
+import { requireRole } from "../middleware/auth.js";
 import prisma from "../prisma.js";
 
 const router = express.Router();
@@ -55,7 +55,6 @@ router.get("/summary", requireRole("admin"), async (req, res) => {
       deliveredOrders: deliveredCount,
     });
   } catch (error) {
-    console.error("Analytics summary error:", error);
     res.status(500).json({ error: error.message || "Failed to fetch analytics summary" });
   }
 });
@@ -109,7 +108,6 @@ router.get("/revenue-trend", requireRole("admin"), async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    console.error("Revenue trend error:", error);
     res.status(500).json({ error: error.message || "Failed to fetch revenue trend" });
   }
 });
@@ -143,7 +141,6 @@ router.get("/top-products", requireRole("admin"), async (req, res) => {
     list.sort((a, b) => b.revenueGenerated - a.revenueGenerated);
     res.json(list.slice(0, limit));
   } catch (error) {
-    console.error("Top products error:", error);
     res.status(500).json({ error: error.message || "Failed to fetch top products" });
   }
 });
@@ -162,7 +159,6 @@ router.get("/order-status-distribution", requireRole("admin"), async (req, res) 
     result.sort((a, b) => b.count - a.count);
     res.json(result);
   } catch (error) {
-    console.error("Order status distribution error:", error);
     res.status(500).json({ error: error.message || "Failed to fetch order status distribution" });
   }
 });

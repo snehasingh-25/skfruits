@@ -3,9 +3,6 @@ import { v2 as cloudinary } from "cloudinary";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import fs from "fs";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -33,7 +30,6 @@ if (process.env.CLOUDINARY_URL) {
 
 if (cloudinaryConfig) {
   cloudinary.config(cloudinaryConfig);
-  console.log("Cloudinary configured successfully");
 }
 
 // Local storage configuration
@@ -149,7 +145,6 @@ export const uploadToCloudinary = async (filePath) => {
     fs.unlinkSync(filePath);
     return result.secure_url;
   } catch (error) {
-    console.error("Cloudinary upload error:", error);
     return null;
   }
 };
@@ -176,7 +171,6 @@ export const getVideoUrl = async (file) => {
       fs.unlinkSync(file.path);
       return result.secure_url;
     } catch (error) {
-      console.error("Cloudinary video upload error:", error);
       // fall through to local
     }
   }

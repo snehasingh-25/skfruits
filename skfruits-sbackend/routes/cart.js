@@ -1,15 +1,16 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import prisma from "../prisma.js";
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
 import { getFruitBasketPackagingProductId } from "../utils/fruitBasketPackagingProduct.js";
+import { jwtSecret as JWT_SECRET } from "../config/env.js";
+import { CART_SESSION_HEADER, getCartSessionId } from "../utils/cartSession.js";
+import { parseJsonStringArray } from "../utils/productSerialize.js";
 
 const router = express.Router();
-const CART_SESSION_HEADER = "x-cart-session-id";
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
 function getSessionId(req) {
-  return req.headers[CART_SESSION_HEADER]?.trim() || req.body?.sessionId?.trim() || null;
+  return getCartSessionId(req);
 }
 
 /** Optional: set req.customerUserId when Bearer token is a customer (not admin). */
@@ -463,7 +464,6 @@ router.post("/fruit-basket", optionalCustomerAuth, async (req, res) => {
     res.setHeader(CART_SESSION_HEADER, fullCart.sessionId);
     res.status(201).json({ sessionId: fullCart.sessionId, items });
   } catch (error) {
-    console.error("POST /cart/fruit-basket error:", error);
     const status = error.statusCode ?? 500;
     res.status(status).json({ error: error.message });
   }
@@ -651,7 +651,6 @@ router.post("/merge", optionalCustomerAuth, async (req, res) => {
     res.setHeader(CART_SESSION_HEADER, updated.sessionId);
     res.json({ sessionId: updated.sessionId, items });
   } catch (error) {
-    console.error("Cart merge error:", error);
     const status = error.statusCode ?? 500;
     res.status(status).json({ error: error.message });
   }
@@ -676,8 +675,8 @@ router.post("/sync", async (req, res) => {
     products.forEach((p) => {
       productsMap[p.id] = {
         ...p,
-        images: p.images ? JSON.parse(p.images) : [],
-        keywords: p.keywords ? JSON.parse(p.keywords) : [],
+        images: parseJsonStringArray(p.images),
+        keywords: parseJsonStringArray(p.keywords),
       };
     });
 

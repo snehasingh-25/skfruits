@@ -1,5 +1,5 @@
 import express from "express";
-import { requireRole } from "../utils/auth.js";
+import { requireRole } from "../middleware/auth.js";
 import prisma from "../prisma.js";
 import { releaseDriverIfAssigned } from "../utils/driverAssignment.js";
 
@@ -78,7 +78,6 @@ router.get("/orders", requireRole("driver"), async (req, res) => {
     }));
     res.json(list);
   } catch (error) {
-    console.error("Driver orders error:", error);
     res.status(500).json({ error: error.message || "Failed to fetch orders" });
   }
 });
@@ -119,7 +118,6 @@ router.put("/orders/:id/status", requireRole("driver"), async (req, res) => {
       orderStatus: orderStatusDisplay(updated.status),
     });
   } catch (error) {
-    console.error("Driver update order status error:", error);
     res.status(500).json({ error: error.message || "Failed to update order status" });
   }
 });

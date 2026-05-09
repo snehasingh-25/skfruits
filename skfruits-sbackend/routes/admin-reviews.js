@@ -1,5 +1,5 @@
 import express from "express";
-import { requireRole } from "../utils/auth.js";
+import { requireRole } from "../middleware/auth.js";
 import prisma from "../prisma.js";
 
 const router = express.Router();
@@ -32,7 +32,6 @@ router.get("/", requireRole("admin"), async (req, res) => {
       }))
     );
   } catch (error) {
-    console.error("Admin reviews GET error:", error);
     res.status(500).json({ error: "Failed to fetch reviews" });
   }
 });

@@ -1,16 +1,13 @@
 import express from "express";
 import bcrypt from "bcryptjs";
-import { requireRole } from "../utils/auth.js";
+import { requireRole } from "../middleware/auth.js";
 import prisma from "../prisma.js";
+import { normalizeEmail } from "../utils/normalizeEmail.js";
 
 const router = express.Router();
 
 const DRIVER_STATUS_VALUES = ["available", "busy", "offline"];
 const SALT_ROUNDS = 10;
-
-function normalizeEmail(v) {
-  return (v || "").replace(/^["']|["']$/g, "").trim().toLowerCase();
-}
 
 function normalizeStatus(value) {
   if (!value || typeof value !== "string") return null;
@@ -80,7 +77,6 @@ router.post("/add", requireRole("admin"), async (req, res) => {
     if (error.code === "P2002") {
       return res.status(400).json({ error: "A user with this email already exists" });
     }
-    console.error("Admin add driver error:", error);
     res.status(500).json({ error: error.message || "Failed to add driver" });
   }
 });
@@ -152,7 +148,6 @@ router.get("/", requireRole("admin"), async (req, res) => {
 
     res.json(list);
   } catch (error) {
-    console.error("Admin list drivers error:", error);
     res.status(500).json({ error: error.message || "Failed to fetch drivers" });
   }
 });
@@ -197,7 +192,6 @@ router.put("/update-status/:id", requireRole("admin"), async (req, res) => {
       createdAt: updated.createdAt,
     });
   } catch (error) {
-    console.error("Admin update driver status error:", error);
     res.status(500).json({ error: error.message || "Failed to update status" });
   }
 });

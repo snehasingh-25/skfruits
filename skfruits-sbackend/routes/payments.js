@@ -1,23 +1,23 @@
 import express from "express";
-import crypto from "crypto";
+import { createHmac } from "node:crypto";
 import Razorpay from "razorpay";
 import prisma from "../prisma.js";
 import { getCartItemsForOrder } from "./cart.js";
-import { optionalCustomerAuth } from "../utils/auth.js";
+import { optionalCustomerAuth } from "../middleware/auth.js";
 import { validateStockForItems, deductStockForOrder } from "../utils/stock.js";
 import { calculateDeliveryCharges } from "./delivery.js";
 import { getEstimatedDeliveryForOrder } from "../utils/deliveryEstimate.js";
 import { tryAssignDriverToOrder } from "../utils/driverAssignment.js";
+import { getCartSessionId } from "../utils/cartSession.js";
 
 const router = express.Router();
 
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
-const CART_SESSION_HEADER = "x-cart-session-id";
 const CURRENCY = "INR";
 
 function getSessionId(req) {
-  return req.headers[CART_SESSION_HEADER]?.trim() || req.body?.sessionId?.trim() || null;
+  return getCartSessionId(req);
 }
 
 /** GET /payments/config — return Razorpay key_id for frontend checkout (public, safe to expose) */
@@ -106,7 +106,6 @@ router.post("/create-order", async (req, res) => {
       total,
     });
   } catch (error) {
-    console.error("Create order error:", error);
     res.status(500).json({ error: error.message || "Failed to create payment order" });
   }
 });
@@ -118,7 +117,7 @@ router.post("/create-order", async (req, res) => {
 function verifyPaymentSignature(orderId, paymentId, signature) {
   if (!RAZORPAY_KEY_SECRET) return false;
   const body = `${orderId}|${paymentId}`;
-  const expected = crypto.createHmac("sha256", RAZORPAY_KEY_SECRET).update(body).digest("hex");
+  const expected = createHmac("sha256", RAZORPAY_KEY_SECRET).update(body).digest("hex");
   return expected === signature;
 }
 
@@ -264,7 +263,6 @@ router.post("/verify", optionalCustomerAuth, async (req, res) => {
 
     res.json({ orderId: order.id, success: true });
   } catch (error) {
-    console.error("Payment verify error:", error);
     res.status(500).json({ error: error.message || "Payment verification failed" });
   }
 });

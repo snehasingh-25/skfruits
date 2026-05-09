@@ -38,7 +38,6 @@ router.get("/:productId", cacheMiddleware(10 * 60 * 1000), async (req, res) => {
 
     res.json(recommendations);
   } catch (error) {
-    console.error("Recommendation error:", error);
     res.status(500).json({ error: "Failed to fetch recommendations" });
   }
 });

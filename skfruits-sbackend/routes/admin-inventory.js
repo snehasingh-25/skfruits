@@ -1,5 +1,5 @@
 import express from "express";
-import { requireRole } from "../utils/auth.js";
+import { requireRole } from "../middleware/auth.js";
 import prisma from "../prisma.js";
 
 const router = express.Router();
@@ -92,7 +92,6 @@ router.get("/", requireRole("admin"), async (req, res) => {
 
     res.json(list);
   } catch (error) {
-    console.error("Inventory list error:", error);
     res.status(500).json({ error: error.message || "Failed to fetch inventory" });
   }
 });

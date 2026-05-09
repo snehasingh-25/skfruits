@@ -1,11 +1,10 @@
 import jwt from "jsonwebtoken";
+import { jwtSecret as JWT_SECRET } from "../config/env.js";
 
 const store = new Map();
 
 const DEFAULT_WINDOW_MS = 60 * 1000;
 const DEFAULT_MAX_REQUESTS = 60;
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
 export function getClientIp(req) {
   const forwarded = req.headers["x-forwarded-for"];

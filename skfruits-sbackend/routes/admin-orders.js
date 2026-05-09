@@ -1,8 +1,10 @@
 import express from "express";
-import { requireRole } from "../utils/auth.js";
+import { requireRole } from "../middleware/auth.js";
 import prisma from "../prisma.js";
 import { releaseDriverIfAssigned } from "../utils/driverAssignment.js";
 import { getGoogleMapsRoute } from "../utils/googleMapsService.js";
+import { parseProductImage } from "../utils/productSerialize.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 const router = express.Router();
 
@@ -48,20 +50,11 @@ function orderStatusDisplay(status) {
   return map[String(status).toLowerCase()] || status;
 }
 
-function parseProductImage(product) {
-  if (!product?.images) return null;
-  try {
-    const raw = product.images;
-    const arr = Array.isArray(raw) ? raw : (typeof raw === "string" ? JSON.parse(raw) : []);
-    return arr.length ? arr[0] : null;
-  } catch {
-    return null;
-  }
-}
-
 /** GET /admin/orders — all orders, newest first (admin only), includes assigned driver */
-router.get("/", requireRole("admin"), async (req, res) => {
-  try {
+router.get(
+  "/",
+  requireRole("admin"),
+  asyncHandler(async (req, res) => {
     const orders = await prisma.order.findMany({
       include: {
         items: {
@@ -97,15 +90,14 @@ router.get("/", requireRole("admin"), async (req, res) => {
       })),
     }));
     res.json(list);
-  } catch (error) {
-    console.error("Admin orders list error:", error);
-    res.status(500).json({ error: error.message || "Failed to fetch orders" });
-  }
-});
+  })
+);
 
 /** GET /admin/orders/:id — full order details (admin only), includes assigned driver */
-router.get("/:id", requireRole("admin"), async (req, res) => {
-  try {
+router.get(
+  "/:id",
+  requireRole("admin"),
+  asyncHandler(async (req, res) => {
     const id = Number(req.params.id);
     if (!id) return res.status(400).json({ error: "Invalid order id" });
     const order = await prisma.order.findUnique({
@@ -169,15 +161,14 @@ router.get("/:id", requireRole("admin"), async (req, res) => {
         image: parseProductImage(item.product),
       })),
     });
-  } catch (error) {
-    console.error("Admin order detail error:", error);
-    res.status(500).json({ error: error.message || "Failed to fetch order" });
-  }
-});
+  })
+);
 
 /** PUT /admin/orders/:id/assign-driver — assign or reassign driver (admin only). Body: { driverUserId } (null to unassign) */
-router.put("/:id/assign-driver", requireRole("admin"), async (req, res) => {
-  try {
+router.put(
+  "/:id/assign-driver",
+  requireRole("admin"),
+  asyncHandler(async (req, res) => {
     const id = Number(req.params.id);
     const driverUserId = req.body?.driverUserId != null ? Number(req.body.driverUserId) : null;
     if (!id) return res.status(400).json({ error: "Invalid order id" });
@@ -261,15 +252,14 @@ router.put("/:id/assign-driver", requireRole("admin"), async (req, res) => {
       driver: driverUser ? { id: driverUser.id, name: driverUser.name, email: driverUser.email, phone: driverUser.phone } : null,
       routePolyline: routePolylineData ? JSON.parse(routePolylineData) : null
     });
-  } catch (error) {
-    console.error("Admin assign driver error:", error);
-    res.status(500).json({ error: error.message || "Failed to assign driver" });
-  }
-});
+  })
+);
 
 /** PUT /admin/orders/update-status/:id — validate transition and update (admin only) */
-router.put("/update-status/:id", requireRole("admin"), async (req, res) => {
-  try {
+router.put(
+  "/update-status/:id",
+  requireRole("admin"),
+  asyncHandler(async (req, res) => {
     const id = Number(req.params.id);
     const rawStatus = req.body?.orderStatus ?? req.body?.status;
     const newStatus = normalizeStatus(rawStatus);
@@ -322,10 +312,7 @@ router.put("/update-status/:id", requireRole("admin"), async (req, res) => {
         image: parseProductImage(item.product),
       })),
     });
-  } catch (error) {
-    console.error("Admin update status error:", error);
-    res.status(500).json({ error: error.message || "Failed to update order" });
-  }
-});
+  })
+);
 
 export default router;

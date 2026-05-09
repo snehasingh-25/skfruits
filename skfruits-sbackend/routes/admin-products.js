@@ -1,13 +1,16 @@
 import express from "express";
-import { requireRole } from "../utils/auth.js";
+import { requireRole } from "../middleware/auth.js";
 import prisma from "../prisma.js";
 import { invalidateCache } from "../utils/cache.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 const router = express.Router();
 
 /** PUT /admin/products/update-stock/:id — body { stock, sizeId?: number, selectedWeight?: string } for variant-specific stock */
-router.put("/update-stock/:id", requireRole("admin"), async (req, res) => {
-  try {
+router.put(
+  "/update-stock/:id",
+  requireRole("admin"),
+  asyncHandler(async (req, res) => {
     const productId = Number(req.params.id);
     let stock = req.body?.stock;
     const sizeId = req.body?.sizeId != null ? Number(req.body.sizeId) : null;
@@ -71,10 +74,7 @@ router.put("/update-stock/:id", requireRole("admin"), async (req, res) => {
     });
     invalidateCache("/products");
     return res.json({ id: productId, variantType: "single", stock });
-  } catch (error) {
-    console.error("Update stock error:", error);
-    res.status(500).json({ error: error.message || "Failed to update stock" });
-  }
-});
+  })
+);
 
 export default router;

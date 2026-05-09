@@ -1,5 +1,5 @@
 import express from "express";
-import { requireRole } from "../utils/auth.js";
+import { requireRole } from "../middleware/auth.js";
 import prisma from "../prisma.js";
 import { cacheMiddleware, invalidateCache } from "../utils/cache.js";
 import { uploadReelFiles, getVideoUrl, getImageUrl } from "../utils/upload.js";
@@ -105,7 +105,6 @@ router.post("/", requireRole("admin"), uploadReelFiles.fields([
 
     res.json(reel);
   } catch (error) {
-    console.error("Create reel error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -181,7 +180,6 @@ router.put("/:id", requireRole("admin"), uploadReelFiles.fields([
 
     res.json(reel);
   } catch (error) {
-    console.error("Update reel error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -224,7 +222,6 @@ router.post("/reorder", requireRole("admin"), async (req, res) => {
 
     res.json({ message: "Order updated successfully" });
   } catch (error) {
-    console.error("Reorder reels error:", error);
     res.status(500).json({ error: error.message });
   }
 });

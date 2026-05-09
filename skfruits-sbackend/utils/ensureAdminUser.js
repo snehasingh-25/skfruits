@@ -22,14 +22,12 @@ export async function ensureAdminUser() {
   const password = normalizeEnv(rawPassword);
 
   if (!email || !password) {
-    console.log("ensureAdminUser: ADMIN_EMAIL or ADMIN_PASSWORD not set; skipping admin seed.");
     return;
   }
 
   try {
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
-      console.log("ensureAdminUser: Admin user already exists, skipping.");
       return;
     }
 
@@ -42,9 +40,7 @@ export async function ensureAdminUser() {
         role: "admin",
       },
     });
-    console.log("ensureAdminUser: Admin user created successfully.");
   } catch (err) {
-    console.error("ensureAdminUser error:", err.message);
     // Do not throw; server should still start
   }
 }

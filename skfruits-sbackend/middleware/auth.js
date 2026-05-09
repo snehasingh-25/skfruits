@@ -1,15 +1,11 @@
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
 import prisma from "../prisma.js";
+import { jwtSecret as JWT_SECRET } from "../config/env.js";
 
-// Load environment variables explicitly with correct path
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-dotenv.config({ path: join(__dirname, "../.env") });
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+/**
+ * Express middleware: JWT verification and role checks.
+ * (HTTP routes for /auth/login, /signup, etc. live in routes/authRoutes.js.)
+ */
 
 function getBearerToken(req) {
   return req.headers.authorization?.replace(/^Bearer\s+/i, "").trim() || null;
@@ -30,10 +26,7 @@ export const requireAuth = (req, res, next) => {
 
 /**
  * Role-based middleware: requireRole(roleName)
- * - Extracts JWT from Authorization: Bearer <token>
- * - Validates token (signature + expiry)
- * - Loads user from DB and checks user.role === roleName (never trust token role for authorization)
- * If role !== required → rejects with 401 Unauthorized.
+ * - Validates JWT, loads user from DB, checks user.role === roleName
  * On success sets req.userId, req.userEmail, req.role, req.auth.
  */
 export const requireRole = (roleName) => async (req, res, next) => {
@@ -62,10 +55,13 @@ export const requireRole = (roleName) => async (req, res, next) => {
   }
 };
 
-/** Admin-only middleware (alias for requireRole("admin")). */
+/** Admin-only (DB-verified). */
 export const verifyToken = requireRole("admin");
 
-/** Require valid JWT and set req.customerUserId (for customer-only routes like my-orders). */
+/** Same as verifyToken. */
+export const requireAdmin = verifyToken;
+
+/** Require valid JWT and set req.customerUserId. */
 export const requireCustomerAuth = (req, res, next) => {
   try {
     const token = req.headers.authorization?.replace(/^Bearer\s+/i, "").trim();
@@ -79,7 +75,7 @@ export const requireCustomerAuth = (req, res, next) => {
   }
 };
 
-/** Like requireCustomerAuth but verifies DB role is `customer` (excludes admin/driver tokens). */
+/** JWT + DB role must be `customer`. */
 export const requireCustomerOnly = async (req, res, next) => {
   try {
     const token = getBearerToken(req);
@@ -104,7 +100,7 @@ export const requireCustomerOnly = async (req, res, next) => {
   }
 };
 
-/** Optionally set req.customerUserId when valid JWT is present (for order creation to link user). */
+/** Set req.customerUserId when Bearer token is valid (no 401 if missing). */
 export const optionalCustomerAuth = (req, res, next) => {
   const token = req.headers.authorization?.replace(/^Bearer\s+/i, "").trim();
   if (!token) return next();
@@ -116,7 +112,7 @@ export const optionalCustomerAuth = (req, res, next) => {
   next();
 };
 
-/** Optionally set req.isAdmin if valid admin token. Does not fail on missing/invalid token. */
+/** Set req.isAdmin when valid admin token (async DB check; always calls next()). */
 export const optionalAdminAuth = (req, res, next) => {
   const token = req.headers.authorization?.replace(/^Bearer\s+/i, "").trim();
   if (!token) return next();

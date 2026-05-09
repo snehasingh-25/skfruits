@@ -1,11 +1,12 @@
 import express from "express";
-import { requireRole } from "../utils/auth.js";
+import { requireRole } from "../middleware/auth.js";
 import { uploadProductMedia, getImageUrl, getVideoUrl } from "../utils/upload.js";
 import prisma from "../prisma.js";
 import { cacheMiddleware, invalidateCache } from "../utils/cache.js";
 import { validateInstagramEmbeds } from "../utils/instagram.js";
 import { getPriceRange, getRecommendationsForProduct } from "../utils/recommendationEngine.js";
 import { PACKAGING_PRODUCT_NAME } from "../utils/fruitBasketPackagingProduct.js";
+import { serializePublicProduct } from "../utils/productSerialize.js";
 
 const router = express.Router();
 
@@ -86,15 +87,7 @@ router.get("/", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
       products.sort((a, b) => (orderMap.get(a.id) ?? 999) - (orderMap.get(b.id) ?? 999));
     }
 
-    // Parse JSON fields (weightOptions for weight-based products e.g. fruits)
-    const parsed = products.map(p => ({
-      ...p,
-      images: p.images ? JSON.parse(p.images) : [],
-      videos: p.videos ? JSON.parse(p.videos) : [],
-      keywords: p.keywords ? JSON.parse(p.keywords) : [],
-      weightOptions: p.weightOptions ? (() => { try { const w = JSON.parse(p.weightOptions); return Array.isArray(w) ? w : []; } catch { return []; } })() : [],
-      categories: p.categories ? p.categories.map(pc => pc.category) : [],
-    }));
+    const parsed = products.map((p) => serializePublicProduct(p));
 
     res.json(parsed);
   } catch (error) {
@@ -124,17 +117,9 @@ router.get("/top-rated", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
     });
     const byId = new Map(products.map((p) => [p.id, p]));
     const ordered = sorted.map((id) => byId.get(id)).filter((p) => p && p.name !== PACKAGING_PRODUCT_NAME);
-    const parsed = ordered.map((p) => ({
-      ...p,
-      images: p.images ? JSON.parse(p.images) : [],
-      videos: p.videos ? JSON.parse(p.videos) : [],
-      keywords: p.keywords ? JSON.parse(p.keywords) : [],
-      weightOptions: p.weightOptions ? (() => { try { const w = JSON.parse(p.weightOptions); return Array.isArray(w) ? w : []; } catch { return []; } })() : [],
-      categories: p.categories ? p.categories.map((pc) => pc.category) : [],
-    }));
+    const parsed = ordered.map((p) => serializePublicProduct(p));
     res.json(parsed);
   } catch (error) {
-    console.error("Top-rated products error:", error);
     res.status(500).json({ error: "Failed to fetch top-rated products" });
   }
 });
@@ -165,17 +150,9 @@ router.get("/:id/recommendations", cacheMiddleware(10 * 60 * 1000), async (req, 
       priceRange,
       limit
     );
-    const parsed = recommendations.map((p) => ({
-      ...p,
-      images: p.images ? JSON.parse(p.images) : [],
-      videos: p.videos ? JSON.parse(p.videos) : [],
-      keywords: p.keywords ? JSON.parse(p.keywords) : [],
-      weightOptions: p.weightOptions ? (() => { try { const w = JSON.parse(p.weightOptions); return Array.isArray(w) ? w : []; } catch { return []; } })() : [],
-      categories: p.categories ? p.categories.map((pc) => pc.category) : [],
-    }));
+    const parsed = recommendations.map((p) => serializePublicProduct(p));
     res.json(parsed);
   } catch (error) {
-    console.error("Product recommendations error:", error);
     res.status(500).json({ error: "Failed to fetch recommendations" });
   }
 });
@@ -216,7 +193,6 @@ router.get("/:id/reviews", async (req, res) => {
       })),
     });
   } catch (error) {
-    console.error("Product reviews GET error:", error);
     res.status(500).json({ error: "Failed to fetch reviews" });
   }
 });
@@ -243,18 +219,7 @@ router.get("/:id", cacheMiddleware(5 * 60 * 1000), async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    const weightOptions = product.weightOptions
-      ? (() => { try { const w = JSON.parse(product.weightOptions); return Array.isArray(w) ? w : []; } catch { return []; } })()
-      : [];
-    res.json({
-      ...product,
-      images: product.images ? JSON.parse(product.images) : [],
-      videos: product.videos ? JSON.parse(product.videos) : [],
-      instagramEmbeds: product.instagramEmbeds ? JSON.parse(product.instagramEmbeds) : [],
-      keywords: product.keywords ? JSON.parse(product.keywords) : [],
-      weightOptions,
-      categories: product.categories ? product.categories.map(pc => pc.category) : [],
-    });
+    res.json(serializePublicProduct(product, { includeInstagramEmbeds: true }));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -358,7 +323,6 @@ router.post("/", requireRole("admin"), uploadProductMedia, async (req, res) => {
       keywords: keywordsArray,
     });
   } catch (error) {
-    console.error("Create product error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -470,7 +434,6 @@ router.put("/:id", requireRole("admin"), uploadProductMedia, async (req, res) =>
       categories: product.categories ? product.categories.map(pc => pc.category) : [],
     });
   } catch (error) {
-    console.error("Update product error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -499,7 +462,6 @@ router.post("/reorder", requireRole("admin"), async (req, res) => {
 
     res.json({ message: "Order updated successfully" });
   } catch (error) {
-    console.error("Reorder products error:", error);
     res.status(500).json({ error: error.message });
   }
 });

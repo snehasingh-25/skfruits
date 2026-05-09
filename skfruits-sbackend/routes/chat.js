@@ -132,7 +132,6 @@ router.post("/", async (req, res) => {
 
     return res.json(buildHandoffPayload("whatsapp"));
   } catch (err) {
-    console.error("Chat error:", err);
     return res.json(buildHandoffPayload("whatsapp"));
   }
 });

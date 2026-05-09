@@ -1,6 +1,6 @@
 import express from "express";
 import prisma from "../prisma.js";
-import { requireCustomerAuth } from "../utils/auth.js";
+import { requireCustomerAuth } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -25,7 +25,6 @@ router.get("/", requireCustomerAuth, async (req, res) => {
     }));
     res.json(list);
   } catch (error) {
-    console.error("Wishlist GET error:", error);
     res.status(500).json({ error: "Failed to fetch wishlist" });
   }
 });
@@ -54,7 +53,6 @@ router.post("/add", requireCustomerAuth, async (req, res) => {
     });
     res.status(201).json(item);
   } catch (error) {
-    console.error("Wishlist add error:", error);
     res.status(500).json({ error: "Failed to add to wishlist" });
   }
 });
@@ -72,7 +70,6 @@ router.delete("/remove/:productId", requireCustomerAuth, async (req, res) => {
     });
     res.status(200).json({ message: "Removed from wishlist" });
   } catch (error) {
-    console.error("Wishlist remove error:", error);
     res.status(500).json({ error: "Failed to remove from wishlist" });
   }
 });

@@ -1,6 +1,6 @@
 import express from "express";
 import prisma from "../prisma.js";
-import { requireCustomerOnly } from "../utils/auth.js";
+import { requireCustomerOnly } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -66,7 +66,6 @@ router.get("/", requireCustomerOnly, async (req, res) => {
     });
     res.json(rows.map(serializeSaved));
   } catch (error) {
-    console.error("saved-fruit-baskets GET:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -116,7 +115,6 @@ router.post("/", requireCustomerOnly, async (req, res) => {
     });
     res.status(201).json(serializeSaved(row));
   } catch (error) {
-    console.error("saved-fruit-baskets POST:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -166,7 +164,6 @@ router.patch("/:id", requireCustomerOnly, async (req, res) => {
     });
     res.json(serializeSaved(row));
   } catch (error) {
-    console.error("saved-fruit-baskets PATCH:", error);
     res.status(500).json({ error: error.message });
   }
 });

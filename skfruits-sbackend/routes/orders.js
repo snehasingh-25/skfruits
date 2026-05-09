@@ -1,25 +1,14 @@
 import express from "express";
-import { requireRole, requireCustomerAuth, optionalCustomerAuth } from "../utils/auth.js";
+import { requireRole, requireCustomerAuth, optionalCustomerAuth } from "../middleware/auth.js";
 import prisma from "../prisma.js";
 import { getCartItemsForOrder } from "./cart.js";
 import { validateStockForItems, deductStockForOrder } from "../utils/stock.js";
 import { calculateDeliveryCharges } from "./delivery.js";
 import { getEstimatedDeliveryForOrder, estimateDeliveryTime } from "../utils/deliveryEstimate.js";
 import { tryAssignDriverToOrder, releaseDriverIfAssigned } from "../utils/driverAssignment.js";
+import { parseProductImage } from "../utils/productSerialize.js";
 
 const router = express.Router();
-
-function parseProductImage(product) {
-  if (!product?.images) return null;
-  try {
-    const raw = product.images;
-    const arr = Array.isArray(raw) ? raw : (typeof raw === "string" ? JSON.parse(raw) : []);
-    return arr.length ? arr[0] : null;
-  } catch {
-    return null;
-  }
-}
-
 
 function paymentStatus(order) {
   if (order.paymentMethod === "cod") return "COD";
@@ -173,7 +162,6 @@ router.post("/create", optionalCustomerAuth, async (req, res) => {
             });
           }
         } catch (e) {
-          console.error("Non-fatal: delivery estimate failed for order", newOrder.id, e.message);
         }
       }
 
@@ -188,7 +176,6 @@ router.post("/create", optionalCustomerAuth, async (req, res) => {
       nearestShopName: order.nearestShopName ?? null,
     });
   } catch (error) {
-    console.error("Order create error:", error);
     res.status(400).json({ error: error.message || "Failed to create order" });
   }
 });
@@ -275,7 +262,6 @@ router.get("/my-orders", requireCustomerAuth, async (req, res) => {
     }));
     res.json(list);
   } catch (error) {
-    console.error("My orders error:", error);
     res.status(500).json({ error: error.message || "Failed to fetch orders" });
   }
 });
@@ -335,7 +321,6 @@ router.get("/:id", requireCustomerAuth, async (req, res) => {
       })),
     });
   } catch (error) {
-    console.error("Order details error:", error);
     res.status(500).json({ error: error.message || "Failed to fetch order" });
   }
 });
@@ -375,7 +360,6 @@ router.patch("/:id/cancel", requireCustomerAuth, async (req, res) => {
     });
     res.json(updated);
   } catch (error) {
-    console.error("Cancel order error:", error);
     res.status(500).json({ error: error.message || "Failed to cancel order" });
   }
 });

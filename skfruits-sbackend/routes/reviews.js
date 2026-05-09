@@ -1,6 +1,6 @@
 import express from "express";
 import prisma from "../prisma.js";
-import { requireCustomerAuth, optionalCustomerAuth, optionalAdminAuth } from "../utils/auth.js";
+import { requireCustomerAuth, optionalCustomerAuth, optionalAdminAuth } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -54,7 +54,6 @@ router.get("/eligibility/:productId", requireCustomerAuth, async (req, res) => {
         : null,
     });
   } catch (error) {
-    console.error("Reviews eligibility error:", error);
     res.status(500).json({ error: "Failed to check eligibility" });
   }
 });
@@ -106,7 +105,6 @@ router.post("/add", requireCustomerAuth, async (req, res) => {
       createdAt: review.createdAt,
     });
   } catch (error) {
-    console.error("Review add error:", error);
     res.status(500).json({ error: "Failed to add review" });
   }
 });
@@ -149,7 +147,6 @@ router.put("/update/:id", requireCustomerAuth, async (req, res) => {
       createdAt: updated.createdAt,
     });
   } catch (error) {
-    console.error("Review update error:", error);
     res.status(500).json({ error: "Failed to update review" });
   }
 });
@@ -177,7 +174,6 @@ router.delete("/delete/:id", optionalCustomerAuth, optionalAdminAuth, async (req
     });
     res.status(200).json({ message: "Review deleted" });
   } catch (error) {
-    console.error("Review delete error:", error);
     res.status(500).json({ error: "Failed to delete review" });
   }
 });

@@ -1,9 +1,9 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import prisma from "../prisma.js";
+import { jwtSecret as JWT_SECRET } from "../config/env.js";
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
 function requireCustomerAuth(req, res, next) {
   const token = req.headers.authorization?.replace(/^Bearer\s+/i, "").trim();

@@ -1,5 +1,5 @@
 import express from "express";
-import { requireRole } from "../utils/auth.js";
+import { requireRole } from "../middleware/auth.js";
 import upload, { getImageUrl } from "../utils/upload.js";
 import prisma from "../prisma.js";
 import { cacheMiddleware, invalidateCache } from "../utils/cache.js";
@@ -84,7 +84,6 @@ router.post("/", requireRole("admin"), upload.single("image"), async (req, res) 
 
     res.json(banner);
   } catch (error) {
-    console.error("Create banner error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -123,7 +122,6 @@ router.put("/:id", requireRole("admin"), upload.single("image"), async (req, res
 
     res.json(banner);
   } catch (error) {
-    console.error("Update banner error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -152,7 +150,6 @@ router.post("/reorder", requireRole("admin"), async (req, res) => {
 
     res.json({ message: "Order updated successfully" });
   } catch (error) {
-    console.error("Reorder banners error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -169,7 +166,6 @@ router.delete("/:id", requireRole("admin"), async (req, res) => {
 
     res.json({ message: "Banner deleted successfully" });
   } catch (error) {
-    console.error("Delete banner error:", error);
     res.status(500).json({ error: error.message });
   }
 });
