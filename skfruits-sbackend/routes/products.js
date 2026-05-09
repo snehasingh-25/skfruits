@@ -283,29 +283,35 @@ router.post("/", requireRole("admin"), uploadProductMedia, async (req, res) => {
       stock: Math.max(0, parseInt(weight.stock, 10) || 0),
     }));
     const categoryIdsArray = categoryIds ? JSON.parse(categoryIds) : [];
+    const descriptionNormalized =
+      description != null && String(description).trim() !== "" ? String(description).trim() : null;
+
+    const createData = {
+      name,
+      description: descriptionNormalized,
+      badge: badge || null,
+      hasSinglePrice: hasSinglePrice === "true" || hasSinglePrice === true,
+      singlePrice: hasSinglePrice === "true" || hasSinglePrice === true ? (singlePrice ? parseFloat(singlePrice) : null) : null,
+      originalPrice: originalPrice != null && originalPrice !== "" ? parseFloat(originalPrice) : null,
+      images: JSON.stringify(imageUrls),
+      videos: videoUrls.length > 0 ? JSON.stringify(videoUrls) : null,
+      instagramEmbeds: validatedInstagramEmbeds.length > 0 ? JSON.stringify(validatedInstagramEmbeds) : null,
+      keywords: JSON.stringify(keywordsArray),
+      weightOptions: weightsWithFloatPrices.length > 0 ? JSON.stringify(weightsWithFloatPrices) : null,
+      sizes: {
+        create: sizesWithFloatPrices,
+      },
+    };
+    if (categoryIdsArray.length > 0) {
+      createData.categories = {
+        create: categoryIdsArray.map((categoryId) => ({
+          categoryId: Number(categoryId),
+        })),
+      };
+    }
 
     const product = await prisma.product.create({
-      data: {
-        name,
-        description,
-        badge: badge || null,
-        hasSinglePrice: hasSinglePrice === "true" || hasSinglePrice === true,
-        singlePrice: hasSinglePrice === "true" || hasSinglePrice === true ? (singlePrice ? parseFloat(singlePrice) : null) : null,
-        originalPrice: originalPrice != null && originalPrice !== "" ? parseFloat(originalPrice) : null,
-        images: JSON.stringify(imageUrls),
-        videos: videoUrls.length > 0 ? JSON.stringify(videoUrls) : null,
-        instagramEmbeds: validatedInstagramEmbeds.length > 0 ? JSON.stringify(validatedInstagramEmbeds) : null,
-        keywords: JSON.stringify(keywordsArray),
-        weightOptions: weightsWithFloatPrices.length > 0 ? JSON.stringify(weightsWithFloatPrices) : null,
-        categories: {
-          create: categoryIdsArray.map(categoryId => ({
-            categoryId: Number(categoryId)
-          }))
-        },
-        sizes: {
-          create: sizesWithFloatPrices,
-        },
-      },
+      data: createData,
       include: {
         sizes: true,
         categories: {
@@ -391,30 +397,36 @@ router.put("/:id", requireRole("admin"), uploadProductMedia, async (req, res) =>
 
     // Parse category IDs
     const categoryIdsArray = categoryIds ? JSON.parse(categoryIds) : [];
+    const descriptionNormalized =
+      description != null && String(description).trim() !== "" ? String(description).trim() : null;
+
+    const updateData = {
+      name,
+      description: descriptionNormalized,
+      badge: badge || null,
+      hasSinglePrice: hasSinglePrice === "true" || hasSinglePrice === true,
+      singlePrice: hasSinglePrice === "true" || hasSinglePrice === true ? (singlePrice ? parseFloat(singlePrice) : null) : null,
+      originalPrice: originalPrice != null && originalPrice !== "" ? parseFloat(originalPrice) : null,
+      images: JSON.stringify(imageUrls),
+      videos: videoUrls.length > 0 ? JSON.stringify(videoUrls) : null,
+      instagramEmbeds: validatedInstagramEmbeds.length > 0 ? JSON.stringify(validatedInstagramEmbeds) : null,
+      keywords: JSON.stringify(keywordsArray),
+      weightOptions: weightsWithFloatPrices.length > 0 ? JSON.stringify(weightsWithFloatPrices) : null,
+      sizes: {
+        create: sizesWithFloatPrices,
+      },
+    };
+    if (categoryIdsArray.length > 0) {
+      updateData.categories = {
+        create: categoryIdsArray.map((categoryId) => ({
+          categoryId: Number(categoryId),
+        })),
+      };
+    }
 
     const product = await prisma.product.update({
       where: { id: Number(req.params.id) },
-      data: {
-        name,
-        description,
-        badge: badge || null,
-        hasSinglePrice: hasSinglePrice === "true" || hasSinglePrice === true,
-        singlePrice: hasSinglePrice === "true" || hasSinglePrice === true ? (singlePrice ? parseFloat(singlePrice) : null) : null,
-        originalPrice: originalPrice != null && originalPrice !== "" ? parseFloat(originalPrice) : null,
-        images: JSON.stringify(imageUrls),
-        videos: videoUrls.length > 0 ? JSON.stringify(videoUrls) : null,
-        instagramEmbeds: validatedInstagramEmbeds.length > 0 ? JSON.stringify(validatedInstagramEmbeds) : null,
-        keywords: JSON.stringify(keywordsArray),
-        weightOptions: weightsWithFloatPrices.length > 0 ? JSON.stringify(weightsWithFloatPrices) : null,
-        categories: {
-          create: categoryIdsArray.map(categoryId => ({
-            categoryId: Number(categoryId)
-          }))
-        },
-        sizes: {
-          create: sizesWithFloatPrices,
-        },
-      },
+      data: updateData,
       include: {
         sizes: true,
         categories: {

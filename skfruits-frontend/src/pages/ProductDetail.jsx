@@ -853,29 +853,29 @@ export default function ProductDetail() {
                 </div>
 
                 {/* Accordions */}
-                <div className="mt-4 rounded-3xl border overflow-hidden" style={{ backgroundColor: "var(--card-white)", borderColor: "var(--border)" }}>
-                  <button
-                    type="button"
-                    onClick={() => toggleSection("details")}
-                    className="w-full flex items-center justify-between px-5 py-4 text-left"
-                  >
-                    <div className="font-bold" style={{ color: "oklch(20% .02 340)" }}>
-                      Product details
-                    </div>
-                    <div className="text-xl font-black" style={{ color: "oklch(40% .02 340)" }}>
-                      {expanded.has("details") ? "−" : "+"}
-                    </div>
-                  </button>
-                  {expanded.has("details") ? (
-                    <div className="px-5 pb-5 text-sm leading-relaxed" style={{ color: "oklch(55% .02 340)" }}>
-                      {product.description}
-                    </div>
-                  ) : null}
+                {product.description?.trim() ? (
+                  <div className="mt-4 rounded-3xl border overflow-hidden" style={{ backgroundColor: "var(--card-white)", borderColor: "var(--border)" }}>
+                    <button
+                      type="button"
+                      onClick={() => toggleSection("details")}
+                      className="w-full flex items-center justify-between px-5 py-4 text-left"
+                    >
+                      <div className="font-bold" style={{ color: "oklch(20% .02 340)" }}>
+                        Product details
+                      </div>
+                      <div className="text-xl font-black" style={{ color: "oklch(40% .02 340)" }}>
+                        {expanded.has("details") ? "−" : "+"}
+                      </div>
+                    </button>
+                    {expanded.has("details") ? (
+                      <div className="px-5 pb-5 text-sm leading-relaxed" style={{ color: "oklch(55% .02 340)" }}>
+                        {product.description}
+                      </div>
+                    ) : null}
 
-                  <div className="h-px" style={{ backgroundColor: "oklch(92% .04 340)" }} />
-
-                  
-                </div>
+                    <div className="h-px" style={{ backgroundColor: "oklch(92% .04 340)" }} />
+                  </div>
+                ) : null}
               </div>
             </aside>
           </div>

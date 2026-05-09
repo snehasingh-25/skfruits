@@ -188,12 +188,6 @@ export default function ProductForm({ product, categories, onSave, onCancel }) {
     e.preventDefault();
     if (isSubmittingRef.current) return;
     
-    // Validation: At least one category is required
-    if (selectedCategories.length === 0) {
-      toast.error("Please select at least one category");
-      return;
-    }
-    
     // Validation: If hasSinglePrice is true, singlePrice is required
     if (formData.hasSinglePrice && (!formData.singlePrice || parseFloat(formData.singlePrice) <= 0)) {
       toast.error("Please enter a valid single price for this product");
@@ -608,7 +602,7 @@ export default function ProductForm({ product, categories, onSave, onCancel }) {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold mb-2" style={{ color: "var(--foreground)" }}>Categories *</label>
+          <label className="block text-sm font-semibold mb-2" style={{ color: "var(--foreground)" }}>Categories (optional)</label>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 p-3 rounded-xl border-2" style={{ borderColor: "var(--border)", backgroundColor: "var(--muted)" }}>
             {[...categories]
               .sort((a, b) => a.name.localeCompare(b.name))
@@ -639,13 +633,13 @@ export default function ProductForm({ product, categories, onSave, onCancel }) {
               })}
           </div>
           {selectedCategories.length === 0 && (
-            <p className="text-xs mt-1 text-muted">Select at least one category.</p>
+            <p className="text-xs mt-1 text-muted">Skip if this product does not belong on a category page (e.g. seasonal watermelon).</p>
           )}
         </div>
 
         <div>
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-            <label className="block text-sm font-semibold text-gray-700">Description *</label>
+            <label className="block text-sm font-semibold text-gray-700">Description (optional)</label>
             <div className="flex items-center gap-2 flex-wrap">
               <select
                 value={descriptionLanguage}
@@ -690,7 +684,6 @@ export default function ProductForm({ product, categories, onSave, onCancel }) {
             className="w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none transition"
             style={{ borderColor: "var(--border)", backgroundColor: "var(--input)", color: "var(--foreground)" }}
             rows="4"
-            required
           />
         </div>
 

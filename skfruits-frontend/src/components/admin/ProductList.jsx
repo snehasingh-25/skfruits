@@ -135,9 +135,11 @@ export default function ProductList({ products, onEdit, onDelete }) {
           <div className="font-semibold" style={{ color: 'oklch(20% .02 340)' }}>
             {product.name}
           </div>
-          <div className="text-xs line-clamp-1" style={{ color: 'oklch(50% .02 340)' }}>
-            {product.description}
-          </div>
+          {product.description?.trim() ? (
+            <div className="text-xs line-clamp-1" style={{ color: 'oklch(50% .02 340)' }}>
+              {product.description}
+            </div>
+          ) : null}
           <div className="text-xs mt-1" style={{ color: 'oklch(50% .02 340)' }}>
             {product.categories && product.categories.length > 0
               ? product.categories.map(c => c.name || c.category?.name).join(", ")

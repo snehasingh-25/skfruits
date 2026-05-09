@@ -1,7 +1,7 @@
 import express from "express";
 import prisma from "../prisma.js";
 import { haversineKm } from "../utils/distance.js";
-import { requireCustomerOnly } from "../utils/auth.js";
+import { requireCustomerOnly } from "../middleware/auth.js";
 import { getETAawarePosition } from "../utils/polylineUtils.js";
 
 const router = express.Router();

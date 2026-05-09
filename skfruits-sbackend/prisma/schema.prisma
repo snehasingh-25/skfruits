@@ -77,7 +77,7 @@ model Category {
 model Product {
   id            Int            @id @default(autoincrement())
   name          String
-  description   String         @db.Text
+  description   String?        @db.Text
   aiDescription String?        @db.Text // Cached AI-generated description (avoids repeat API calls)
   badge         String?
   hasSinglePrice Boolean       @default(false) // If true, use singlePrice instead of sizes

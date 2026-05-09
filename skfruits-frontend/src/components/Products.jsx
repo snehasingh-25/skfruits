@@ -25,7 +25,9 @@ export default function Products() {
       {products.map(p => (
         <div key={p.id} className="bg-white rounded shadow p-4">
           <h3 className="text-lg font-semibold">{p.name}</h3>
-          <p className="text-sm text-gray-600">{p.description}</p>
+          {p.description?.trim() ? (
+            <p className="text-sm text-gray-600">{p.description}</p>
+          ) : null}
 
           {p.badge && (
             <span className="inline-block mt-2 px-2 py-1 text-xs bg-green-100 text-green-700 rounded">

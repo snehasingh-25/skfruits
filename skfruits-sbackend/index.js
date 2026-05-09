@@ -223,18 +223,38 @@ app.use((req, res) => {
 const PORT = env.port;
 const HOST = env.host;
 
-// Create HTTP server with keep-alive enabled
+// Create HTTP server with keep-alive enabled (use events, not listen callback — avoids
+// misleading "listening" logs when bind fails with e.g. EADDRINUSE)
 let server;
 try {
-  server = app.listen(PORT, HOST, async () => {
-    await ensureAdminUser();
-    await getFruitBasketPackagingProductId();
-  });
+  server = app.listen(PORT, HOST);
 
-  server.on("error", () => {
+  server.once("error", (err) => {
+    const code = err && "code" in err ? err.code : "";
+    console.error("HTTP server error:", err.message || err);
+    if (code === "EADDRINUSE") {
+      console.error(
+        `Port ${PORT} is already in use. Stop the other process or set PORT in .env (e.g. lsof -i :${PORT}).`
+      );
+    }
     process.exit(1);
   });
+
+  server.once("listening", () => {
+    const urlHost = HOST === "0.0.0.0" ? "localhost" : HOST;
+    console.log(`Server listening on http://${urlHost}:${PORT}`);
+
+    void (async () => {
+      try {
+        await ensureAdminUser();
+        await getFruitBasketPackagingProductId();
+      } catch (err) {
+        console.error("Post-listen bootstrap failed:", err);
+      }
+    })();
+  });
 } catch (error) {
+  console.error("Failed to start server:", error.message || error);
   process.exit(1);
 }
 
