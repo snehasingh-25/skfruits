@@ -96,7 +96,7 @@ export default function Search() {
 
   return (
     <div className="min-h-screen bg-white py-16">
-      <div className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <div className="px-4 sm:px-6 lg:px-8  ">
         <div className="mb-8">
           <h2 className="text-xl font-bold mb-4" style={{ color: 'oklch(20% .02 340)' }}>
             Search Results

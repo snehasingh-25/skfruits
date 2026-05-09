@@ -366,7 +366,7 @@ export default function ProductDetail() {
   return (
     <>
       <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
-      <div className="max-w-7xl mx-auto">
+      <div className=" ">
         {/* Top bar */}
         <div className="px-4 sm:px-6 lg:px-8 pt-6">
           <nav className="mb-5">

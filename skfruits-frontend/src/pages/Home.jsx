@@ -282,7 +282,7 @@ export default function Home() {
 
           {/* Shop By Category Section */}
       {categories.length > 0 ? (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="  px-4 sm:px-6 lg:px-8 py-6">
           <div
             className="relative overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--border)]"
             style={{
@@ -432,7 +432,7 @@ export default function Home() {
       ) : null}
 
           {/* Phase 5: Fruit basket discovery strip */}
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2" aria-label="Personalized fruit baskets">
+          <section className="  px-4 sm:px-6 lg:px-8 pt-4 pb-2" aria-label="Personalized fruit baskets">
             <Link
               to="/fruit-basket"
               className="flex flex-row items-center justify-between gap-3 sm:gap-4 rounded-[var(--radius-xl)] border px-5 py-4 sm:px-8 sm:py-2 transition-all hover:shadow-md"
@@ -467,7 +467,7 @@ export default function Home() {
 
       {/* Popular Fruits */}
       {isInitialLoad ? (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: "var(--background)" }}>
+        <div className="  px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: "var(--background)" }}>
           <div className="flex items-center justify-between mb-10">
             <h2 className="font-display text-xl font-bold text-design-foreground">Popular Fruits</h2>
           </div>
@@ -480,7 +480,7 @@ export default function Home() {
           </div>
         </div>
       ) : popularProducts.length > 0 ? (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
+        <div className="  px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
           <div className="flex items-center justify-between mb-10">
             <h2 className="font-display text-xl font-bold text-design-foreground">Popular Fruits</h2>
             <Link
@@ -511,20 +511,20 @@ export default function Home() {
 
       {/* Top Rated */}
       {topRatedProducts.length > 0 && (
-        <div className="max-w-7xl mx-auto">
+        <div className=" ">
           <ProductCarouselSection title="Top Rated" products={topRatedProducts} />
         </div>
       )}
 
        {/* Personalized: Recently Viewed */}
        {recentIds.length > 0 && (
-        <div className="max-w-7xl mx-auto">
+        <div className=" ">
           <ProductCarouselSection title="Recently Viewed" productIds={recentIds} />
         </div>
       )}
 
       {/* Delivery in 30 mins banner */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="  px-4 sm:px-6 lg:px-8 py-6">
         {/* <img
           src="/mins.png"
           alt=""
@@ -559,13 +559,13 @@ export default function Home() {
 
       {/* Personalized: Buy Again */}
       {buyAgainIds.length > 0 && (
-        <div className="max-w-7xl mx-auto">
+        <div className=" ">
           <ProductCarouselSection title="Buy Again" productIds={buyAgainIds} />
         </div>
       )}
 
       {/* Trending Gifts Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
+      <div className="  px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
           <div className="flex items-center justify-between mb-10">
             <h2 className="font-display text-xl font-bold text-design-foreground">Our Products</h2>
             {products.length > 0 && (
@@ -602,7 +602,7 @@ export default function Home() {
         </div>
 
       {/* Why Choose Us (trust section) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="  px-4 sm:px-6 lg:px-8 py-6">
         {/* Store Experience Section */}
         <div className="mb-10 sm:mb-12" style={{ backgroundColor: "transparent" }}>
           <section
@@ -801,7 +801,7 @@ export default function Home() {
       
       {/* Personalized: From Your Wishlist */}
       {wishlistItems.length > 0 && (
-        <div className="max-w-7xl mx-auto">
+        <div className=" ">
           <ProductCarouselSection
             title="From Your Wishlist"
             products={wishlistItems.map((item) => item.product).filter(Boolean)}
@@ -811,7 +811,7 @@ export default function Home() {
 
       {/* Reels Section */}
       {reels.length > 0 && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
+          <div className="  px-4 sm:px-6 lg:px-8 py-6" style={{ backgroundColor: 'var(--background)' }}>
             <h2 className="font-display text-xl font-bold mb-8 text-center text-design-foreground">
               Follow Us{" "}
               <a

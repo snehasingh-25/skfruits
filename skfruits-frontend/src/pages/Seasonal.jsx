@@ -97,7 +97,7 @@ export default function Seasonal() {
   // List all seasonals
   return (
     <div className="min-h-screen py-16 bg-page-products">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="  px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h1 className="font-display text-4xl font-bold mb-4" style={{ color: "var(--foreground)" }}>Seasonal</h1>
           <p className="text-lg" style={{ color: "var(--foreground-muted)" }}>Fresh picks for the season</p>

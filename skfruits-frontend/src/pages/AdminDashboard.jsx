@@ -204,7 +204,7 @@ export default function AdminDashboard() {
   return (
     <>
       {/* Mobile-only: horizontal tabs (desktop uses AdminLayout sidebar) */}
-      <div className="lg:hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+      <div className="lg:hidden   px-4 sm:px-6 lg:px-8 pt-4">
         <div className="flex gap-2 overflow-x-auto pb-2">
           {tabs.map((tab) =>
             ["orders", "analytics", "inventory", "reviews"].includes(tab.id) ? (
@@ -234,7 +234,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 ">
+      <div className="  px-4 sm:px-6 lg:px-8 py-6 ">
           {/* Content */}
           {loading ? (
             <div className="rounded-lg shadow p-12 text-center" style={{ backgroundColor: "var(--background)", border: "1px solid var(--border)" }}>
