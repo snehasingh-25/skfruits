@@ -37,6 +37,9 @@ router.post("/add", requireRole("admin"), async (req, res) => {
     if (!nameStr) {
       return res.status(400).json({ error: "Name is required" });
     }
+    if (!emailNorm) {
+      return res.status(400).json({ error: "Email is required" });
+    }
     if (!phoneStr) {
       return res.status(400).json({ error: "Phone is required" });
     }
@@ -44,13 +47,12 @@ router.post("/add", requireRole("admin"), async (req, res) => {
       return res.status(400).json({ error: "Password must be at least 6 characters" });
     }
 
-    const loginEmail = emailNorm ?? driverPlaceholderEmail();
-    if (emailNorm != null) {
-      const existing = await prisma.user.findUnique({ where: { email: loginEmail } });
-      if (existing) {
-        return res.status(400).json({ error: "A user with this email already exists" });
-      }
+    const existing = await prisma.user.findUnique({ where: { email: emailNorm } });
+    if (existing) {
+      return res.status(400).json({ error: "A user with this email already exists" });
     }
+
+    const loginEmail = emailNorm;
 
     const hashedPassword = await bcrypt.hash(rawPassword, SALT_ROUNDS);
 

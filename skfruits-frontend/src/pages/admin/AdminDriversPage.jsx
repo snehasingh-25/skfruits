@@ -130,8 +130,8 @@ export default function AdminDriversPage() {
   const handleAddDriver = async (e) => {
     e.preventDefault();
     const { name, phone, password, email } = addForm;
-    if (!name?.trim() || !phone?.trim() || !password?.trim()) {
-      toast.error("Name, phone and password are required.");
+    if (!name?.trim() || !email?.trim() || !phone?.trim() || !password?.trim()) {
+      toast.error("Name, email, phone and password are required.");
       return;
     }
     if (password.length < 6) {
@@ -145,9 +145,9 @@ export default function AdminDriversPage() {
         headers: getHeaders(),
         body: JSON.stringify({
           name: name.trim(),
+          email: email.trim(),
           phone: phone.trim(),
           password,
-          ...(email?.trim() && { email: email.trim() }),
         }),
       });
       const data = await res.json();
@@ -216,12 +216,13 @@ export default function AdminDriversPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-1" style={{ color: "var(--foreground)" }}>Email (optional)</label>
+                <label className="block text-sm font-semibold mb-1" style={{ color: "var(--foreground)" }}>Email *</label>
                 <input
                   type="email"
                   value={addForm.email}
                   onChange={(e) => setAddForm((f) => ({ ...f, email: e.target.value }))}
                   placeholder="driver@example.com"
+                  required
                   className="w-full px-4 py-2.5 rounded-lg border"
                   style={{ borderColor: "var(--border)", background: "var(--input)", color: "var(--foreground)" }}
                 />
