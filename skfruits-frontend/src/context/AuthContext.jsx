@@ -1,11 +1,32 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { API } from "../api";
 
+const ADMIN_TOKEN_KEY = "adminToken";
+const ADMIN_USER_KEY = "adminUser";
 const AuthContext = createContext();
 
+function getStored(key) {
+  try { return localStorage.getItem(key) || null; } catch { return null; }
+}
+
+function setStored(key, value) {
+  try {
+    if (value) localStorage.setItem(key, typeof value === "string" ? value : JSON.stringify(value));
+    else localStorage.removeItem(key);
+  } catch { /* ignore */ }
+}
+
+function getStoredUser() {
+  try {
+    const raw = localStorage.getItem(ADMIN_USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("adminToken"));
+  // Restore cached admin data immediately so isAuthenticated is true before API check
+  const [user, setUser] = useState(() => getStoredUser());
+  const [token, setToken] = useState(() => getStored(ADMIN_TOKEN_KEY));
   const [loading, setLoading] = useState(true);
   const [connectionError, setConnectionError] = useState(false);
 
@@ -29,12 +50,16 @@ export function AuthProvider({ children }) {
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);
+        setStored(ADMIN_USER_KEY, JSON.stringify(data.user));
       } else if (res.status === 401) {
+        // Token is genuinely invalid — clear everything
         logout();
       } else {
+        // Server error (500, etc.) — don't log out, show connection error
         setConnectionError(true);
       }
     } catch (error) {
+      // Network error — don't log out, show connection error
       console.error("Token verification error:", error);
       setConnectionError(true);
     } finally {
@@ -56,7 +81,8 @@ export function AuthProvider({ children }) {
         if (data.user?.isAdmin) {
           setToken(data.token);
           setUser(data.user);
-          localStorage.setItem("adminToken", data.token);
+          setStored(ADMIN_TOKEN_KEY, data.token);
+          setStored(ADMIN_USER_KEY, JSON.stringify(data.user));
           setConnectionError(false);
           return { success: true };
         }
@@ -71,7 +97,8 @@ export function AuthProvider({ children }) {
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem("adminToken");
+    setStored(ADMIN_TOKEN_KEY, null);
+    setStored(ADMIN_USER_KEY, null);
     setConnectionError(false);
   };
 

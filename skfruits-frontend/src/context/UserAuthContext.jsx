@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from "rea
 import { API } from "../api";
 
 const USER_TOKEN_KEY = "skfruits_user_token";
+const USER_DATA_KEY = "skfruits_user_data";
 const AuthContext = createContext();
 
 function getStoredToken() {
@@ -21,37 +22,72 @@ function setStoredToken(token) {
   }
 }
 
+function getStoredUser() {
+  try {
+    const raw = localStorage.getItem(USER_DATA_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function setStoredUser(user) {
+  try {
+    if (user) localStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
+    else localStorage.removeItem(USER_DATA_KEY);
+  } catch { /* ignore */ }
+}
+
 export function UserAuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
+  // Restore cached user immediately so isAuthenticated is true before API check
+  const [user, setUser] = useState(() => getStoredUser());
+  const [token, setToken] = useState(() => getStoredToken());
   const [loading, setLoading] = useState(true);
 
+  // Returns { user, authFailed } — authFailed is true only on 401 (token is invalid)
   const fetchUser = useCallback(async (authToken) => {
-    if (!authToken) return null;
+    if (!authToken) return { user: null, authFailed: true };
     try {
       const res = await fetch(`${API}/auth/me`, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
-      if (!res.ok) return null;
+      if (res.status === 401) return { user: null, authFailed: true };
+      if (!res.ok) return { user: null, authFailed: false }; // server error — don't log out
       const data = await res.json();
-      return data.user || null;
+      return { user: data.user || null, authFailed: !data.user };
     } catch {
-      return null;
+      // Network error — don't log out
+      return { user: null, authFailed: false };
     }
   }, []);
 
   useEffect(() => {
     const stored = getStoredToken();
     if (!stored) {
+      setUser(null);
+      setStoredUser(null);
       setLoading(false);
       return;
     }
-    setToken(stored);
+    // Token exists — verify it in the background
     fetchUser(stored)
-      .then((u) => {
-        setUser(u);
+      .then((result) => {
+        if (result.authFailed) {
+          // Token is genuinely invalid (401) — clear everything
+          setUser(null);
+          setToken(null);
+          setStoredToken(null);
+          setStoredUser(null);
+        } else if (result.user) {
+          // Successful verification — update user with fresh data
+          setUser(result.user);
+          setStoredUser(result.user);
+        }
+        // else: network/server error — keep cached user from localStorage
       })
-      .catch(() => setUser(null))
+      .catch(() => {
+        // Unexpected error — keep cached user
+      })
       .finally(() => setLoading(false));
   }, [fetchUser]);
 
@@ -82,6 +118,7 @@ export function UserAuthProvider({ children }) {
         setToken(t);
         setUser(u);
         setStoredToken(t);
+        setStoredUser(u);
         const isDriver = u?.role === "driver";
         return { success: true, ...(isDriver && { redirectToDriver: true }) };
       } catch (err) {
@@ -111,6 +148,7 @@ export function UserAuthProvider({ children }) {
         setToken(t);
         setUser(u);
         setStoredToken(t);
+        setStoredUser(u);
         return { success: true };
       } catch (err) {
         console.error("Signup error:", err);
@@ -124,6 +162,7 @@ export function UserAuthProvider({ children }) {
     setToken(null);
     setUser(null);
     setStoredToken(null);
+    setStoredUser(null);
   }, []);
 
   const loginWithToken = useCallback(async (authToken, userData) => {
@@ -133,18 +172,20 @@ export function UserAuthProvider({ children }) {
         setToken(authToken);
         setUser(userData);
         setStoredToken(authToken);
+        setStoredUser(userData);
         return true;
       }
 
       // Otherwise, validate the token by fetching user data
-      const fetchedUser = await fetchUser(authToken);
-      if (!fetchedUser) {
+      const result = await fetchUser(authToken);
+      if (result.authFailed || !result.user) {
         return false;
       }
 
       setToken(authToken);
-      setUser(fetchedUser);
+      setUser(result.user);
       setStoredToken(authToken);
+      setStoredUser(result.user);
       return true;
     } catch (error) {
       console.error("Login with token error:", error);
@@ -170,7 +211,16 @@ export function UserAuthProvider({ children }) {
         logout,
         signup,
         getAuthHeaders,
-        refreshUser: () => fetchUser(getStoredToken()).then(setUser),
+        refreshUser: () =>
+          fetchUser(getStoredToken()).then((result) => {
+            if (result.authFailed) {
+              setUser(null);
+              setToken(null);
+              setStoredToken(null);
+            } else if (result.user) {
+              setUser(result.user);
+            }
+          }),
       }}
     >
       {children}
