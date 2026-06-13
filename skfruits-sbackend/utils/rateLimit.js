@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { jwtSecret as JWT_SECRET } from "../config/env.js";
+import { normalizeEmail } from "./normalizeEmail.js";
 
 const store = new Map();
 
@@ -115,6 +116,12 @@ export const writeMethodRateLimiter = createWriteMethodRateLimiter({
 export const authRateLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   maxRequests: 10,
+  /** Use a per-IP+email key so different accounts from the same IP don't share one bucket. */
+  keyGenerator: (req) => {
+    const ip = getClientIp(req);
+    const email = normalizeEmail(req.body?.email);
+    return `${ip}:${email || "anon"}`;
+  },
   scope: "auth",
   message: "Too many authentication attempts. Please try again later.",
 });

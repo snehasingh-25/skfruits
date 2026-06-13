@@ -7,6 +7,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("adminToken"));
   const [loading, setLoading] = useState(true);
+  const [connectionError, setConnectionError] = useState(false);
 
   useEffect(() => {
     if (token) {
@@ -18,6 +19,7 @@ export function AuthProvider({ children }) {
 
   const verifyToken = async () => {
     try {
+      setConnectionError(false);
       const res = await fetch(`${API}/auth/verify`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -27,12 +29,14 @@ export function AuthProvider({ children }) {
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);
-      } else {
+      } else if (res.status === 401) {
         logout();
+      } else {
+        setConnectionError(true);
       }
     } catch (error) {
       console.error("Token verification error:", error);
-      logout();
+      setConnectionError(true);
     } finally {
       setLoading(false);
     }
@@ -53,6 +57,7 @@ export function AuthProvider({ children }) {
           setToken(data.token);
           setUser(data.user);
           localStorage.setItem("adminToken", data.token);
+          setConnectionError(false);
           return { success: true };
         }
         return { success: false, message: "This account is not an administrator. Use the storefront login for customers and drivers." };
@@ -67,10 +72,22 @@ export function AuthProvider({ children }) {
     setToken(null);
     setUser(null);
     localStorage.removeItem("adminToken");
+    setConnectionError(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading,
+        login,
+        logout,
+        isAuthenticated: !!user,
+        connectionError,
+        verifyToken,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

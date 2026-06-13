@@ -4,13 +4,15 @@ import { API } from "../api";
 import { useFruitBasket } from "../context/FruitBasketContext";
 import { useUserAuth } from "../context/UserAuthContext";
 import { useToast } from "../context/ToastContext";
+import { useCart } from "../context/CartContext";
 
 export default function FruitBasketCreate() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const toast = useToast();
   const { getAuthHeaders } = useUserAuth();
-  const { selectedBasket, setSelectedBasket, startFreshBasket, hydrateFromSaved } = useFruitBasket();
+  const { selectedBasket, setSelectedBasket, setSelectedFruits, startFreshBasket, hydrateFromSaved } = useFruitBasket();
+  const { cartItems } = useCart();
   const [baskets, setBaskets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingSaved, setLoadingSaved] = useState(false);
@@ -51,6 +53,84 @@ export default function FruitBasketCreate() {
       next.delete("fresh");
       next.delete("basket");
       replaced = true;
+    }
+
+    const cartBasketRaw = params.get("cartBasket");
+    if (cartBasketRaw) {
+      const basketId = Number(cartBasketRaw);
+      if (!Number.isFinite(basketId) || basketId <= 0) {
+        next.delete("cartBasket");
+        setSearchParams(next, { replace: true });
+        return;
+      }
+
+      if (loading || !baskets.length) return;
+
+      const basketStyle = baskets.find((b) => b.id === basketId);
+      if (!basketStyle) {
+        next.delete("cartBasket");
+        setSearchParams(next, { replace: true });
+        return;
+      }
+
+      let cancelled = false;
+      setLoadingSaved(true);
+
+      (async () => {
+        try {
+          const basketFruitsInCart = cartItems.filter(
+            (item) => !item.isPackagingLine && Number(item.fruitBasketId) === basketId
+          );
+          const ids = [...new Set(basketFruitsInCart.map((f) => f.productId).filter(Boolean))];
+          let products = [];
+          if (ids.length > 0) {
+            const pr = await fetch(`${API}/products?ids=${ids.join(",")}`);
+            products = await pr.json();
+            if (!Array.isArray(products)) products = [];
+          }
+          if (cancelled) return;
+
+          const map = new Map(products.map((p) => [p.id, p]));
+          const lines = [];
+          for (const item of basketFruitsInCart) {
+            const p = map.get(item.productId);
+            if (!p) continue;
+            const sizeObj = item.sizeId ? p.sizes?.find((s) => s.id === item.sizeId) : null;
+            lines.push({
+              key: `${p.id}-${item.selectedWeight || ""}-${item.sizeId || ""}`,
+              productId: p.id,
+              product: p,
+              quantity: item.quantity,
+              selectedWeight: item.selectedWeight,
+              selectedSize: sizeObj,
+              price: item.price,
+              subtotal: item.subtotal,
+            });
+          }
+
+          setSelectedBasket(basketStyle);
+          setSelectedFruits(lines);
+          next.delete("cartBasket");
+          setSearchParams(next, { replace: true });
+          navigate("/fruit-basket/create/review", { replace: true });
+        } catch (err) {
+          console.error("Error loading cart basket:", err);
+          if (!cancelled) {
+            toast.error("Could not load basket from cart");
+            setSearchParams((prev) => {
+              const n = new URLSearchParams(prev);
+              n.delete("cartBasket");
+              return n;
+            }, { replace: true });
+          }
+        } finally {
+          if (!cancelled) setLoadingSaved(false);
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+      };
     }
 
     const savedRaw = params.get("saved");
@@ -138,6 +218,11 @@ export default function FruitBasketCreate() {
     navigate,
     startFreshBasket,
     toast,
+    baskets,
+    loading,
+    cartItems,
+    setSelectedBasket,
+    setSelectedFruits,
   ]);
 
   const handleChooseFruits = () => {

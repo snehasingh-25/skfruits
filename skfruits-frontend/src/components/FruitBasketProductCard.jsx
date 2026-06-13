@@ -179,7 +179,7 @@ export default function FruitBasketProductCard({ product }) {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v14M5 12h14" />
               </svg>
-              Add to basket
+              Add
             </>
           )}
         </button>

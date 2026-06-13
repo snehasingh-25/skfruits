@@ -86,6 +86,7 @@ async function hydrateCartItems(items) {
           stock: 999999,
           skipStockDeduction: true,
           isPackagingLine: true,
+          fruitBasketId: item.fruitBasketId,
         };
       }
 
@@ -135,6 +136,7 @@ async function hydrateCartItems(items) {
         stock,
         skipStockDeduction: false,
         isPackagingLine: false,
+        fruitBasketId: item.fruitBasketId,
       };
     })
     .filter(Boolean);
@@ -373,13 +375,15 @@ router.post("/fruit-basket", optionalCustomerAuth, async (req, res) => {
       if (variantStock <= 0) {
         return res.status(400).json({ error: `"${product.name}" is out of stock` });
       }
+
       const currentQtySameVariant = cart.items
         .filter(
           (i) =>
             (i.lineKind || "product") === "product" &&
             i.productId === productId &&
             (i.productSizeId ?? null) === sizeIdForStock &&
-            (i.selectedWeight ?? null) === (selectedWeight || null)
+            (i.selectedWeight ?? null) === (selectedWeight || null) &&
+            (i.fruitBasketId ?? null) === Number(fruitBasketId)
         )
         .reduce((sum, i) => sum + i.quantity, 0);
       if (currentQtySameVariant + quantity > variantStock) {
@@ -420,6 +424,7 @@ router.post("/fruit-basket", optionalCustomerAuth, async (req, res) => {
           productSizeId: sizeId,
           selectedWeight,
           lineKind: "product",
+          fruitBasketId: Number(fruitBasketId),
         },
       });
 
@@ -437,6 +442,7 @@ router.post("/fruit-basket", optionalCustomerAuth, async (req, res) => {
             selectedWeight,
             quantity,
             lineKind: "product",
+            fruitBasketId: Number(fruitBasketId),
           },
         });
       }
@@ -616,6 +622,7 @@ router.post("/merge", optionalCustomerAuth, async (req, res) => {
                   productSizeId: gi.productSizeId,
                   selectedWeight: gi.selectedWeight,
                   lineKind: "product",
+                  fruitBasketId: gi.fruitBasketId,
                 },
         });
         if (existing) {

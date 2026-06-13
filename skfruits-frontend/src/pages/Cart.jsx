@@ -28,7 +28,7 @@ export default function Cart() {
   const handleOpenProduct = (item) => {
     if (!item?.productId) return;
     if (item.isPackagingLine) {
-      navigate("/fruit-basket/create/review");
+      navigate(`/fruit-basket/create?cartBasket=${item.fruitBasketId || ""}`);
       return;
     }
     navigate(`/product/${item.productId}`);

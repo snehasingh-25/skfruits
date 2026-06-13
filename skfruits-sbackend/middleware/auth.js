@@ -30,10 +30,16 @@ export const requireAuth = (req, res, next) => {
  * On success sets req.userId, req.userEmail, req.role, req.auth.
  */
 export const requireRole = (roleName) => async (req, res, next) => {
+  let decoded;
   try {
     const token = getBearerToken(req);
     if (!token) return res.status(401).json({ message: "No token provided" });
-    const decoded = jwt.verify(token, JWT_SECRET);
+    decoded = jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
+
+  try {
     const userId = Number(decoded.userId);
     if (!userId) return res.status(401).json({ message: "Invalid token" });
 
@@ -51,7 +57,7 @@ export const requireRole = (roleName) => async (req, res, next) => {
     req.auth = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Invalid or expired token" });
+    return res.status(500).json({ error: error.message || "Database connection error during authentication" });
   }
 };
 
@@ -77,10 +83,16 @@ export const requireCustomerAuth = (req, res, next) => {
 
 /** JWT + DB role must be `customer`. */
 export const requireCustomerOnly = async (req, res, next) => {
+  let decoded;
   try {
     const token = getBearerToken(req);
     if (!token) return res.status(401).json({ message: "Login required" });
-    const decoded = jwt.verify(token, JWT_SECRET);
+    decoded = jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
+
+  try {
     const userId = Number(decoded.userId);
     if (!userId) return res.status(401).json({ message: "Invalid token" });
 
@@ -96,7 +108,7 @@ export const requireCustomerOnly = async (req, res, next) => {
     req.customerUserId = user.id;
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Invalid or expired token" });
+    return res.status(500).json({ error: error.message || "Database connection error during authentication" });
   }
 };
 
@@ -113,20 +125,17 @@ export const optionalCustomerAuth = (req, res, next) => {
 };
 
 /** Set req.isAdmin when valid admin token (async DB check; always calls next()). */
-export const optionalAdminAuth = (req, res, next) => {
+export const optionalAdminAuth = async (req, res, next) => {
   const token = req.headers.authorization?.replace(/^Bearer\s+/i, "").trim();
   if (!token) return next();
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const userId = Number(decoded.userId);
     if (!userId) return next();
-    prisma.user
-      .findUnique({ where: { id: userId }, select: { role: true } })
-      .then((u) => {
-        if (u?.role === "admin") req.isAdmin = true;
-      })
-      .finally(() => next());
+    const u = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+    if (u?.role === "admin") req.isAdmin = true;
   } catch (_) {
-    next();
+    // Ignore verification errors for optional auth
   }
+  next();
 };
