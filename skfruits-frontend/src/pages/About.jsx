@@ -1,52 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
 const IMG = {
-  heroBasket:
-    "https://images.unsplash.com/photo-1610832958506-aa56368192c9?auto=format&fit=crop&w=1200&q=82",
-  whoWeAre:
-    "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=82",
-  promiseBasket:
-    "https://images.unsplash.com/photo-1619566636858-adf3-464a0a896c3?auto=format&fit=crop&w=600&q=82",
+  heroBasket: "/images/store/IMG_9262.jpg",
+  whoWeAre: "/images/store/IMG_9264.jpg",
+  promiseBasket: "/images/store/IMG_9266.jpg",
 };
-
-const TIMELINE = [
-  {
-    year: "1947",
-    title: "Migration",
-    caption: "A new beginning and the roots of our family trade.",
-    img: "https://images.unsplash.com/photo-1473163928189-364b2c4e1123?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    year: "1949",
-    title: "Business start",
-    caption: "From a small wooden cabin, we began serving fresh produce.",
-    img: "https://images.unsplash.com/photo-1449158743715-0a90ebb2d2d8?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    year: "1970",
-    title: "Expansion",
-    caption: "Growing with the market and our loyal neighbourhood.",
-    img: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    year: "1984",
-    title: "Larger presence",
-    caption: "A stronger footprint and wider selection of premium fruits.",
-    img: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    year: "Growth era",
-    title: "Multi-city",
-    caption: "Delivery and wholesale—freshness reaching farther every day.",
-    img: "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    year: "Today",
-    title: "Modern retail",
-    caption: "Fast delivery, same values—trusted quality you can taste.",
-    img: "https://images.unsplash.com/photo-1601925260368-h2e2423d842b?auto=format&fit=crop&w=400&q=80",
-  },
-];
 
 const FEATURE_CARDS = [
   {
@@ -312,44 +270,6 @@ export default function About() {
                 </div>
               </Reveal>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Our Journey */}
-      <section className="py-16 sm:py-20" style={{ background: "var(--ab-cream)" }}>
-        <div className="mx-auto max-w-7xl  px-2 sm:px-4 lg:px-6">
-          <Reveal>
-            <div className="mb-12 text-center">
-              <h2 className="about-display text-2xl sm:text-3xl">OUR JOURNEY</h2>
-              <p className="mx-auto mt-3 max-w-2xl text-base" style={{ color: "var(--ab-muted)" }}>
-                Milestones that shaped Dil Se SK Fruits—from humble beginnings to the brand you trust today.
-              </p>
-            </div>
-          </Reveal>
-          <div className="relative">
-            <div className="about-timeline-track hidden lg:block" />
-            <div className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4 lg:grid lg:snap-none lg:grid-cols-6 lg:gap-4 lg:overflow-visible lg:pb-0 [&::-webkit-scrollbar]:h-1.5">
-              {TIMELINE.map((item, i) => (
-                <Reveal key={item.year} className="min-w-[140px] flex-1 snap-center lg:min-w-0" delayMs={i * 50}>
-                  <div className="flex flex-col items-center text-center">
-                    <div
-                      className="relative z-[1] mb-4 h-24 w-24 overflow-hidden rounded-full border-4 border-white shadow-md sm:h-28 sm:w-28"
-                      style={{ borderColor: i % 2 === 0 ? "var(--ab-green)" : "var(--ab-orange)" }}
-                    >
-                      <img src={item.img} alt="" className="h-full w-full object-cover" loading="lazy" />
-                    </div>
-                    <p className="about-display text-sm sm:text-base">{item.year}</p>
-                    <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--ab-orange)" }}>
-                      {item.title}
-                    </p>
-                    <p className="mt-2 text-xs leading-relaxed sm:text-sm" style={{ color: "var(--ab-muted)" }}>
-                      {item.caption}
-                    </p>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
           </div>
         </div>
       </section>

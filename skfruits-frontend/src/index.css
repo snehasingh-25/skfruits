@@ -504,22 +504,6 @@ a, button, input, textarea, select {
   font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
-.about-timeline-track {
-  position: absolute;
-  left: 8%;
-  right: 8%;
-  top: 3.5rem;
-  height: 0;
-  border-top: 2px dashed var(--ab-orange);
-  pointer-events: none;
-}
-
-@media (max-width: 1023px) {
-  .about-timeline-track {
-    display: none;
-  }
-}
-
 .about-decor-slices {
   pointer-events: none;
   position: absolute;
@@ -574,4 +558,131 @@ a, button, input, textarea, select {
 .contact-mockup .cf-field:focus-within {
   border-color: var(--cf-green);
   box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.12);
+}
+
+/* Floating action buttons — WhatsApp + Chatbot stack */
+.fab-stack {
+  --fab-size: 3.5rem;
+  --fab-gap: 1.125rem;
+  --fab-inset-x: 1rem;
+  --fab-nav-height: 4.25rem;
+  --fab-edge-gap: 0.75rem;
+  position: fixed;
+  right: var(--fab-inset-x);
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--fab-gap);
+  bottom: calc(var(--fab-nav-height) + var(--fab-edge-gap) + env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+}
+
+.fab-stack > * {
+  pointer-events: auto;
+}
+
+body.chat-open .fab-stack {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .fab-stack {
+    --fab-inset-x: 1.5rem;
+    bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.fab-button {
+  width: var(--fab-size);
+  height: var(--fab-size);
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: none;
+  cursor: pointer;
+  transition:
+    transform var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out),
+    filter var(--motion-fast) var(--ease-out);
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.18),
+    0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.fab-button:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.2),
+    0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.fab-button:active {
+  transform: scale(0.96);
+}
+
+.fab-button:focus-visible {
+  outline: 2px solid #f97316;
+  outline-offset: 3px;
+}
+
+.fab-button--whatsapp {
+  background: linear-gradient(135deg, #34d399 0%, #22c55e 55%, #16a34a 100%);
+  color: #ffffff;
+}
+
+.fab-button--chat {
+  background: linear-gradient(135deg, #fb923c 0%, #f97316 52%, #ea580c 100%);
+  color: #ffffff;
+  position: relative;
+}
+
+.fab-button--chat.fab-button--pulse {
+  animation: fab-chat-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes fab-chat-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 4px 14px rgba(249, 115, 22, 0.35),
+      0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+  50% {
+    box-shadow:
+      0 6px 22px rgba(249, 115, 22, 0.55),
+      0 0 0 10px rgba(249, 115, 22, 0.12);
+  }
+}
+
+.fab-tooltip {
+  position: absolute;
+  right: calc(100% + 0.75rem);
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  padding: 0.4rem 0.65rem;
+  border-radius: var(--radius-sm);
+  background: rgba(26, 26, 26, 0.92);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-fast) var(--ease-out);
+}
+
+.fab-button--chat:hover .fab-tooltip,
+.fab-button--chat:focus-visible .fab-tooltip {
+  opacity: 1;
+}
+
+@media (max-width: 767px) {
+  .fab-tooltip {
+    display: none;
+  }
 }

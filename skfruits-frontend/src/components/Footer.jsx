@@ -2,9 +2,12 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { API } from "../api";
 import { useToast } from "../context/ToastContext";
+import { useContactSettings } from "../hooks/useContactSettings";
+import { getMailtoHref, getTelHref } from "../config/contactSettings";
 
 export default function Footer() {
   const toast = useToast();
+  const contact = useContactSettings();
   const [email, setEmail] = useState("");
   const [subscribing, setSubscribing] = useState(false);
 
@@ -104,27 +107,38 @@ export default function Footer() {
             <h4 className="font-display font-bold mb-4 text-lg text-design-foreground">Connect With Us</h4>
 
             <div className="space-y-2 text-sm text-design-foreground">
-              <p className="flex items-start gap-2">
-                <span className="mt-0.5">📍</span>
-                <span></span>
-              </p>
               <p className="flex items-center gap-2">
                 <span>📱</span>
-                <a 
-                  href="tel:+919116546255" 
+                <a
+                  href={getTelHref(contact.phoneE164)}
                   className="hover:underline transition-all duration-300 text-design-foreground hover:opacity-80"
                 >
-                  
+                  {contact.phoneDisplay}
                 </a>
               </p>
               <p className="flex items-center gap-2">
                 <span>📧</span>
-                <a 
-                  href="mailto:yashj.6628@gmail.com" 
+                <a
+                  href={getMailtoHref(contact.email)}
                   className="hover:underline transition-all duration-300 text-design-foreground hover:opacity-80"
                 >
-                  
+                  {contact.email}
                 </a>
+              </p>
+              <p className="flex items-start gap-2">
+                <span className="mt-0.5">📍</span>
+                {contact.mapUrl ? (
+                  <a
+                    href={contact.mapUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline transition-all duration-300 text-design-foreground hover:opacity-80"
+                  >
+                    {contact.businessAddress}
+                  </a>
+                ) : (
+                  <span>{contact.businessAddress}</span>
+                )}
               </p>
             </div>
 

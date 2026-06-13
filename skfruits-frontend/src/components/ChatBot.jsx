@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API } from "../api";
 import ProductCard from "./ProductCard";
+import ChatBotIcon from "./ChatBotIcon";
 
 const SUPPORT_PHONE_E164 = "+919116546255";
 const SUPPORT_WHATSAPP = "919116546255";
@@ -41,6 +42,7 @@ const WELCOME_MESSAGE = {
 export default function ChatBot() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const [messages, setMessages] = useState([WELCOME_MESSAGE]);
   const [inputMessage, setInputMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -50,6 +52,25 @@ export default function ChatBot() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen]);
+
+  useEffect(() => {
+    document.body.classList.toggle("chat-open", isOpen);
+    return () => document.body.classList.remove("chat-open");
+  }, [isOpen]);
+
+  const toggleChat = () => {
+    setHasInteracted(true);
+    setIsOpen((open) => !open);
+  };
 
   const sendToApi = async (userText) => {
     if (!userText?.trim()) return;
@@ -212,32 +233,29 @@ export default function ChatBot() {
 
   return (
     <>
-      {/* Floating button - responsive positioning */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50 rounded-full w-14 h-14 md:w-16 md:h-16 shadow-2xl hover:scale-110 transition-all duration-300 flex items-center justify-center group active:scale-95"
-        style={{ backgroundColor: "var(--btn-primary-bg)", color: "var(--btn-primary-fg)" }}
-        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--hover-accent)")}
-        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--btn-primary-bg)")}
-      >
-        {!isOpen ? (
-          <img 
-            src="/model.png" 
-            alt="Support" 
-            className="w-10 h-10"
-          />
-        ) : (
-          <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: "var(--btn-primary-fg)" }}>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        )}
-      </button>
+      {!isOpen && (
+        <button
+          type="button"
+          onClick={toggleChat}
+          aria-label="Chat with us"
+          aria-expanded={isOpen}
+          aria-haspopup="dialog"
+          className={`fab-button fab-button--chat${!hasInteracted ? " fab-button--pulse" : ""}`}
+        >
+          <span className="fab-tooltip" role="tooltip">
+            Chat with us
+          </span>
+          <ChatBotIcon className="h-7 w-7" />
+        </button>
+      )}
 
-      {/* Chat window - responsive layout */}
       {isOpen && (
         <div
-          className="fixed inset-x-0 bottom-0 md:bottom-24 md:right-8 md:left-auto z-50 w-full md:w-96 h-[100dvh] md:h-[600px] bg-white md:rounded-2xl shadow-2xl flex flex-col border-2 md:border-2 border-t-2 overflow-hidden"
+          className="fixed inset-x-0 bottom-0 md:bottom-[11.5rem] md:right-6 md:left-auto z-50 w-full md:w-96 h-[100dvh] md:h-[600px] bg-white md:rounded-2xl shadow-2xl flex flex-col border-2 md:border-2 border-t-2 overflow-hidden"
           style={{ borderColor: "var(--border)", backgroundColor: "var(--card-white)" }}
+          role="dialog"
+          aria-modal="true"
+          aria-label="SK Fruits support chat"
         >
           {/* Header - responsive padding */}
           <div
@@ -245,12 +263,11 @@ export default function ChatBot() {
             style={{ borderColor: "var(--border)", backgroundColor: "var(--secondary)" }}
           >
             <div className="flex items-center gap-2 md:gap-3">
-              <div className="w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center overflow-hidden" style={{ backgroundColor: "var(--card-white)" }}>
-                <img 
-                  src="/model.png" 
-                  alt="Support" 
-                  className="w-10 h-10"
-                />
+              <div
+                className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full text-white shadow-md"
+                style={{ background: "linear-gradient(135deg, #fb923c 0%, #f97316 52%, #ea580c 100%)" }}
+              >
+                <ChatBotIcon className="h-6 w-6 md:h-7 md:w-7" />
               </div>
               <div>
                 <h3 className="font-bold text-sm md:text-base" style={{ color: "var(--foreground)" }}>
@@ -261,7 +278,12 @@ export default function ChatBot() {
                 </p>
               </div>
             </div>
-            <button onClick={() => setIsOpen(false)} className="p-1 rounded-lg hover:bg-white/50 transition">
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              aria-label="Close chat"
+              className="p-1 rounded-lg hover:bg-white/50 transition"
+            >
               <svg className="w-5 h-5" style={{ color: "var(--foreground)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>

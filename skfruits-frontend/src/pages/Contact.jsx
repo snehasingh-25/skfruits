@@ -1,49 +1,16 @@
 import { useState } from "react";
 import { API } from "../api";
 import { useToast } from "../context/ToastContext";
-
-const PHONE_DISPLAY = "+91 91165 46255";
-const PHONE_E164 = "919116546255";
-const EMAIL = "Skfruitsbhilwara@gmail.com";
-const MAILTO = "mailto:Skfruitsbhilwara@gmail.com";
-const MAPS_SEARCH =
-  "https://www.google.com/maps/search/?api=1&query=Dil+Se+SK+Fruits+Bhilwara+Rajasthan+311001";
+import { useContactSettings } from "../hooks/useContactSettings";
+import { getMailtoHref, getTelHref } from "../config/contactSettings";
 
 const IMG = {
-  orchard: "https://images.unsplash.com/photo-1416879595882-3373a0480b7b?auto=format&fit=crop&w=1800&q=80",
-  basket: "https://images.unsplash.com/photo-1610832958506-aa56368192c9?auto=format&fit=crop&w=900&q=82",
-  bannerFruit: "https://images.unsplash.com/photo-1619566636858-adf3-464a0a896c3?auto=format&fit=crop&w=700&q=82",
+  orchard: "/images/store/IMG_9267.jpg",
+  basket: "/images/store/IMG_9268.jpg",
+  heroCard: "/images/store/IMG_9271.jpg",
+  bannerFruit: "/images/store/IMG_9266.jpg",
 };
 
-const STORES = [
-  {
-    n: 1,
-    lines: ["Shop no. 5, Suchna Kendra", "Dil Se SK Fruits", "Bhilwara, Rajasthan 311001"],
-    thumb: "https://images.unsplash.com/photo-1601925260368-h2e2423d842b?auto=format&fit=crop&w=200&q=80",
-  },
-  {
-    n: 2,
-    lines: ["Krashi Upaj Mandi", "Shop No. 93, 94", "Bhilwara, Rajasthan 311001"],
-    thumb: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=200&q=80",
-  },
-];
-
-const SOCIAL = [
-  {
-    name: "Instagram",
-    handle: "dilseskfruits",
-    cta: "Follow for daily fruit stories",
-    href: "https://www.instagram.com/invites/contact/?utm_source=ig_contact_invite&utm_medium=copy_link&utm_content=xm9qyjh",
-    gradient: true,
-  },
-  {
-    name: "Facebook",
-    handle: "Dil Se Sk Fruits",
-    cta: "Like our page for offers & updates",
-    href: "https://www.facebook.com/share/1GsP7HqSMy/",
-    gradient: false,
-  },
-];
 
 function StylizedMap() {
   return (
@@ -98,6 +65,14 @@ function FieldIconWrap({ icon, children, align = "center" }) {
 
 export default function Contact() {
   const toast = useToast();
+  const {
+    phoneDisplay: PHONE_DISPLAY,
+    phoneE164: PHONE_E164,
+    email: EMAIL,
+    mapUrl: MAPS_SEARCH,
+    stores: STORES,
+  } = useContactSettings();
+  const MAILTO = getMailtoHref(EMAIL);
   const [form, setForm] = useState({ name: "", phone: "", email: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
 
@@ -166,10 +141,17 @@ export default function Contact() {
               className="w-[52%] rounded-2xl object-cover shadow-xl ring-2 ring-white/80"
             />
             <div className="w-[44%] self-end rounded-2xl bg-[#c8a882] p-2 shadow-lg ring-2 ring-white/60">
-              <div className="flex aspect-[3/4] flex-col justify-between rounded-xl bg-[#fdf6e3] p-3 text-[10px] font-bold uppercase leading-tight text-[#2d5a27] shadow-inner">
+              <div className="flex aspect-[3/4] flex-col justify-between overflow-hidden rounded-xl bg-[#fdf6e3] p-3 text-[10px] font-bold uppercase leading-tight text-[#2d5a27] shadow-inner">
                 <span>Dil Se</span>
-                <span className="text-[var(--cf-orange)]">SK Fruits</span>
-                <span className="text-[9px] font-normal normal-case text-[var(--cf-muted)]">Fresh • Local • Fast</span>
+                <img
+                  src={IMG.heroCard}
+                  alt="Dil Se SK Fruits store"
+                  className="my-2 min-h-0 w-full flex-1 rounded-lg object-cover"
+                />
+                <div>
+                  <span className="block text-[var(--cf-orange)]">SK Fruits</span>
+                  <span className="text-[9px] font-normal normal-case text-[var(--cf-muted)]">Fresh • Local • Fast</span>
+                </div>
               </div>
             </div>
           </div>
@@ -180,7 +162,7 @@ export default function Contact() {
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid gap-4 md:grid-cols-3">
           <a
-            href={`tel:+${PHONE_E164}`}
+            href={getTelHref(PHONE_E164)}
             className="flex gap-4 rounded-[var(--radius-lg)] border bg-[var(--cf-white)] p-5 shadow-sm transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-md"
             style={{ borderColor: "var(--cf-line)" }}
           >
@@ -420,7 +402,7 @@ export default function Contact() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <a
-              href="tel:+917976948872"
+              href={getTelHref(PHONE_E164)}
               className="rounded-xl shadow-lg p-8 text-center hover:shadow-xl transition-all duration-300 group"
               style={{ backgroundColor: "var(--card-white)" }}
             >
@@ -445,7 +427,7 @@ export default function Contact() {
             </a>
 
             <a
-              href="mailto:yashj.6628@gmail.com"
+              href={MAILTO}
               className="rounded-xl shadow-lg p-8 text-center hover:shadow-xl transition-all duration-300 group"
               style={{ backgroundColor: "var(--card-white)" }}
             >
@@ -470,7 +452,7 @@ export default function Contact() {
             </a>
 
             <a
-              href="https://maps.google.com/?q=Sewa+Sadan+Rd+near+Sitaram+Ji+Ki+Bawri+Bhopal+Ganj+Bhilwara+Rajasthan+311001"
+              href={MAPS_SEARCH}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-xl shadow-lg p-8 text-center hover:shadow-xl transition-all duration-300 group"
