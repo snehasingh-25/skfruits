@@ -107,8 +107,6 @@ router.post("/event", requireRole("driver"), async (req, res) => {
       }
     });
 
-    console.log(`[DriverTracking] Event: ${eventType} for order ${orderId} by driver ${driverId}`);
-
     // Prepare response
     let responseData = { 
       success: true, 
