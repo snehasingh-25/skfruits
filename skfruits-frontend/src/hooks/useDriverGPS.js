@@ -1,13 +1,13 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { API } from "../api";
 
-const PING_INTERVAL_MS = 10_000; // Send location every 10 seconds
+const PING_INTERVAL_MS = 60_000; // Send location every 60 seconds (1 minute)
 
 /**
  * Hook for managing driver GPS tracking during active deliveries.
  *
  * - Watches GPS position via navigator.geolocation.watchPosition
- * - Sends lightweight "ping" events every 10 seconds
+ * - Sends lightweight "ping" events every 60 seconds
  * - Sends hard events (picked_up, reached, delivered) on demand
  * - Fires sendBeacon on page unload for last-known position
  *

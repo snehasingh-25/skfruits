@@ -63,10 +63,14 @@ export function useOrderTracking(orderId, getAuthHeaders, options = {}) {
       setError(null);
       retriesRef.current = 0;
 
-      // Check if delivered — stop polling
-      if (data.status === "delivered") {
+      // Check if delivered via either tracking status or order lifecycle status
+      const isNowDelivered =
+        data.status === "delivered" ||
+        data.orderStatus === "delivered";
+
+      if (isNowDelivered) {
         setIsDelivered(true);
-        return; // Don't schedule next poll
+        return; // Stop polling
       }
 
       // Schedule next poll based on server recommendation
