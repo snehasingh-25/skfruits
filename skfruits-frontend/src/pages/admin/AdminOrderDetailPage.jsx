@@ -234,8 +234,8 @@ export default function AdminOrderDetailPage() {
                 style={{ width: `${(currentStep / Math.max(STEPS.length - 1, 1)) * 100}%`, background: "var(--primary)" }}
               />
               {STEPS.map((label, idx) => {
-                const done = currentStep > idx;
                 const active = currentStep === idx;
+                const done = currentStep > idx || (idx === STEPS.length - 1 && active);
                 return (
                   <div key={label} className="flex flex-col items-center relative z-10">
                     <div

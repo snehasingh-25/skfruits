@@ -6,6 +6,7 @@ import {
   orderAllowsDriverSelfRelease,
   orderDataClearDriverAndTracking,
 } from "../utils/driverAssignment.js";
+import { parseProductImage } from "../utils/productSerialize.js";
 
 const router = express.Router();
 
@@ -71,12 +72,15 @@ router.get("/orders", requireRole("driver"), async (req, res) => {
       addressLatitude: order.addressLatitude ?? null,
       addressLongitude: order.addressLongitude ?? null,
       total: order.total,
+      paymentMethod: order.paymentMethod,
+      paymentStatus: order.paymentStatus,
       deliveryFee: order.deliveryFee,
       estimatedDeliveryDate: order.estimatedDeliveryDate,
       notes: order.notes,
       items: (order.items || []).map((item) => ({
         productName: item.productName,
         sizeLabel: item.sizeLabel,
+        image: parseProductImage(item.product),
         quantity: item.quantity,
         price: item.price,
         subtotal: item.subtotal,
@@ -111,7 +115,12 @@ router.put("/orders/:id/status", requireRole("driver"), async (req, res) => {
 
     const updated = await prisma.order.update({
       where: { id },
-      data: { status: newStatus },
+      data: {
+        status: newStatus,
+        // Keep trackingStatus in sync so customer tracking page updates immediately
+        ...(newStatus === "delivered" && { trackingStatus: "delivered" }),
+        ...(newStatus === "out_for_delivery" && { trackingStatus: "in_transit" }),
+      },
     });
 
     if (newStatus === "delivered") {

@@ -107,10 +107,10 @@ router.get("/order/:orderId", requireCustomerOnly, async (req, res) => {
       }
 
       // Freshness indicator
-      if (freshnessSeconds > 300) {
-        confidence = "low"; // More than 5 minutes old
-      } else if (freshnessSeconds > 60) {
-        confidence = "medium"; // More than 1 minute old
+      if (freshnessSeconds > 600) {
+        confidence = "low"; // More than 10 minutes old
+      } else if (freshnessSeconds > 180) {
+        confidence = "medium"; // More than 3 minutes old
       }
 
       // Use ETA-aware positioning with polyline (smooth but with realistic GPS jitter)
@@ -545,10 +545,10 @@ router.get("/order/:orderId/polling", requireCustomerOnly, async (req, res) => {
       }
 
       // Confidence based on location freshness
-      if (freshnessSeconds > 300) {
-        confidence = "low";
-      } else if (freshnessSeconds > 60) {
-        confidence = "medium";
+      if (freshnessSeconds > 600) {
+        confidence = "low";    // More than 10 minutes old
+      } else if (freshnessSeconds > 180) {
+        confidence = "medium"; // More than 3 minutes old
       }
 
       // Use ETA-aware positioning with polyline (smooth but with realistic GPS jitter)
@@ -597,6 +597,7 @@ router.get("/order/:orderId/polling", requireCustomerOnly, async (req, res) => {
     res.json({
       orderId: parseInt(orderId),
       status: order.trackingStatus,
+      orderStatus: order.status,           // ← actual order lifecycle status
       tracking: {
         etaMinutes: Math.max(0, etaMinutes),
         lastKnownLocation: { lat: lastEvent.latitude, lng: lastEvent.longitude },

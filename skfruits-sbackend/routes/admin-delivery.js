@@ -209,10 +209,8 @@ router.delete("/shop-locations/:id", requireRole("admin"), async (req, res) => {
       return res.status(404).json({ error: "Shop location not found" });
     }
 
-    // Soft delete
-    const deletedLocation = await prisma.shopLocation.update({
-      where: { id: locationId },
-      data: { isActive: false }
+    const deletedLocation = await prisma.shopLocation.delete({
+      where: { id: locationId }
     });
 
     res.json({

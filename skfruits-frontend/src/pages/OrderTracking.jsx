@@ -6,8 +6,7 @@ import { API } from "../api";
 import { useOrderTracking } from "../hooks/useOrderTracking";
 import LiveTrackingMap from "../components/LiveTrackingMap";
 
-// Shop location (Bhilwara Railway Station area)
-const SHOP_LOCATION = { lat: 25.3478, lng: 74.6370 };
+// Shop location is fetched dynamically from the backend (no hardcoded coords).
 
 const STATUS_STEPS = [
   { key: "picked_up", label: "Picked Up", emoji: "📦" },
@@ -33,8 +32,10 @@ export default function OrderTracking() {
   const { isAuthenticated, loading: authLoading, getAuthHeaders } = useUserAuth();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [shopLocation, setShopLocation] = useState(null);
+  const [mapEta, setMapEta] = useState(null);
 
-  // Fetch order details for address/metadata
+  // Fetch order details and then resolve the shop's real coordinates
   useEffect(() => {
     if (!isAuthenticated || !id) return;
     const headers = getAuthHeaders();
@@ -42,7 +43,26 @@ export default function OrderTracking() {
 
     fetch(`${API}/orders/${id}`, { headers, credentials: "include" })
       .then((res) => (res.ok ? res.json() : null))
-      .then((data) => setOrder(data))
+      .then(async (data) => {
+        setOrder(data);
+        // Fetch real shop locations and match by nearestShopName
+        try {
+          const shopRes = await fetch(`${API}/delivery/shop-locations`);
+          if (shopRes.ok) {
+            const shops = await shopRes.json();
+            if (shops?.length) {
+              const matched = data?.nearestShopName
+                ? shops.find((s) => s.name === data.nearestShopName) || shops[0]
+                : shops[0];
+              if (matched?.latitude && matched?.longitude) {
+                setShopLocation({ lat: Number(matched.latitude), lng: Number(matched.longitude) });
+              }
+            }
+          }
+        } catch (_) {
+          // silently ignore — shop marker simply won't show
+        }
+      })
       .catch(() => toast.error("Could not load order"))
       .finally(() => setLoading(false));
   }, [id, isAuthenticated, getAuthHeaders, toast]);
@@ -137,7 +157,8 @@ export default function OrderTracking() {
           <LiveTrackingMap
             trackingData={trackingData}
             destination={destination}
-            shopLocation={SHOP_LOCATION}
+            shopLocation={shopLocation}
+            onEtaChange={setMapEta}
             className="w-full h-full"
           />
         </div>
@@ -189,32 +210,27 @@ export default function OrderTracking() {
                   <span className="text-2xl">🛵</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  {tracking.etaMinutes > 0 ? (
-                    <>
-                      <p className="text-2xl font-bold text-white">
-                        ~{tracking.etaMinutes} min{tracking.etaMinutes !== 1 ? "s" : ""}
-                      </p>
-                      <p className="text-sm text-white/70">Estimated arrival</p>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-lg font-bold text-white">On the way</p>
-                      <p className="text-sm text-white/70">Your driver is heading to you</p>
-                    </>
-                  )}
+                  {(() => {
+                    const displayEta = tracking.etaMinutes || mapEta;
+                    if (displayEta > 0) {
+                      return (
+                        <>
+                          <p className="text-2xl font-bold text-white">
+                            ~{displayEta} min{displayEta !== 1 ? "s" : ""}
+                          </p>
+                          <p className="text-sm text-white/70">Estimated arrival</p>
+                        </>
+                      );
+                    }
+                    return (
+                      <>
+                        <p className="text-lg font-bold text-white">On the way</p>
+                        <p className="text-sm text-white/70">Your driver is heading to you</p>
+                      </>
+                    );
+                  })()}
                 </div>
-                {/* Confidence indicator */}
-                {tracking.confidence && tracking.confidence !== "high" && (
-                  <span
-                    className="text-xs px-2 py-1 rounded-full font-medium"
-                    style={{
-                      background: tracking.confidence === "low" ? "rgba(255,59,48,0.3)" : "rgba(255,204,0,0.3)",
-                      color: "white",
-                    }}
-                  >
-                    {tracking.confidence === "low" ? "⚠ Stale" : "~"}
-                  </span>
-                )}
+
               </div>
             </div>
           )}

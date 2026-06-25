@@ -1,128 +1,29 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { useState, useEffect, useRef } from "react";
+import { useGoogleMaps } from "../hooks/useGoogleMaps";
 
-/* ── Available tile layer styles (all free, no API key needed) ────────────
- *
- * CartoDB Positron — Clean, light minimal style, great for modern UIs
- *   url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
- *   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
- *
- * CartoDB Dark Matter — Dark theme map, sleek look
- *   url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
- *   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
- *
- * Stadia Alidade Smooth — Soft pastel tones, very polished
- *   url: "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
- *   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://stadiamaps.com/">Stadia Maps</a>'
- *
- * Esri World Street Map (active) — Detailed, Google Maps-like appearance
- *   url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
- *   attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom'
- *
- * OpenTopoMap — Topographic / terrain style
- *   url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
- *   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://opentopomap.org">OpenTopoMap</a>'
- *
- * OpenStreetMap (default) — Standard community-maintained map
- *   url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
- *   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
- * ──────────────────────────────────────────────────────────────────────── */
-const TILE_URL = "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png";
-const TILE_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://stadiamaps.com/">Stadia Maps</a>';
-
-/* ── Fix Leaflet's default marker icon (broken paths in bundlers) ────────── */
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
-
-/* ── Nominatim reverse-geocode (free, no key) ───────────────────────────── */
-async function reverseGeocode(lat, lng) {
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&accept-language=en`,
-      { headers: { "User-Agent": "SKFruits/1.0" } }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    const a = data.address || {};
-    const addressLine = [
-      a.house_number,
-      a.road,
-      a.neighbourhood || a.suburb || a.hamlet,
-    ]
-      .filter(Boolean)
-      .join(", ");
-    return {
-      addressLine: addressLine || data.display_name?.split(",").slice(0, 2).join(",").trim() || "",
-      city: a.city || a.town || a.village || a.county || "",
-      state: a.state || "",
-      pincode: a.postcode || "",
-      latitude: lat,
-      longitude: lng,
-    };
-  } catch {
-    return { addressLine: "", city: "", state: "", pincode: "", latitude: lat, longitude: lng };
-  }
-}
-
-/* ── Nominatim forward search (autocomplete replacement) ─────────────── */
-async function searchAddress(query) {
-  if (!query || query.length < 3) return [];
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=in&accept-language=en`,
-      { headers: { "User-Agent": "SKFruits/1.0" } }
-    );
-    if (!res.ok) return [];
-    return res.json();
-  } catch {
-    return [];
-  }
-}
-
-/* ── Sub-component: handles map click → moves marker + reverse geocodes ── */
-function MapClickHandler({ onLocationSelect }) {
-  useMapEvents({
-    click(e) {
-      onLocationSelect(e.latlng.lat, e.latlng.lng);
-    },
-  });
-  return null;
-}
-
-/* ── Sub-component: flies map to new position ────────────────────────── */
-function FlyTo({ lat, lng }) {
-  const map = useMap();
-  useEffect(() => {
-    if (lat != null && lng != null) {
-      map.flyTo([lat, lng], 16, { duration: 0.8 });
+function parseAddressComponents(components) {
+  let addressLine = "";
+  let city = "";
+  let state = "";
+  let pincode = "";
+  for (const c of components || []) {
+    const type = c.types?.[0];
+    const value = c.long_name || "";
+    if (type === "street_number" || type === "route" || type === "sublocality_level_1" || type === "sublocality") {
+      addressLine = [addressLine, value].filter(Boolean).join(", ");
     }
-  }, [lat, lng, map]);
-  return null;
+    if (type === "locality") city = value;
+    if (type === "administrative_area_level_1") state = value;
+    if (type === "postal_code") pincode = value;
+  }
+  if (!city && components?.length) {
+    const locality = components.find((c) => c.types?.includes("locality"));
+    const admin2 = components.find((c) => c.types?.includes("administrative_area_level_2"));
+    city = locality?.long_name || admin2?.long_name || "";
+  }
+  return { addressLine: addressLine.trim() || "", city, state, pincode };
 }
 
-/**
- * LocationPicker — Leaflet + OpenStreetMap replacement for GoogleAddressInput.
- *
- * Features:
- * - Text search via Nominatim (free)
- * - Click/tap map to drop pin → reverse geocode
- * - "Use my location" button (browser geolocation API)
- * - Draggable marker for fine-tuning
- *
- * Props:
- *   onChange({ addressLine, city, state, pincode, latitude, longitude })
- *   initialLat, initialLng — starting position (optional)
- *   placeholder
- *   showMap — render the map (default true)
- *   className, style — for the search input
- */
 export default function LocationPicker({
   onChange,
   initialLat = null,
@@ -132,122 +33,215 @@ export default function LocationPicker({
   className = "",
   style = {},
 }) {
+  const { isLoaded, error } = useGoogleMaps();
+  const inputRef = useRef(null);
+  const mapContainerRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const markerRef = useRef(null);
+  const autocompleteRef = useRef(null);
+
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState([]);
-  const [showResults, setShowResults] = useState(false);
-  const [markerPos, setMarkerPos] = useState(
-    initialLat != null && initialLng != null ? [initialLat, initialLng] : null
-  );
-  const [mapCenter, setMapCenter] = useState(
-    initialLat != null && initialLng != null ? [initialLat, initialLng] : [28.6139, 77.209] // Default: New Delhi
-  );
   const [locating, setLocating] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
-  const searchTimerRef = useRef(null);
-  const wrapperRef = useRef(null);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handler = (e) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) setShowResults(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  // Debounced forward search
-  const handleSearchChange = (value) => {
-    setQuery(value);
-    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    if (value.length < 3) {
-      setResults([]);
-      setShowResults(false);
-      return;
+  const [selectedCoords, setSelectedCoords] = useState(() => {
+    if (initialLat != null && initialLng != null) {
+      return { lat: Number(initialLat), lng: Number(initialLng) };
     }
-    searchTimerRef.current = setTimeout(async () => {
-      const data = await searchAddress(value);
-      setResults(data);
-      setShowResults(data.length > 0);
-    }, 400);
-  };
+    return null;
+  });
 
-  // When a search result is selected
-  const handleResultSelect = async (item) => {
-    const lat = parseFloat(item.lat);
-    const lng = parseFloat(item.lon);
-    setMarkerPos([lat, lng]);
-    setMapCenter([lat, lng]);
-    setQuery(item.display_name?.split(",").slice(0, 3).join(",").trim() || "");
-    setShowResults(false);
-
-    const a = item.address || {};
-    const addressLine = [a.house_number, a.road, a.neighbourhood || a.suburb || a.hamlet]
-      .filter(Boolean)
-      .join(", ");
-    onChange?.({
-      addressLine: addressLine || item.display_name?.split(",").slice(0, 2).join(",").trim() || "",
-      city: a.city || a.town || a.village || a.county || "",
-      state: a.state || "",
-      pincode: a.postcode || "",
-      latitude: lat,
-      longitude: lng,
+  // Reverse geocode via Google Geocoder
+  const performReverseGeocoding = (lat, lng) => {
+    if (!window.google?.maps) return;
+    setGeocoding(true);
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+      setGeocoding(false);
+      if (status === "OK" && results?.[0]) {
+        const place = results[0];
+        const { addressLine, city, state, pincode } = parseAddressComponents(place.address_components);
+        const finalAddressLine = addressLine || place.formatted_address?.split(",")[0]?.trim() || "";
+        
+        setQuery(place.formatted_address || "");
+        onChange?.({
+          addressLine: finalAddressLine,
+          city,
+          state,
+          pincode,
+          latitude: lat,
+          longitude: lng,
+        });
+      }
     });
   };
 
-  // When map is clicked or marker dragged
-  const handleLocationSelect = useCallback(
-    async (lat, lng) => {
-      setMarkerPos([lat, lng]);
-      setGeocoding(true);
-      const data = await reverseGeocode(lat, lng);
-      setGeocoding(false);
-      if (data) {
-        setQuery(
-          [data.addressLine, data.city].filter(Boolean).join(", ") || `${lat.toFixed(5)}, ${lng.toFixed(5)}`
-        );
-        onChange?.(data);
-      }
-    },
-    [onChange]
-  );
+  // Autocomplete setup
+  useEffect(() => {
+    if (!isLoaded || !inputRef.current || !window.google?.maps?.places) return;
 
-  // "Use my location" — browser geolocation
-  const handleUseMyLocation = async () => {
+    const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
+      componentRestrictions: { country: "in" },
+      fields: ["place_id", "geometry", "address_components", "formatted_address"],
+      types: ["address"],
+    });
+    autocompleteRef.current = autocomplete;
+
+    const handlePlaceChange = () => {
+      const place = autocomplete.getPlace();
+      if (!place?.geometry?.location) return;
+
+      const lat = place.geometry.location.lat();
+      const lng = place.geometry.location.lng();
+      const { addressLine, city, state, pincode } = parseAddressComponents(place.address_components);
+      const finalAddressLine = addressLine || (place.formatted_address || "").split(",")[0]?.trim() || "";
+
+      setQuery(place.formatted_address || "");
+      setSelectedCoords({ lat, lng });
+
+      onChange?.({
+        addressLine: finalAddressLine,
+        city,
+        state,
+        pincode,
+        latitude: lat,
+        longitude: lng,
+      });
+
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.setCenter({ lat, lng });
+        mapInstanceRef.current.setZoom(16);
+        updateMarker(lat, lng);
+      }
+    };
+
+    autocomplete.addListener("place_changed", handlePlaceChange);
+    return () => {
+      if (autocompleteRef.current) {
+        window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
+      }
+    };
+  }, [isLoaded, onChange]);
+
+  // Update map marker
+  const updateMarker = (lat, lng) => {
+    if (!mapInstanceRef.current) return;
+
+    if (markerRef.current) {
+      markerRef.current.setPosition({ lat, lng });
+    } else {
+      markerRef.current = new window.google.maps.Marker({
+        position: { lat, lng },
+        map: mapInstanceRef.current,
+        draggable: true,
+      });
+
+      markerRef.current.addListener("dragend", () => {
+        const position = markerRef.current.getPosition();
+        const newLat = position.lat();
+        const newLng = position.lng();
+        setSelectedCoords({ lat: newLat, lng: newLng });
+        performReverseGeocoding(newLat, newLng);
+      });
+    }
+  };
+
+  // Initialize Map
+  useEffect(() => {
+    if (!isLoaded || !showMap || !mapContainerRef.current || !window.google?.maps) return;
+
+    const defaultCenter = selectedCoords || { lat: 13.0207, lng: 77.7097 }; // Default center (Bengaluru)
+    
+    const map = new window.google.maps.Map(mapContainerRef.current, {
+      center: defaultCenter,
+      zoom: selectedCoords ? 16 : 12,
+      zoomControl: true,
+      fullscreenControl: false,
+      streetViewControl: false,
+    });
+    mapInstanceRef.current = map;
+
+    if (selectedCoords) {
+      updateMarker(selectedCoords.lat, selectedCoords.lng);
+    }
+
+    // Add map click listener
+    map.addListener("click", (e) => {
+      const lat = e.latLng.lat();
+      const lng = e.latLng.lng();
+      setSelectedCoords({ lat, lng });
+      updateMarker(lat, lng);
+      performReverseGeocoding(lat, lng);
+    });
+
+    return () => {
+      if (markerRef.current) {
+        markerRef.current.setMap(null);
+        markerRef.current = null;
+      }
+      mapInstanceRef.current = null;
+    };
+  }, [isLoaded, showMap]);
+
+  // Sync coords from parent props if they change
+  useEffect(() => {
+    if (initialLat != null && initialLng != null) {
+      const lat = Number(initialLat);
+      const lng = Number(initialLng);
+      if (selectedCoords?.lat !== lat || selectedCoords?.lng !== lng) {
+        setSelectedCoords({ lat, lng });
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.setCenter({ lat, lng });
+          updateMarker(lat, lng);
+        }
+      }
+    }
+  }, [initialLat, initialLng]);
+
+  // "Use my location" Geolocation helper
+  const handleUseMyLocation = () => {
     if (!navigator.geolocation) return;
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      async (pos) => {
+      (pos) => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
-        setMarkerPos([lat, lng]);
-        setMapCenter([lat, lng]);
-        setGeocoding(true);
-        const data = await reverseGeocode(lat, lng);
-        setGeocoding(false);
-        if (data) {
-          setQuery([data.addressLine, data.city].filter(Boolean).join(", "));
-          onChange?.(data);
+        setSelectedCoords({ lat, lng });
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.setCenter({ lat, lng });
+          mapInstanceRef.current.setZoom(16);
+          updateMarker(lat, lng);
         }
+        performReverseGeocoding(lat, lng);
         setLocating(false);
       },
       () => setLocating(false),
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 10000 }
     );
   };
 
+  if (error) {
+    return (
+      <div className="space-y-1">
+        <p className="text-sm text-muted">
+          Address search unavailable. Enter address manually below.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-2" ref={wrapperRef}>
-      {/* Search input + locate button */}
+    <div className="space-y-2">
       <div className="relative flex gap-2">
         <div className="relative flex-1">
           <input
+            ref={inputRef}
             type="text"
             value={query}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            onFocus={() => results.length > 0 && setShowResults(true)}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder={placeholder}
             className={className}
             style={style}
+            disabled={!isLoaded}
             autoComplete="off"
           />
           {geocoding && (
@@ -255,32 +249,11 @@ export default function LocationPicker({
               <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--primary)", borderTopColor: "transparent" }} />
             </div>
           )}
-          {/* Dropdown results */}
-          {showResults && results.length > 0 && (
-            <ul
-              className="absolute z-50 left-0 right-0 mt-1 rounded-lg border shadow-lg max-h-52 overflow-y-auto"
-              style={{ background: "var(--background)", borderColor: "var(--border)" }}
-            >
-              {results.map((item, i) => (
-                <li
-                  key={item.place_id || i}
-                  onClick={() => handleResultSelect(item)}
-                  className="px-3 py-2.5 text-sm cursor-pointer hover:bg-[var(--muted)] transition-colors border-b last:border-b-0"
-                  style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
-                >
-                  {item.display_name?.length > 80
-                    ? item.display_name.slice(0, 80) + "…"
-                    : item.display_name}
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
-        {/* Use my location button */}
         <button
           type="button"
           onClick={handleUseMyLocation}
-          disabled={locating}
+          disabled={locating || !isLoaded}
           title="Use my current location"
           className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-lg border transition-all hover:shadow-md disabled:opacity-50"
           style={{
@@ -299,40 +272,20 @@ export default function LocationPicker({
         </button>
       </div>
 
-      {/* Map */}
       {showMap && (
         <div className="rounded-lg overflow-hidden border" style={{ borderColor: "var(--border)", height: "220px" }}>
-          <MapContainer
-            center={mapCenter}
-            zoom={markerPos ? 16 : 12}
-            style={{ height: "100%", width: "100%" }}
-            scrollWheelZoom={true}
-          >
-            <TileLayer
-              attribution={TILE_ATTRIBUTION}
-              url={TILE_URL}
-            />
-            <MapClickHandler onLocationSelect={handleLocationSelect} />
-            <FlyTo lat={mapCenter[0]} lng={mapCenter[1]} />
-            {markerPos && (
-              <Marker
-                position={markerPos}
-                draggable
-                eventHandlers={{
-                  dragend: (e) => {
-                    const { lat, lng } = e.target.getLatLng();
-                    handleLocationSelect(lat, lng);
-                  },
-                }}
-              />
-            )}
-          </MapContainer>
+          {isLoaded ? (
+            <div ref={mapContainerRef} style={{ width: "100%", height: "100%" }} />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-sm text-muted" style={{ background: "var(--muted)" }}>
+              Loading map...
+            </div>
+          )}
         </div>
       )}
 
-      {/* Hint text */}
       <p className="text-xs text-muted">
-        Tap the map to drop a pin, or use the{" "}
+        Tap the map to drop a pin, drag the marker to adjust, or use the{" "}
         <button type="button" onClick={handleUseMyLocation} className="underline" style={{ color: "var(--primary)" }}>
           locate me
         </button>{" "}

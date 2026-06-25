@@ -82,7 +82,7 @@ export async function deductStockForOrder(tx, items) {
       const size = product.sizes?.find((s) => s.id === sizeId);
       if (!size) throw new Error(`Size not found for "${product.name}"`);
       const result = await tx.$executeRaw`
-        UPDATE "ProductSize"
+        UPDATE ProductSize
         SET stock = stock - ${qty}
         WHERE id = ${sizeId} AND stock >= ${qty}
       `;
@@ -96,7 +96,7 @@ export async function deductStockForOrder(tx, items) {
     }
 
     const result = await tx.$executeRaw`
-      UPDATE "Product"
+      UPDATE Product
       SET stock = stock - ${qty}
       WHERE id = ${product.id} AND stock >= ${qty}
     `;

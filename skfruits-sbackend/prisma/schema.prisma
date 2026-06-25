@@ -477,7 +477,7 @@ model DeliveryTimeConfig {
   // Delivery window & cutoff rules
   deliveryWindowStart   Int      @default(8)          // Delivery window starts at hour (8 = 8 AM)
   deliveryWindowEnd     Int      @default(9)          // Delivery window ends at hour (9 = 9 AM)
-  orderCutoffHour       Int      @default(19)         // Cutoff hour for same-day (19 = 7 PM)
+  orderCutoffHour       Int      @default(23)         // Cutoff hour for same-day (23 = 11 PM)
   minDeliveryHour       Int      @default(8)          // Minimum delivery hour (8 = 8 AM)
   
   updatedAt             DateTime @updatedAt

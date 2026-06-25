@@ -167,7 +167,7 @@ app.get("/health", async (req, res) => {
 app.use("/products", productListRateLimiter, productRoutes);
 app.use("/categories", publicBrowseRateLimiter, categoryRoutes);
 app.use("/orders", publicBrowseRateLimiter, orderRoutes);
-app.use("/auth", authRateLimiter, authRoutes);
+app.use("/auth", authRoutes);
 app.use("/contact", limitPostOnly(formSubmissionRateLimiter), contactRoutes);
 app.use("/cart", publicBrowseRateLimiter, cartRoutes);
 app.use("/reels", publicBrowseRateLimiter, reelRoutes);

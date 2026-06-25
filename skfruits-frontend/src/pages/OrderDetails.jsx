@@ -208,8 +208,8 @@ export default function OrderDetails() {
                 }}
               />
               {STEPS.map((label, idx) => {
-                const done = currentStep > idx;
                 const active = currentStep === idx;
+                const done = currentStep > idx || (idx === STEPS.length - 1 && active);
                 return (
                   <div key={label} className="flex flex-col items-center relative z-10">
                     <div
@@ -239,7 +239,7 @@ export default function OrderDetails() {
         )}
 
         {/* Delivery ETA */}
-        {order.estimatedDeliveryMinutes != null && (
+        {!isCancelled && String(order.status).toLowerCase() !== "delivered" && order.estimatedDeliveryMinutes != null && (
           <div className="rounded-xl p-5 mb-8" style={{ background: "linear-gradient(135deg, #16a34a 0%, #059669 100%)" }}>
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">

@@ -61,7 +61,7 @@ function validatePincode(value) {
 }
 
 export default function Checkout() {
-  const { cartItems, isLoaded, refreshCart } = useCart();
+  const { cartItems, isLoaded, refreshCart, clearCart } = useCart();
   const { isAuthenticated, getAuthHeaders } = useUserAuth();
   const toast = useToast();
   const navigate = useNavigate();
@@ -92,6 +92,16 @@ export default function Checkout() {
 
   const sessionId = getSessionId();
 
+  const getActiveCoords = () => {
+    if (isAuthenticated && selectedAddressId && addresses.length) {
+      const addr = addresses.find((a) => a.id === selectedAddressId);
+      if (addr) {
+        return { lat: addr.latitude, lng: addr.longitude };
+      }
+    }
+    return { lat: form.latitude, lng: form.longitude };
+  };
+
   useEffect(() => {
     if (!isLoaded || !sessionId) {
       setLoadingSummary(false);
@@ -99,9 +109,18 @@ export default function Checkout() {
     }
     setLoadingSummary(true);
     setSummaryError(null);
-    const url = selectedSlotId
-      ? `${API}/delivery/checkout-summary?slotId=${selectedSlotId}`
-      : `${API}/delivery/checkout-summary`;
+
+    const coords = getActiveCoords();
+    let url = `${API}/delivery/checkout-summary`;
+    const params = new URLSearchParams();
+    if (selectedSlotId) params.append("slotId", selectedSlotId);
+    if (coords.lat != null && coords.lng != null) {
+      params.append("latitude", coords.lat);
+      params.append("longitude", coords.lng);
+    }
+    const qs = params.toString();
+    if (qs) url += `?${qs}`;
+
     fetch(url, { headers: { "X-Cart-Session-Id": sessionId } })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(res.status === 400 ? "Invalid cart" : "Failed to load"))))
       .then((data) => setDeliverySummary(data))
@@ -110,7 +129,7 @@ export default function Checkout() {
         setDeliverySummary(null);
       })
       .finally(() => setLoadingSummary(false));
-  }, [isLoaded, sessionId, cartItems.length, selectedSlotId]);
+  }, [isLoaded, sessionId, cartItems.length, selectedSlotId, selectedAddressId, addresses, form.latitude, form.longitude, isAuthenticated]);
 
   const fetchSlots = () => {
     setLoadingSlots(true);
@@ -144,12 +163,14 @@ export default function Checkout() {
       .finally(() => setLoadingAddresses(false));
   }, [isAuthenticated, getAuthHeaders]);
 
+  const [orderPlaced, setOrderPlaced] = useState(false);
+
   useEffect(() => {
-    if (isLoaded && cartItems.length === 0) {
+    if (isLoaded && cartItems.length === 0 && !orderPlaced) {
       toast.error("Your cart is empty");
       navigate("/cart", { replace: true });
     }
-  }, [isLoaded, cartItems.length, navigate, toast]);
+  }, [isLoaded, cartItems.length, navigate, toast, orderPlaced]);
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -292,7 +313,9 @@ export default function Checkout() {
           await saveAddressToAccount(customerDetails);
         }
         clearPendingOrderNotes();
-        navigate(`/order-success?orderId=${data.orderId}`, { replace: true });
+        setOrderPlaced(true);
+        await clearCart();
+        navigate(`/orders/${data.orderId}`, { replace: true });
       } catch (err) {
         console.error(err);
         toast.error("Something went wrong. Please try again.");
@@ -407,7 +430,9 @@ export default function Checkout() {
             paymentInProgressRef.current = false;
             setSubmitting(false);
             clearPendingOrderNotes();
-            navigate(`/order-success?orderId=${verifyData.orderId}`, { replace: true });
+            setOrderPlaced(true);
+            await clearCart();
+            navigate(`/orders/${verifyData.orderId}`, { replace: true });
           } catch (err) {
             console.error(err);
             setPaymentError("Network error. Your payment may have succeeded; we will confirm shortly.");
@@ -737,9 +762,15 @@ export default function Checkout() {
                 </div>
               ) : deliverySummary ? (
                 <div className="space-y-4">
+                  {deliverySummary.distanceKm != null && (
+                    <div className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
+                      📍 Your location is {deliverySummary.distanceKm} km from {deliverySummary.nearestShopName || "shop"}
+                    </div>
+                  )}
                   <div className="flex flex-wrap items-center gap-3">
                     <span className="text-base font-medium" style={{ color: "var(--foreground)" }}>
                       {deliverySummary.estimatedDeliveryText}
+                      {deliverySummary.estimatedMinutes != null && ` (within ${deliverySummary.estimatedMinutes} mins)`}
                     </span>
                     {deliverySummary.isFreeDelivery && (
                       <span
@@ -819,28 +850,7 @@ export default function Checkout() {
                 )}
               </div>
             )}
-            {!loadingSlots && deliverySlots.length === 0 && (
-              <div
-                className="rounded-xl p-4 border border-dashed"
-                style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}
-              >
-                <p className="text-sm">
-                  {slotsError
-                    ? "Could not load delivery slots. You can still place the order; we'll use the default delivery date."
-                    : "No delivery slots available for the next 7 days. Default ETA applies."}
-                </p>
-                {slotsError && (
-                  <button
-                    type="button"
-                    onClick={fetchSlots}
-                    className="mt-2 text-sm font-medium underline"
-                    style={{ color: "var(--primary)" }}
-                  >
-                    Try again
-                  </button>
-                )}
-              </div>
-            )}
+
 
             {/* Add address modal (checkout) */}
             {addAddressModalOpen && (

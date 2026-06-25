@@ -58,6 +58,32 @@ router.get("/charges", async (req, res) => {
     res.status(500).json({ error: error.message || "Failed to get delivery charges" });
   }
 });
+
+/**
+ * GET /delivery/shop-locations
+ * Public endpoint — returns all active shop locations so the tracking page
+ * can display the real pickup marker instead of a hardcoded coordinate.
+ */
+router.get("/shop-locations", async (req, res) => {
+  try {
+    let locations = await prisma.shopLocation.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true, latitude: true, longitude: true },
+      orderBy: { id: "asc" },
+    });
+    // If no active locations exist, fall back to all locations so the map isn't blank
+    if (!locations.length) {
+      locations = await prisma.shopLocation.findMany({
+        select: { id: true, name: true, latitude: true, longitude: true },
+        orderBy: { id: "asc" },
+      });
+    }
+    res.json(locations);
+  } catch (error) {
+    res.status(500).json({ error: error.message || "Failed to get shop locations" });
+  }
+});
+
 /**
  * ============================================================================
  * PHASE 2: Service Area & Delivery Time Validation
@@ -472,6 +498,9 @@ router.get("/checkout-summary", async (req, res) => {
   try {
     const sessionId = getSessionId(req);
     const slotIdParam = req.query?.slotId != null ? Number(req.query.slotId) : null;
+    const latParam = req.query?.latitude != null ? parseFloat(req.query.latitude) : null;
+    const lngParam = req.query?.longitude != null ? parseFloat(req.query.longitude) : null;
+
     let cartTotal = 0;
     if (sessionId) {
       const items = await getCartItemsForOrder(sessionId);
@@ -498,14 +527,33 @@ router.get("/checkout-summary", async (req, res) => {
     }
     if (!etaResult.estimatedDeliveryDate) {
       const orderTime = new Date();
+      
+      let deliveryConfig = await prisma.deliveryTimeConfig.findFirst();
+      if (!deliveryConfig) {
+        deliveryConfig = await prisma.deliveryTimeConfig.create({ data: {} });
+      }
+      const cutoffHour = deliveryConfig.orderCutoffHour || 23;
+
       const cutoff = new Date(orderTime);
-      cutoff.setHours(SAME_DAY_CUTOFF_HOUR, 0, 0, 0);
+      cutoff.setHours(cutoffHour, 0, 0, 0);
       const estimatedDate = orderTime <= cutoff ? new Date(orderTime) : addDays(orderTime, 1);
       estimatedDate.setHours(0, 0, 0, 0);
       etaResult = {
         estimatedDeliveryDate: estimatedDate.toISOString().slice(0, 10),
         estimatedDeliveryText: formatDateForETA(estimatedDate),
       };
+    }
+
+    let distanceKm = null;
+    let nearestShopName = null;
+    let estimatedMinutes = null;
+    if (latParam != null && lngParam != null && !isNaN(latParam) && !isNaN(lngParam)) {
+      const estimate = await estimateDeliveryTime(latParam, lngParam);
+      if (estimate.serviceable) {
+        distanceKm = estimate.distanceKm;
+        nearestShopName = estimate.nearestShop;
+        estimatedMinutes = estimate.estimatedMinutes;
+      }
     }
 
     const subtotal = Math.max(0, cartTotal);
@@ -521,6 +569,9 @@ router.get("/checkout-summary", async (req, res) => {
       total,
       estimatedDeliveryDate: etaResult.estimatedDeliveryDate,
       estimatedDeliveryText: etaResult.estimatedDeliveryText,
+      distanceKm,
+      nearestShopName,
+      estimatedMinutes,
       ...(etaResult.slotId != null && { slotId: etaResult.slotId }),
     });
   } catch (error) {
@@ -541,10 +592,14 @@ export async function getEstimatedDeliveryForOrder(deliverySlotId, orderTime = n
       return d.toISOString().slice(0, 10);
     }
   }
+
+  let deliveryConfig = await prisma.deliveryTimeConfig.findFirst();
+  const cutoffHour = deliveryConfig?.orderCutoffHour || 23;
+
   const cutoff = new Date(orderTime);
   // Keep cutoff logic consistent with the server's date boundaries.
   // We still format the resulting date as UTC date-only to avoid +/-1 day issues.
-  cutoff.setUTCHours(SAME_DAY_CUTOFF_HOUR, 0, 0, 0);
+  cutoff.setUTCHours(cutoffHour, 0, 0, 0);
   const estimatedDate = orderTime <= cutoff ? new Date(orderTime) : addDays(orderTime, 1);
   estimatedDate.setUTCHours(0, 0, 0, 0);
   return estimatedDate.toISOString().slice(0, 10);
@@ -602,7 +657,7 @@ export async function estimateDeliveryTime(lat, lng) {
 
   // 5. Check driver availability
   const availableDrivers = await prisma.user.count({
-    where: { role: "driver", driverStatus: "available" },
+    where: { role: "driver", driverAvailability: "available" },
   });
   const driverAvailable = availableDrivers > 0;
 
