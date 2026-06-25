@@ -95,10 +95,10 @@ export default function DeliveryMapCard({
             href={mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-medium underline"
-            style={{ color: "var(--primary)" }}
+            className="flex items-center justify-center gap-2 mt-3 px-4 py-2.5 w-full rounded-xl text-sm font-bold border-2 transition-transform active:scale-[0.98]"
+            style={{ borderColor: "var(--primary)", color: "var(--primary)", background: "var(--background)" }}
           >
-            Open in Google Maps
+            🗺️ Open in Google Maps
           </a>
         )}
       </div>
@@ -114,10 +114,10 @@ export default function DeliveryMapCard({
             href={mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-medium underline"
-            style={{ color: "var(--primary)" }}
+            className="flex items-center justify-center gap-2 mt-3 px-4 py-2.5 w-full rounded-xl text-sm font-bold border-2 transition-transform active:scale-[0.98]"
+            style={{ borderColor: "var(--primary)", color: "var(--primary)", background: "var(--background)" }}
           >
-            Open in Google Maps
+            🗺️ Open in Google Maps
           </a>
         )}
       </div>
@@ -155,10 +155,10 @@ export default function DeliveryMapCard({
           href={mapsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-block mt-1.5 text-sm font-medium underline"
-          style={{ color: "var(--primary)" }}
+          className="flex items-center justify-center gap-2 mt-3 px-4 py-2.5 w-full rounded-xl text-sm font-bold border-2 transition-transform active:scale-[0.98]"
+          style={{ borderColor: "var(--primary)", color: "var(--primary)", background: "var(--background)" }}
         >
-          Open in Google Maps
+          🗺️ Open in Google Maps
         </a>
       )}
     </div>

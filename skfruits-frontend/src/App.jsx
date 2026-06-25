@@ -35,6 +35,7 @@ import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage";
 import AdminInventoryPage from "./pages/admin/AdminInventoryPage";
 import AdminReviewsPage from "./pages/admin/AdminReviewsPage";
 import AdminDriversPage from "./pages/admin/AdminDriversPage";
+import AdminShopLocationsPage from "./pages/admin/AdminShopLocationsPage";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import OAuthCallback from "./pages/OAuthCallback";
@@ -73,7 +74,7 @@ function PublicLayout() {
           <Route path="/profile/wishlist" element={<Wishlist />} />
           <Route path="/orders/:id" element={<OrderDetails />} />
           <Route path="/orders/:id/track" element={<OrderTracking />} />
-          <Route path="/driver" element={<DriverProtectedRoute><DriverDashboard /></DriverProtectedRoute>} />
+
           <Route path="/search" element={<Search />} />
           <Route path="/fruit-basket" element={<FruitBasketLanding />} />
           <Route path="/fruit-basket/create" element={<FruitBasketCreate />} />
@@ -124,7 +125,10 @@ export default function App() {
                 <Route path="inventory" element={<AdminInventoryPage />} />
                 <Route path="reviews" element={<AdminReviewsPage />} />
                 <Route path="drivers" element={<AdminDriversPage />} />
+                <Route path="shop-locations" element={<AdminShopLocationsPage />} />
               </Route>
+
+              <Route path="/driver" element={<DriverProtectedRoute><DriverDashboard /></DriverProtectedRoute>} />
 
               {/* Public Routes */}
               <Route path="/*" element={<PublicLayout />} />

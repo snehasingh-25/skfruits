@@ -12,6 +12,7 @@ const SIDEBAR_ITEMS = [
   { id: "analytics", label: "Analytics", path: "/admin/analytics" },
   { id: "inventory", label: "Inventory", path: "/admin/inventory" },
   { id: "reviews", label: "Reviews", path: "/admin/reviews" },
+  { id: "shop-locations", label: "Shop Locations", path: "/admin/shop-locations" },
   { id: "messages", label: "Messages", path: "/admin/dashboard", search: "?tab=messages" },
 ];
 
