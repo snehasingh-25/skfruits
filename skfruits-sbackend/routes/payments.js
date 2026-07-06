@@ -252,6 +252,8 @@ router.post("/verify", optionalCustomerAuth, async (req, res) => {
               quantity: item.quantity,
               price: Number(item.price),
               subtotal: Number(item.subtotal),
+              fruitBasketId: item.fruitBasketId || null,
+              isPackagingLine: item.isPackagingLine || false,
             })),
           },
         },

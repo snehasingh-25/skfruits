@@ -321,27 +321,105 @@ export default function OrderDetails() {
               </span>
             </div>
           )}
-          <ul className="space-y-4">
-            {order.items?.map((item, idx) => (
-              <li key={idx} className="flex gap-4 py-3 border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
-                <div className="w-16 h-16 rounded-lg flex-shrink-0 overflow-hidden flex items-center justify-center" style={{ background: "var(--muted)" }}>
-                  {item.image ? <img src={item.image} alt={item.name} className="w-full h-full object-cover" /> : <span className="text-xs text-muted">—</span>}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium truncate" style={{ color: "var(--foreground)" }}>
-                    {item.name}
-                    {isFruitBasketPackagingLine(item) && (
-                      <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full align-middle" style={{ background: "var(--accent)", color: "var(--foreground)" }}>
-                        Basket
-                      </span>
+          {(() => {
+            const baskets = {};
+            const standalone = [];
+            
+            (order.items || []).forEach((item) => {
+              const isPkg = item.isPackagingLine || isFruitBasketPackagingLine(item);
+              if (item.fruitBasketId != null) {
+                if (!baskets[item.fruitBasketId]) {
+                  baskets[item.fruitBasketId] = {
+                    packaging: null,
+                    fruits: []
+                  };
+                }
+                if (isPkg) {
+                  baskets[item.fruitBasketId].packaging = item;
+                } else {
+                  baskets[item.fruitBasketId].fruits.push(item);
+                }
+              } else {
+                standalone.push(item);
+              }
+            });
+
+            return (
+              <div className="space-y-6">
+                {/* Baskets */}
+                {Object.entries(baskets).map(([basketId, group]) => (
+                  <div key={basketId} className="rounded-xl border p-5 shadow-sm transition-all" style={{ borderColor: "var(--primary)", background: "rgba(22, 101, 52, 0.02)" }}>
+                    {group.packaging ? (
+                      <div className="flex gap-4 pb-3.5 border-b" style={{ borderColor: "var(--border)" }}>
+                        <div className="w-14 h-14 rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center bg-[var(--muted)]">
+                          {group.packaging.image ? <img src={group.packaging.image} alt={group.packaging.name} className="w-full h-full object-cover" /> : <span className="text-xs text-muted">—</span>}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-bold text-base" style={{ color: "var(--foreground)" }}>
+                            🧺 {group.packaging.name}
+                          </p>
+                          <p className="text-xs text-muted">Basket Packaging × {group.packaging.quantity}</p>
+                        </div>
+                        <p className="font-bold text-base" style={{ color: "var(--primary)" }}>₹{Number(group.packaging.subtotal).toFixed(2)}</p>
+                      </div>
+                    ) : (
+                      <div className="pb-2 border-b" style={{ borderColor: "var(--border)" }}>
+                        <p className="font-bold text-sm text-muted uppercase tracking-wider">Custom Basket #{basketId}</p>
+                      </div>
                     )}
-                  </p>
-                  <p className="text-sm text-muted">{item.sizeLabel} × {item.quantity}</p>
-                </div>
-                <p className="font-semibold" style={{ color: "var(--primary)" }}>₹{Number(item.subtotal).toFixed(2)}</p>
-              </li>
-            ))}
-          </ul>
+                    
+                    <div className="mt-4 pl-4 space-y-3.5 border-l-2" style={{ borderColor: "var(--primary)" }}>
+                      <p className="text-xs font-bold uppercase text-[var(--primary)] tracking-widest">Basket Contents:</p>
+                      {group.fruits.map((item, idx) => (
+                        <div key={idx} className="flex gap-4 items-center">
+                          <div className="w-10 h-10 rounded-lg flex-shrink-0 overflow-hidden flex items-center justify-center bg-[var(--muted)]">
+                            {item.image ? <img src={item.image} alt={item.name} className="w-full h-full object-cover" /> : <span className="text-xs text-muted">—</span>}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-sm" style={{ color: "var(--foreground)" }}>
+                              {item.name}
+                            </p>
+                            <p className="text-xs text-muted">{item.sizeLabel} × {item.quantity}</p>
+                          </div>
+                          <p className="font-semibold text-sm" style={{ color: "var(--foreground)" }}>₹{Number(item.subtotal).toFixed(2)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Standalone Items */}
+                {standalone.length > 0 && (
+                  <div className="space-y-4">
+                    {Object.keys(baskets).length > 0 && (
+                      <h3 className="text-xs font-bold uppercase text-muted tracking-widest border-b pb-2 mb-2" style={{ borderColor: "var(--border)" }}>Standalone Products</h3>
+                    )}
+                    <ul className="space-y-4">
+                      {standalone.map((item, idx) => (
+                        <li key={idx} className="flex gap-4 py-3 border-b last:border-b-0" style={{ borderColor: "var(--border)" }}>
+                          <div className="w-16 h-16 rounded-lg flex-shrink-0 overflow-hidden flex items-center justify-center" style={{ background: "var(--muted)" }}>
+                            {item.image ? <img src={item.image} alt={item.name} className="w-full h-full object-cover" /> : <span className="text-xs text-muted">—</span>}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium" style={{ color: "var(--foreground)" }}>
+                              {item.name}
+                              {isFruitBasketPackagingLine(item) && (
+                                <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full align-middle" style={{ background: "var(--accent)", color: "var(--foreground)" }}>
+                                  Basket
+                                </span>
+                              )}
+                            </p>
+                            <p className="text-sm text-muted">{item.sizeLabel} × {item.quantity}</p>
+                          </div>
+                          <p className="font-semibold" style={{ color: "var(--primary)" }}>₹{Number(item.subtotal).toFixed(2)}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
           <div className="mt-4 pt-4 border-t flex justify-between font-bold text-lg" style={{ borderColor: "var(--border)", color: "var(--foreground)" }}>
             <span>Total</span>
             <span style={{ color: "var(--primary)" }}>₹{Number(order.total).toFixed(2)}</span>

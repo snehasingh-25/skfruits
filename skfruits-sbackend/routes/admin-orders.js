@@ -158,6 +158,8 @@ router.get(
         quantity: item.quantity,
         price: item.price,
         subtotal: item.subtotal,
+        fruitBasketId: item.fruitBasketId,
+        isPackagingLine: item.isPackagingLine,
         image: parseProductImage(item.product),
       })),
     });

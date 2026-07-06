@@ -532,7 +532,7 @@ router.get("/checkout-summary", async (req, res) => {
       if (!deliveryConfig) {
         deliveryConfig = await prisma.deliveryTimeConfig.create({ data: {} });
       }
-      const cutoffHour = deliveryConfig.orderCutoffHour || 23;
+      const cutoffHour = deliveryConfig.orderCutoffHour || 19;
 
       const cutoff = new Date(orderTime);
       cutoff.setHours(cutoffHour, 0, 0, 0);
@@ -597,7 +597,7 @@ export async function getEstimatedDeliveryForOrder(deliverySlotId, orderTime = n
   }
 
   let deliveryConfig = await prisma.deliveryTimeConfig.findFirst();
-  const cutoffHour = deliveryConfig?.orderCutoffHour || 23;
+  const cutoffHour = deliveryConfig?.orderCutoffHour || 19;
 
   const cutoff = new Date(orderTime);
   // Keep cutoff logic consistent with the server's date boundaries.

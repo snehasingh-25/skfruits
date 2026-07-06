@@ -17,7 +17,7 @@ const DEFAULT_CONFIG = {
   bufferMinutes: 5,
   maxDeliverableKm: 10,
   noDriverExtraMinutes: 15,
-  orderCutoffHour: 23,
+  orderCutoffHour: 19,
   minDeliveryHour: 8,
   deliveryWindowStart: 8,
   deliveryWindowEnd: 9,

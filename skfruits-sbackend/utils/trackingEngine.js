@@ -154,7 +154,7 @@ export function isPointInServiceArea(
  */
 export function getDeliveryWindow(
   orderTime,
-  cutoffHour = 23,
+  cutoffHour = 19,
   minDeliveryHour = 8,
   deliveryWindowStart = 8,
   deliveryWindowEnd = 9

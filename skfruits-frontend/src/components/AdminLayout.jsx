@@ -6,13 +6,13 @@ const SIDEBAR_ITEMS = [
   { id: "categories", label: "Categories", path: "/admin/dashboard", search: "?tab=categories" },
   { id: "banners", label: "Banners", path: "/admin/dashboard", search: "?tab=banners" },
   { id: "baskets", label: "Fruit Baskets", path: "/admin/dashboard", search: "?tab=baskets" },
-  { id: "reels", label: "Reels", path: "/admin/dashboard", search: "?tab=reels" },
+  // { id: "reels", label: "Reels", path: "/admin/dashboard", search: "?tab=reels" },
   { id: "orders", label: "Orders", path: "/admin/orders" },
   { id: "drivers", label: "Drivers", path: "/admin/drivers" },
   { id: "analytics", label: "Analytics", path: "/admin/analytics" },
   { id: "inventory", label: "Inventory", path: "/admin/inventory" },
   { id: "reviews", label: "Reviews", path: "/admin/reviews" },
-  { id: "shop-locations", label: "Shop Locations", path: "/admin/shop-locations" },
+  // { id: "shop-locations", label: "Shop Locations", path: "/admin/shop-locations" },
   { id: "messages", label: "Messages", path: "/admin/dashboard", search: "?tab=messages" },
 ];
 

@@ -142,6 +142,8 @@ router.post("/create", optionalCustomerAuth, async (req, res) => {
               quantity: item.quantity,
               price: Number(item.price),
               subtotal: Number(item.subtotal),
+              fruitBasketId: item.fruitBasketId || null,
+              isPackagingLine: item.isPackagingLine || false,
             })),
           },
         },
@@ -320,10 +322,13 @@ router.get("/:id", requireCustomerAuth, async (req, res) => {
       items: order.items.map((item) => ({
         productId: item.productId,
         name: item.productName,
+        productName: item.productName,
         sizeLabel: item.sizeLabel,
         quantity: item.quantity,
         price: item.price,
         subtotal: item.subtotal,
+        fruitBasketId: item.fruitBasketId,
+        isPackagingLine: item.isPackagingLine,
         image: parseProductImage(item.product),
       })),
     });
