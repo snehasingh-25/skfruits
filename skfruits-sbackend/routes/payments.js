@@ -6,7 +6,7 @@ import { getCartItemsForOrder } from "./cart.js";
 import { optionalCustomerAuth } from "../middleware/auth.js";
 import { validateStockForItems, deductStockForOrder } from "../utils/stock.js";
 import { calculateDeliveryCharges } from "./delivery.js";
-import { getEstimatedDeliveryForOrder } from "../utils/deliveryEstimate.js";
+import { getEstimatedDeliveryForOrder, estimateDeliveryTime } from "../utils/deliveryEstimate.js";
 import { tryAssignDriverToOrder } from "../utils/driverAssignment.js";
 import { getCartSessionId } from "../utils/cartSession.js";
 
@@ -155,6 +155,13 @@ router.post("/verify", optionalCustomerAuth, async (req, res) => {
     }
     const addressLat = latitude != null && Number.isFinite(Number(latitude)) ? Number(latitude) : null;
     const addressLng = longitude != null && Number.isFinite(Number(longitude)) ? Number(longitude) : null;
+
+    if (addressLat != null && addressLng != null) {
+      const est = await estimateDeliveryTime(addressLat, addressLng);
+      if (!est.serviceable) {
+        return res.status(400).json({ error: est.reason || "Address is outside our delivery range" });
+      }
+    }
 
     const existingOrder = await prisma.order.findUnique({
       where: { razorpayPaymentId },

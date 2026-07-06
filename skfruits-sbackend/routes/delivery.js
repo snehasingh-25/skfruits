@@ -547,10 +547,12 @@ router.get("/checkout-summary", async (req, res) => {
     let distanceKm = null;
     let nearestShopName = null;
     let estimatedMinutes = null;
+    let serviceable = true;
     if (latParam != null && lngParam != null && !isNaN(latParam) && !isNaN(lngParam)) {
       const estimate = await estimateDeliveryTime(latParam, lngParam);
+      serviceable = estimate.serviceable;
+      distanceKm = estimate.distanceKm;
       if (estimate.serviceable) {
-        distanceKm = estimate.distanceKm;
         nearestShopName = estimate.nearestShop;
         estimatedMinutes = estimate.estimatedMinutes;
       }
@@ -572,6 +574,7 @@ router.get("/checkout-summary", async (req, res) => {
       distanceKm,
       nearestShopName,
       estimatedMinutes,
+      serviceable,
       ...(etaResult.slotId != null && { slotId: etaResult.slotId }),
     });
   } catch (error) {

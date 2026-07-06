@@ -762,25 +762,33 @@ export default function Checkout() {
                 </div>
               ) : deliverySummary ? (
                 <div className="space-y-4">
-                  {deliverySummary.distanceKm != null && (
-                    <div className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
-                      📍 Your location is {deliverySummary.distanceKm} km from {deliverySummary.nearestShopName || "shop"}
+                  {deliverySummary.serviceable === false ? (
+                    <div className="p-3.5 rounded-lg text-sm font-medium border" style={{ background: "rgba(239, 68, 68, 0.08)", color: "var(--destructive)", borderColor: "rgba(239, 68, 68, 0.2)" }}>
+                      ⚠️ Sorry, we are not available at this address. {deliverySummary.distanceKm != null && `Your location is ${deliverySummary.distanceKm} km away. `}We only deliver within {deliverySummary.serviceRadius || 10} km of our nearest shop.
                     </div>
+                  ) : (
+                    <>
+                      {deliverySummary.distanceKm != null && (
+                        <div className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
+                          📍 Your location is {deliverySummary.distanceKm} km from {deliverySummary.nearestShopName || "shop"}
+                        </div>
+                      )}
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="text-base font-medium" style={{ color: "var(--foreground)" }}>
+                          {deliverySummary.estimatedDeliveryText}
+                          {deliverySummary.estimatedMinutes != null && ` (within ${deliverySummary.estimatedMinutes} mins)`}
+                        </span>
+                        {deliverySummary.isFreeDelivery && (
+                          <span
+                            className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
+                            style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
+                          >
+                            Free delivery
+                          </span>
+                        )}
+                      </div>
+                    </>
                   )}
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-base font-medium" style={{ color: "var(--foreground)" }}>
-                      {deliverySummary.estimatedDeliveryText}
-                      {deliverySummary.estimatedMinutes != null && ` (within ${deliverySummary.estimatedMinutes} mins)`}
-                    </span>
-                    {deliverySummary.isFreeDelivery && (
-                      <span
-                        className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
-                        style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
-                      >
-                        Free delivery
-                      </span>
-                    )}
-                  </div>
                   {!deliverySummary.isFreeDelivery && deliverySummary.deliveryFee > 0 && (
                     <p className="text-sm text-muted">
                       Delivery fee: ₹{Number(deliverySummary.deliveryFee).toFixed(2)}
@@ -1001,7 +1009,7 @@ export default function Checkout() {
               {/* Section 4 — Place Order CTA */}
               <button
                 type="submit"
-                disabled={submitting || loadingSummary || !!summaryError}
+                disabled={submitting || loadingSummary || !!summaryError || (deliverySummary && deliverySummary.serviceable === false)}
                 className="w-full mt-6 py-4 rounded-xl font-semibold text-lg transition-all duration-300 shadow-md hover:shadow-lg active:scale-[0.99] disabled:opacity-60 disabled:pointer-events-none"
                 style={{
                   background: "var(--btn-primary-bg)",

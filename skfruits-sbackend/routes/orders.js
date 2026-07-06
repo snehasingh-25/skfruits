@@ -51,6 +51,13 @@ router.post("/create", optionalCustomerAuth, async (req, res) => {
     const addressLat = latitude != null && Number.isFinite(Number(latitude)) ? Number(latitude) : null;
     const addressLng = longitude != null && Number.isFinite(Number(longitude)) ? Number(longitude) : null;
 
+    if (addressLat != null && addressLng != null) {
+      const est = await estimateDeliveryTime(addressLat, addressLng);
+      if (!est.serviceable) {
+        return res.status(400).json({ error: est.reason || "Address is outside our delivery range" });
+      }
+    }
+
     const items = await getCartItemsForOrder(sessionId);
     if (!items || items.length === 0) {
       return res.status(400).json({ error: "Cart is empty" });
